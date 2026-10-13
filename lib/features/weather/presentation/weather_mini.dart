@@ -74,8 +74,20 @@ class WeatherMini extends StatelessWidget {
   }
 }
 
+// Measured on the HM-01 export (2x, halved).
+/// Condition tile: 56 square, radius 16.
 const double _tileSize = 56;
-const double _rowIconSize = 18;
+
+/// The sun glyph in the tile is 30 across, which a 33 Material Symbol
+/// draws.
+const double _conditionIconSize = 33;
+
+/// Extra space between the temperature line and the stats row.
+const double _rowGap = 2;
+
+/// Tile to temperature, and between the three stats on the second row.
+const double _tileGap = 14;
+const double _statGap = 10;
 
 /// "Updated 5 min ago" / "Updated 2 h ago".
 String updatedAgo(DateTime fetchedAt, DateTime now) {
@@ -86,15 +98,15 @@ String updatedAgo(DateTime fetchedAt, DateTime now) {
 }
 
 const _icons = <String, IconData>{
-  'clear_day': Symbols.clear_day,
-  'clear_night': Symbols.clear_night,
-  'partly_cloudy_day': Symbols.partly_cloudy_day,
-  'cloud': Symbols.cloud,
-  'foggy': Symbols.foggy,
-  'rainy_light': Symbols.rainy_light,
-  'rainy': Symbols.rainy,
-  'weather_snowy': Symbols.weather_snowy,
-  'thunderstorm': Symbols.thunderstorm,
+  'clear_day': Symbols.clear_day_rounded,
+  'clear_night': Symbols.clear_night_rounded,
+  'partly_cloudy_day': Symbols.partly_cloudy_day_rounded,
+  'cloud': Symbols.cloud_rounded,
+  'foggy': Symbols.foggy_rounded,
+  'rainy_light': Symbols.rainy_light_rounded,
+  'rainy': Symbols.rainy_rounded,
+  'weather_snowy': Symbols.weather_snowy_rounded,
+  'thunderstorm': Symbols.thunderstorm_rounded,
 };
 
 Color _iconColor(String iconName) => switch (iconName) {
@@ -120,7 +132,7 @@ class _Data extends StatelessWidget {
     final current = state.snapshot.current;
     final condition = current.condition;
     final today = todayRow(state.snapshot.days, current.time);
-    final rowText = AppText.body.copyWith(color: AppColors.soil600);
+    final rowText = AppText.bodySm.copyWith(color: AppColors.soil600);
 
     return Row(
       children: [
@@ -133,12 +145,12 @@ class _Data extends StatelessWidget {
           ),
           child: Icon(
             _icons[condition.iconName],
-            size: 32,
+            size: _conditionIconSize,
             fill: 1,
             color: _iconColor(condition.iconName),
           ),
         ),
-        const SizedBox(width: AppSpacing.lg),
+        const SizedBox(width: _tileGap),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,27 +168,28 @@ class _Data extends StatelessWidget {
                   Flexible(
                     child: Text(
                       condition.label,
-                      style: rowText,
+                      style: AppText.body.copyWith(color: AppColors.soil600),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-              if (today != null)
+              if (today != null) ...[
+                const SizedBox(height: _rowGap),
                 Wrap(
-                  spacing: AppSpacing.md,
+                  spacing: _statGap,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     _Stat(
-                      icon: Symbols.thermostat,
+                      icon: Symbols.device_thermostat_rounded,
                       color: AppColors.heat,
                       text:
                           'H ${today.tmaxF.round()} / L ${today.tminF.round()}',
                       style: rowText,
                     ),
                     _Stat(
-                      icon: Symbols.water_drop,
+                      icon: Symbols.water_drop_rounded,
                       color: AppColors.frost,
                       text: today.precipProb == null
                           ? '—'
@@ -184,7 +197,7 @@ class _Data extends StatelessWidget {
                       style: rowText,
                     ),
                     _Stat(
-                      icon: Symbols.sunny,
+                      icon: Symbols.sunny_rounded,
                       color: AppColors.geauxGold,
                       text: today.uvMax == null
                           ? 'UV —'
@@ -193,6 +206,7 @@ class _Data extends StatelessWidget {
                     ),
                   ],
                 ),
+              ],
               if (state.refreshError != null)
                 Text(
                   updatedAgo(state.snapshot.fetchedAt, now),
@@ -202,7 +216,11 @@ class _Data extends StatelessWidget {
           ),
         ),
         if (showChevron)
-          const Icon(Symbols.chevron_right, color: AppColors.soil600),
+          const Icon(
+            Symbols.chevron_right_rounded,
+            size: AppIconSize.xl,
+            color: AppColors.chevronMuted,
+          ),
       ],
     );
   }
@@ -225,8 +243,8 @@ class _Stat extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Icon(icon, size: _rowIconSize, fill: 1, color: color),
-      const SizedBox(width: 2),
+      Icon(icon, size: AppIconSize.xs, fill: 1, color: color),
+      const SizedBox(width: AppSpacing.xs),
       Text(text, style: style),
     ],
   );
