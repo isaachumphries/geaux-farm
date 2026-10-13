@@ -25,7 +25,13 @@ class WeatherState {
   final Object? refreshError;
 }
 
-/// Forecast for one `(lat, lon)` (already rounded to 2 decimals).
+/// The [weatherProvider] key for a place: coordinates rounded to 2
+/// decimals, so small GPS jitter reuses the same forecast.
+(double lat, double lon) forecastLocation(double lat, double lon) =>
+    ((lat * 100).round() / 100, (lon * 100).round() / 100);
+
+/// Forecast for one `(lat, lon)` (already rounded to 2 decimals, see
+/// [forecastLocation]).
 ///
 /// Fetches on first build. [WeatherNotifier.refresh] refetches only when the
 /// snapshot is stale (> 60 min) unless `force` is set (pull-to-refresh).
