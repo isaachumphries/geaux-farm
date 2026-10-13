@@ -6,7 +6,7 @@ The app repo is `geaux_farm/` (GitHub `isaachumphries/geaux-farm`). The planning
 ## 0. Where the work comes from
 
 - Every change starts from a GitHub issue on the **geaux-farm kanban** board (user project #2). Pick cards from **Ready**. Don't pick from **Backlog** until every issue listed under its "Depends on" is merged.
-- Board flow: `Backlog` → `Ready` → `In progress` (when you open the branch) → `In review` (when the PR is up) → `Done` (when the PR merges into its milestone branch). The issue itself closes when the milestone branch lands on `main` (section 2, "Milestone branches"). Move the card yourself at each step.
+- Board flow: `Backlog` → `Ready` → `In progress` (when you open the branch) → `In review` (when the PR is up) → `Done` (when the PR merges into its milestone branch). When a `Part of #N` PR merges, the card goes back to `In progress` until the last PR for the issue lands. The issue itself closes when the milestone branch lands on `main` (section 2, "Milestone branches"). Move the card yourself at each step.
 - Issues are grouped under epics: #12 shell & onboarding, #10 data layer, #9 climate & weather, #7 catalog & recommendations, #8 garden & care, #6 community, #13 polish & demo, #14 local (stretch). Milestones are the plan's gates: Gate 1 (Day 7), Gate 2 (Day 14), Gate 3 (demo).
 - Read the issue's **Done when** and **References** before you write code. The issue body is the acceptance contract. If it's wrong or incomplete, comment on the issue. Don't silently build something else.
 - Labels: `area: *` names the SME who reviews first (`plan/10-team-and-timeline.md` § SME areas). `contract` marks a Day-2 frozen contract (section 4). `cut-candidate` and `stretch` items get dropped first when a gate slips.
