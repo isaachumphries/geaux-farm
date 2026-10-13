@@ -1,0 +1,152 @@
+[
+  {
+    "id": "kale",
+    "commonName": "Kale",
+    "scientificName": "Brassica oleracea var. sabellica",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 40, "max": 80},
+    "growTempF": {"min": 20, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 50, "daysMax": 65},
+      {"method": "seed", "daysMin": 55, "daysMax": 75}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Pick the outer leaves; leave the center growing"},
+        {"type": "fertilize", "everyDays": 21, "note": "Side-dress with a balanced fertilizer"}
+      ]
+    },
+    "tips": [
+      "Light frost sweetens the leaves, so fall and winter crops taste best.",
+      "Check leaf undersides for cabbage worms and pick them off."
+    ],
+    "image": {"asset": "assets/plants/images/kale.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "source": "curated"
+  },
+  {
+    "id": "cherry-tomato",
+    "commonName": "Cherry Tomato",
+    "scientificName": "Solanum lycopersicum var. cerasiforme",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 50, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 55, "daysMax": 70},
+      {"method": "seed", "daysMin": 85, "daysMax": 100}
+    ],
+    "productiveDays": 45,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 4, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 3,
+      "weeklyMinutes": 30,
+      "tasks": [
+        {"type": "prune", "everyDays": 7, "note": "Tie to the stake and pinch suckers below the first flower cluster"},
+        {"type": "fertilize", "everyDays": 14, "note": "Tomato fertilizer once fruit sets"}
+      ]
+    },
+    "tips": [
+      "Water at the soil, not the leaves, to slow leaf disease.",
+      "Pick fruit as soon as it colors so heavy rain doesn't split it."
+    ],
+    "image": {"asset": "assets/plants/images/cherry-tomato.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "source": "curated"
+  },
+  {
+    "id": "sweet-basil",
+    "commonName": "Sweet Basil",
+    "scientificName": "Ocimum basilicum",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 65, "max": 90},
+    "growTempF": {"min": 50, "max": 100},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 40},
+      {"method": "seed", "daysMin": 50, "daysMax": 70}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Pinch tops just above a leaf pair to keep it bushy"},
+        {"type": "fertilize", "everyDays": 28, "note": "Light liquid feed"}
+      ]
+    },
+    "tips": [
+      "Pinch off flower buds to keep the leaves coming.",
+      "Bring pots indoors before nights turn cold."
+    ],
+    "image": {"asset": "assets/plants/images/sweet-basil.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "source": "curated"
+  },
+  {
+    "id": "english-lavender",
+    "commonName": "English Lavender",
+    "scientificName": "Lavandula angustifolia",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial", "evergreen"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": {"min": "5a", "max": "8b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 10, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 90}
+    ],
+    "productiveDays": 45,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 3, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 10},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "prune", "everyDays": 90, "note": "Trim spent flower stalks; never cut into bare wood"}
+      ]
+    },
+    "tips": [
+      "Use a gravelly, fast-draining mix — humid Gulf summers cause root rot.",
+      "Let the soil dry out between waterings."
+    ],
+    "image": {"asset": "assets/plants/images/english-lavender.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "source": "curated"
+  }
+]
