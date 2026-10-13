@@ -44,6 +44,9 @@ abstract final class AppColors {
   static const tileSoil = Color(0xFFF1E6D8);
   static const tileSoilLedge = Color(0xFFA27249);
 
+  /// "THIS SEASON" overline on the leaf-700 season banner (HM-01).
+  static const seasonOverline = Color(0xFFA4D7AA);
+
   /// Translucent white disc behind a plant card's category icon (HM-01,
   /// RC-01).
   static const artHalo = Color(0x8CFFFFFF);
@@ -132,6 +135,15 @@ abstract final class AppIconSize {
 
   /// Compat badge mark and the "Plant now" ribbon sprout.
   static const double sm = 16;
+
+  /// Location pin in the Home city pill.
+  static const double md = 18;
+
+  /// Gear in the Home header's round button.
+  static const double lg = 22;
+
+  /// Material default: banner leaf, chevrons.
+  static const double xl = 24;
 }
 
 abstract final class AppSpacing {
