@@ -111,6 +111,16 @@ abstract final class AppText {
   );
 }
 
+/// Inline icon sizes: the steps the Figma uses next to text and in
+/// buttons. Illustration art sizes stay with the widget that draws them.
+abstract final class AppIconSize {
+  /// Card detail lines and the maintenance pill's bolt.
+  static const double xs = 14;
+
+  /// Compat badge mark and the "Plant now" ribbon sprout.
+  static const double sm = 16;
+}
+
 abstract final class AppSpacing {
   static const double xs = 4;
   static const double sm = 8;

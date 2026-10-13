@@ -58,6 +58,7 @@ void main() {
     expect(AppRadii.sheet, 24);
     expect(AppBorders.width, 2);
     expect(AppBorders.ledge, 4);
+    expect([AppIconSize.xs, AppIconSize.sm], [14, 16]);
   });
 
   group('AppTheme.light', () {
