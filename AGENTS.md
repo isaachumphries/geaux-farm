@@ -6,7 +6,7 @@ The app repo is `geaux_farm/` (GitHub `isaachumphries/geaux-farm`). The planning
 ## 0. Where the work comes from
 
 - Every change starts from a GitHub issue on the **geaux-farm kanban** board (user project #2). Pick cards from **Ready**. Don't pick from **Backlog** until every issue listed under its "Depends on" is merged.
-- Board flow: `Backlog` → `Ready` → `In progress` (when you open the branch) → `In review` (when the PR is up) → `Done` (when the PR merges and the issue closes). Move the card yourself at each step.
+- Board flow: `Backlog` → `Ready` → `In progress` (when you open the branch) → `In review` (when the PR is up) → `Done` (when the PR merges into its milestone branch). The issue itself closes when the milestone branch lands on `main` (section 2, "Milestone branches"). Move the card yourself at each step.
 - Issues are grouped under epics: #12 shell & onboarding, #10 data layer, #9 climate & weather, #7 catalog & recommendations, #8 garden & care, #6 community, #13 polish & demo, #14 local (stretch). Milestones are the plan's gates: Gate 1 (Day 7), Gate 2 (Day 14), Gate 3 (demo).
 - Read the issue's **Done when** and **References** before you write code. The issue body is the acceptance contract. If it's wrong or incomplete, comment on the issue. Don't silently build something else.
 - Labels: `area: *` names the SME who reviews first (`plan/10-team-and-timeline.md` § SME areas). `contract` marks a Day-2 frozen contract (section 4). `cut-candidate` and `stretch` items get dropped first when a gate slips.
@@ -49,27 +49,40 @@ No frame exists yet for CM-05 My profile, the report sheet, or LC-01–03 (Local
   - Subject: imperative mood, ≤72 chars, prefixed with the area and ending with the issue number, e.g. `care: add slotFor free-time scheduling (#42)`. Don't start the subject with `#`, because git treats lines starting with `#` as comments.
   - Body: explain *why*, not just what. Reference context a reviewer won't otherwise have (plan section, fixture, edge case).
 - Each commit should build and pass tests where practical. Don't leave intermediate commits in a broken state on shared branches.
-- Don't rewrite shared/pushed history that others may have based work on. Rebasing an open PR's branch onto `main` before it lands is fine (see section 9).
+- Don't rewrite shared/pushed history that others may have based work on. Rebasing an open PR's branch onto its base branch (its milestone branch, or the parent branch of a stacked PR) before it lands is fine (see section 9). Milestone branches themselves are never rebased.
 - Force-push only with `--force-with-lease` (never bare `--force`), and only to an unmerged branch that is yours or that you're landing as a maintainer (section 9).
 
 ## 2. One branch, one PR, per task
 
 - One issue = one branch = one PR. Don't bundle unrelated issues.
 - Branch naming: `<area>/<issue#>-<short-slug>`, e.g. `care/42-slot-for` or `onboarding/23-availability-grid`. Areas: `shell`, `onboarding`, `data`, `climate`, `weather`, `catalog`, `recs`, `garden`, `care`, `community`, `local`, `settings`, `ci`.
-- Always branch from an up-to-date `origin/main`:
+- Always branch from the up-to-date milestone branch for the issue's milestone (see "Milestone branches" below), never straight from `main`:
   ```
   git fetch origin
-  git checkout -b <area>/<issue#>-<short-slug> origin/main
+  git checkout -b <area>/<issue#>-<short-slug> origin/milestone/gate-<n>
   ```
 - Keep PRs small, roughly 400 changed lines as a guide (generated `*.g.dart` and `plants.json` data don't count). Split larger work into sequential PRs. Catalog authoring issues can land in batches of about 10 records.
-- PR body references the issue (`Closes #N`) and includes test notes: what you tested, how (unit, widget, pgTAP, emulator/device), and what you didn't. UI PRs include a 360×800 screenshot side by side with the Figma frame it implements.
-- To incorporate upstream changes, rebase on main; don't merge main into your branch.
+- PR body references the issue (`Closes #N`, or `Part of #N` when the PR delivers only some of the issue's "Done when" boxes and lists the rest) and includes test notes: what you tested, how (unit, widget, pgTAP, emulator/device), and what you didn't. UI PRs include a 360×800 screenshot side by side with the Figma frame it implements.
+- To incorporate upstream changes, rebase on the milestone branch you target; don't merge it into your branch.
   ```
   git fetch origin
-  git rebase origin/main
+  git rebase origin/milestone/gate-<n>
   ```
-- Never commit directly to `main`.
+- Never commit directly to `main` or to a milestone branch.
 - Don't merge a PR until it has passed the pre-merge review in section 9 and CI is green (format, analyze, test, build; plus `supabase test db` once that job exists). After that, a maintainer may merge it with a merge commit, whether it's their own PR or a teammate's. Merges happen in the team's daily merge window.
+
+### Milestone branches
+
+Every milestone (gate) has its own integration branch. All work for a milestone lands there first, and the milestone reaches `main` in one reviewed merge.
+
+- Names match the GitHub milestones: `milestone/gate-1`, `milestone/gate-2`, `milestone/gate-3`.
+- The first person to start work on a milestone creates its branch and pushes it right away. Cut it from `origin/main`, or from the previous milestone's branch when that milestone hasn't landed yet (Gate 2 work builds on Gate 1 code).
+- Task branches (`<area>/<issue#>-<short-slug>`) are cut from the branch of the issue's own milestone, and their PRs target that milestone branch, not `main`. Stacked PRs inside a milestone follow section 9.
+- If a task needs code that is still only on an earlier milestone's branch, sync that branch into the later milestone branch first (next bullet). Don't move the issue to the other milestone's branch.
+- Keep milestone branches current with merge commits; never rebase them (they are shared history). To sync, open a PR titled `milestone: sync gate-<n> with <source>` that merges `origin/main` or the earlier milestone branch into the milestone branch.
+- A milestone lands when its gate statement passes on a device (section 10). Open a PR from `milestone/gate-<n>` into `main` titled `milestone: land Gate <n>`. List every task PR it contains, add `Closes #N` for each finished issue (PRs into a non-default branch don't close issues), and list the issues that are only partly done. It gets the section 9 review and lands with a merge commit. Later milestone branches then sync with `main`.
+- Delete a milestone branch after it lands.
+- CI runs on PRs into `main` and into `milestone/**`.
 
 ## 3. Git worktrees for parallel work
 
@@ -89,9 +102,9 @@ Rules:
 
 Cheat-sheet:
 ```
-# create a new worktree + branch for a task, based on up-to-date main
+# create a new worktree + branch for a task, based on the up-to-date milestone branch
 git fetch origin
-git worktree add ../geaux_farm-wt/<branch> -b <branch> origin/main
+git worktree add ../geaux_farm-wt/<branch> -b <branch> origin/milestone/gate-<n>
 
 # list active worktrees
 git worktree list
@@ -143,7 +156,7 @@ git worktree remove --force ../geaux_farm-wt/<branch>
 ## 8. Before opening a PR
 
 Checklist:
-- [ ] Branch is rebased on the latest `origin/main` (no merge commits from main into your branch).
+- [ ] Branch is rebased on the latest milestone branch it targets (no merge commits from the base into your branch).
 - [ ] `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, and `flutter test` pass locally. If you touched `supabase/`, `supabase db reset && supabase test db` passes. If you touched `plants.json`, `test/catalog/plants_json_test.dart` passes.
 - [ ] Generated Drift code is regenerated and committed if the schema changed.
 - [ ] Every "Done when" box in the issue is satisfied, or the PR says which ones aren't and why.
@@ -162,7 +175,7 @@ A review subagent can do the pre-merge review; you don't have to wait for a huma
 - It covers the PR's own diff (`gh pr diff <n>`, which for a stacked PR is the diff against its parent) in separate passes:
   - correctness against the issue's "Done when" and the referenced plan sections (exact copy, formulas, thresholds, fixture values), and for UI changes, visual fidelity to the Figma frame (layout, tokens, type, icons, states). An unexplained visual deviation is a blocking finding;
   - test strength, including mutation probes. If the suite stays green when the guarded code is removed (e.g. delete the humidity multiplier, the rain-hint boundary, or an RLS policy), that's a blocking finding;
-  - compatibility with current `main`: frozen contracts, route table, Drift `schemaVersion`, Supabase migration numbering, `pubspec.lock` conflicts, merge conflicts;
+  - compatibility with the current base branch (the milestone branch, or `main` for a `milestone: land` PR): frozen contracts, route table, Drift `schemaVersion`, Supabase migration numbering, `pubspec.lock` conflicts, merge conflicts;
   - this file's rules plus safety: secrets, PII, live network access in tests, rate limits on Open-Meteo/Supabase/Overpass, RLS gaps (anon or another user able to write), `supabase_flutter` imports outside the allowed files.
 - An adversarial pass tries to refute each blocking finding. A finding is dropped only when the refutation cites concrete evidence (code, a test, or a probe) and the review records it. A finding that isn't clearly refuted stays blocking.
 - The review is posted on the PR.
@@ -175,7 +188,7 @@ Landing a teammate's PR: a maintainer may rebase it onto `origin/main`, resolve 
 - before rebasing, note the branch's current remote SHA, and push with an explicit lease on it: `git push --force-with-lease=<branch>:<that-sha> origin <branch>`. A bare `--force-with-lease` checks against your remote-tracking ref, which a later fetch can move past the author's newest commit.
 - never drop commits the author pushed in the meantime. If the lease fails, fetch, fold the new commits in, check they're all present, and push again with a lease on the new SHA.
 
-If PRs are stacked (a branch cut from another open PR's branch), land them bottom-up. Retarget each child to `main` before merging it, so its `Closes #N` closes the issue. After merge, move the card to **Done**. A human post-merge review is still welcome; file follow-ups as issues on the board.
+If PRs are stacked (a branch cut from another open PR's branch), land them bottom-up. Retarget each child to its milestone branch before merging it. After merge, move the card to **Done**; the issue closes when the milestone lands on `main`. A human post-merge review is still welcome; file follow-ups as issues on the board.
 
 ## 10. Gates and cut order
 
