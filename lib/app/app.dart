@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Root widget. #35 replaces the default theme with the design tokens and
-/// #41 replaces the placeholder home with the router.
+import 'theme.dart';
+
+/// Root widget. #41 replaces the placeholder home with the router.
 class GeauxFarmApp extends StatelessWidget {
   const GeauxFarmApp({super.key});
 
@@ -9,7 +10,7 @@ class GeauxFarmApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Geaux Farm',
-      theme: ThemeData(useMaterial3: true),
+      theme: AppTheme.light(),
       home: const Scaffold(body: Center(child: Text('Geaux Farm'))),
     );
   }
