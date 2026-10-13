@@ -63,9 +63,9 @@ void main() {
     expect(find.text('H 93 / L 66'), findsOneWidget);
     expect(find.text('0%'), findsOneWidget);
     expect(find.text('UV 7'), findsOneWidget);
-    expect(find.byIcon(Symbols.clear_day), findsOneWidget);
+    expect(find.byIcon(Symbols.clear_day_rounded), findsOneWidget);
     expect(find.textContaining('Updated'), findsNothing);
-    expect(find.byIcon(Symbols.chevron_right), findsNothing);
+    expect(find.byIcon(Symbols.chevron_right_rounded), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -74,8 +74,8 @@ void main() {
   ) async {
     await pumpMini(tester, AsyncData(WeatherState(snapshot(isDay: false))));
     expect(find.text('Clear'), findsOneWidget);
-    expect(find.byIcon(Symbols.clear_night), findsOneWidget);
-    expect(find.byIcon(Symbols.clear_day), findsNothing);
+    expect(find.byIcon(Symbols.clear_night_rounded), findsOneWidget);
+    expect(find.byIcon(Symbols.clear_day_rounded), findsNothing);
   });
 
   testWidgets('chevron and tap only when onTap is set', (tester) async {
@@ -85,7 +85,7 @@ void main() {
       AsyncData(WeatherState(snapshot())),
       onTap: () => taps++,
     );
-    expect(find.byIcon(Symbols.chevron_right), findsOneWidget);
+    expect(find.byIcon(Symbols.chevron_right_rounded), findsOneWidget);
     await tester.tap(find.text('90°'));
     await tester.pumpAndSettle();
     expect(taps, 1);
