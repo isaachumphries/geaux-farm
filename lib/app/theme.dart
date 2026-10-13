@@ -91,6 +91,24 @@ abstract final class AppText {
     height: 14 / 11,
     fontWeight: FontWeight.w600,
   );
+
+  /// Uppercase button labels ("GET STARTED", "I'LL PICK LATER").
+  static const button = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    height: 20 / 14,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 1,
+  );
+
+  /// Uppercase caps lines ("WEDNESDAY, OCT 7", "THIS SEASON").
+  static const overline = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 12,
+    height: 16 / 12,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 0.5,
+  );
 }
 
 abstract final class AppSpacing {

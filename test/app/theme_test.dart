@@ -44,6 +44,10 @@ void main() {
     check(AppText.bodySm, 14, 20, FontWeight.w500);
     check(AppText.label, 12, 16, FontWeight.w700);
     check(AppText.caption, 11, 14, FontWeight.w600);
+    check(AppText.button, 14, 20, FontWeight.w800);
+    check(AppText.overline, 12, 16, FontWeight.w800);
+    expect(AppText.button.letterSpacing, 1);
+    expect(AppText.overline.letterSpacing, 0.5);
   });
 
   test('spacing and radius scales', () {
