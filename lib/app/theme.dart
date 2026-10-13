@@ -43,6 +43,10 @@ abstract final class AppColors {
   static const tileSkyLedge = Color(0xFF3081CA);
   static const tileSoil = Color(0xFFF1E6D8);
   static const tileSoilLedge = Color(0xFFA27249);
+
+  /// Translucent white disc behind a plant card's category icon (HM-01,
+  /// RC-01).
+  static const artHalo = Color(0x8CFFFFFF);
 }
 
 /// Type tokens: plan/01 sizes and line heights, Figma (Nunito) weights.
@@ -109,6 +113,25 @@ abstract final class AppText {
     fontWeight: FontWeight.w800,
     letterSpacing: 0.5,
   );
+
+  /// Plant names on cards and card titles ("Kale", "Pick your first
+  /// plant"): between body and h2 in the Figma.
+  static const cardTitle = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 18,
+    height: 24 / 18,
+    fontWeight: FontWeight.w800,
+  );
+}
+
+/// Inline icon sizes: the steps the Figma uses next to text and in
+/// buttons. Illustration art sizes stay with the widget that draws them.
+abstract final class AppIconSize {
+  /// Card detail lines and the maintenance pill's bolt.
+  static const double xs = 14;
+
+  /// Compat badge mark and the "Plant now" ribbon sprout.
+  static const double sm = 16;
 }
 
 abstract final class AppSpacing {
