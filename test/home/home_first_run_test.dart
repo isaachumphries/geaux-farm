@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -10,11 +11,19 @@ import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
 import 'package:geaux_farm/features/home/application/first_plant_prompt_provider.dart';
 import 'package:geaux_farm/features/home/domain/home_copy.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
+import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
+import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
 import 'package:geaux_farm/features/onboarding/domain/space.dart';
+import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/recommendations/application/recommendations_provider.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_card.dart';
+import 'package:geaux_farm/features/weather/data/forecast_client.dart';
+import 'package:geaux_farm/features/weather/data/weather_provider.dart';
+import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 import '../recommendations/fixtures/scored.dart';
 
@@ -43,6 +52,37 @@ class _FailedClimate extends ClimateNotifier {
 
 final _wednesdayMorning = DateTime(2026, 10, 7, 9, 41);
 
+final _forecastJson = File('test/fixtures/open_meteo/forecast_baton_rouge.json')
+    .readAsStringSync();
+
+/// Fake Open-Meteo: serves the Baton Rouge fixture (or a 503 when [fail] is
+/// set) and records every request, so no test touches the network.
+class _FakeForecast {
+  final requests = <Uri>[];
+  bool fail = false;
+
+  OpenMeteoForecastClient get client => OpenMeteoForecastClient(
+    MockClient((request) async {
+      requests.add(request.url);
+      return fail
+          ? http.Response('down', 503)
+          : http.Response(_forecastJson, 200);
+    }),
+  );
+}
+
+UserProfile _profileAt(double lat, double lon) => UserProfile(
+  city: defaultUserProfile.city,
+  admin1: defaultUserProfile.admin1,
+  countryCode: defaultUserProfile.countryCode,
+  lat: lat,
+  lon: lon,
+  timezone: defaultUserProfile.timezone,
+  goals: defaultUserProfile.goals,
+  experience: defaultUserProfile.experience,
+  availability: defaultUserProfile.availability,
+);
+
 Future<ProviderContainer> _pump(
   WidgetTester tester, {
   List<ScoredPlant>? recs,
@@ -50,6 +90,8 @@ Future<ProviderContainer> _pump(
   ClimateNotifier Function()? climate,
   DateTime? now,
   Size size = const Size(390, 844),
+  _FakeForecast? forecast,
+  Stream<UserProfile>? profile,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -63,6 +105,11 @@ Future<ProviderContainer> _pump(
       if (recsValue != null)
         recommendationsProvider.overrideWithValue(recsValue),
       if (climate != null) climateProvider.overrideWith(climate),
+      forecastClientProvider.overrideWithValue(
+        (forecast ?? _FakeForecast()).client,
+      ),
+      weatherClockProvider.overrideWithValue(() => DateTime(2026, 10, 13, 17)),
+      if (profile != null) userProfileProvider.overrideWith((ref) => profile),
     ],
   );
   await tester.pumpWidget(
@@ -74,6 +121,8 @@ Future<ProviderContainer> _pump(
       ),
     ),
   );
+  // One frame for the providers, one for the fake forecast to land.
+  await tester.pump();
   await tester.pump();
   return container;
 }
@@ -195,6 +244,106 @@ void main() {
       findsOneWidget,
     );
     await _unmount(tester, c);
+  });
+
+  group('weather card', () {
+    testWidgets('shows the fixture forecast between header and banner', (
+      tester,
+    ) async {
+      final forecast = _FakeForecast();
+      final c = await _pump(tester, recs: _recs(3), forecast: forecast);
+
+      // Fixture: current 90.4 °F; today max 93.4, min 66.3.
+      expect(find.text('90°'), findsOneWidget);
+      expect(find.text('H 93 / L 66'), findsOneWidget);
+      final card = tester.getRect(find.byType(WeatherMini));
+      expect(
+        card.top,
+        greaterThan(tester.getRect(find.text('Good morning!')).bottom),
+      );
+      expect(
+        card.bottom,
+        lessThan(tester.getRect(find.text('THIS SEASON')).top),
+      );
+      expect(forecast.requests, hasLength(1));
+      await _unmount(tester, c);
+    });
+
+    testWidgets('requests the profile location rounded to 2 decimals', (
+      tester,
+    ) async {
+      final forecast = _FakeForecast();
+      final c = await _pump(
+        tester,
+        recs: _recs(3),
+        forecast: forecast,
+        profile: Stream.value(_profileAt(30.4512, -91.1871)),
+      );
+
+      expect(forecast.requests, hasLength(1));
+      final query = forecast.requests.single.queryParameters;
+      expect(query['latitude'], '30.45');
+      expect(query['longitude'], '-91.19');
+      expect(c.exists(weatherProvider((30.45, -91.19))), isTrue);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('nothing and no request while the profile loads', (
+      tester,
+    ) async {
+      final forecast = _FakeForecast();
+      final pending = StreamController<UserProfile>();
+      addTearDown(pending.close);
+      final c = await _pump(
+        tester,
+        recs: _recs(3),
+        forecast: forecast,
+        profile: pending.stream,
+      );
+
+      expect(find.byType(WeatherMini), findsNothing);
+      expect(forecast.requests, isEmpty);
+      expect(find.text('THIS SEASON'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
+    for (final dismissed in [false, true]) {
+      testWidgets('pull-to-refresh forces one fetch '
+          '(${dismissed ? 'HM-01b' : 'HM-01'})', (tester) async {
+        final forecast = _FakeForecast();
+        final c = await _pump(tester, recs: _recs(3), forecast: forecast);
+        if (dismissed) await _pickLater(tester);
+        expect(forecast.requests, hasLength(1));
+
+        // The snapshot is minutes old, so only a forced refresh refetches.
+        await tester.fling(find.byType(ListView), const Offset(0, 400), 1000);
+        for (var i = 0; i < 10; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+
+        expect(forecast.requests, hasLength(2));
+        expect(find.text('90°'), findsOneWidget);
+        await _unmount(tester, c);
+      });
+    }
+
+    testWidgets('a failed fetch shows the error state on Home at 360×800', (
+      tester,
+    ) async {
+      final forecast = _FakeForecast()..fail = true;
+      final c = await _pump(
+        tester,
+        recs: _recs(3),
+        forecast: forecast,
+        size: const Size(360, 800),
+      );
+
+      expect(find.text(WeatherMini.errorCopy), findsOneWidget);
+      expect(find.text('RETRY'), findsOneWidget);
+      expect(find.textContaining('°'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await _unmount(tester, c);
+    });
   });
 
   group('slim card line', () {
