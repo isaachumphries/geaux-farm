@@ -50,6 +50,9 @@ abstract final class AppColors {
   /// Translucent white disc behind a plant card's category icon (HM-01,
   /// RC-01).
   static const artHalo = Color(0x8CFFFFFF);
+
+  /// Light chevron on tappable white cards (WeatherMini on HM-01).
+  static const chevronMuted = Color(0xFFCECBBE);
 }
 
 /// Type tokens: plan/01 sizes and line heights, Figma (Nunito) weights.

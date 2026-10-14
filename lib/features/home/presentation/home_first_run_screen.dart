@@ -12,6 +12,8 @@ import '../../recommendations/application/recommendations_provider.dart';
 import '../../recommendations/domain/scored_plant.dart';
 import '../../recommendations/domain/season_line.dart';
 import '../../recommendations/presentation/widgets/plant_card.dart';
+import '../../weather/data/weather_provider.dart';
+import '../../weather/presentation/weather_mini.dart';
 import '../application/first_plant_prompt_provider.dart';
 import '../domain/home_copy.dart';
 
@@ -48,45 +50,75 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
     }
   }
 
+  /// Pull-to-refresh always refetches the forecast (plan/06). With no
+  /// profile yet there is no weather card, so there is nothing to refresh.
+  Future<void> _onRefresh() async {
+    final profile = ref.read(userProfileProvider).value;
+    if (profile == null) return;
+    final location = forecastLocation(profile.lat, profile.lon);
+    await ref.read(weatherProvider(location).notifier).refresh(force: true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final dismissed = ref.watch(firstPlantPromptDismissedProvider);
+    final profile = ref.watch(userProfileProvider).value;
+    final location = profile == null
+        ? null
+        : forecastLocation(profile.lat, profile.lon);
     const inset = EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding);
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: ListView(
-          controller: _scroll,
-          padding: const EdgeInsets.only(
-            top: AppSpacing.md,
-            bottom: AppSpacing.xl,
-          ),
-          children: [
-            const Padding(padding: inset, child: _Header()),
-            const SizedBox(height: AppSpacing.lg),
-            const Padding(padding: inset, child: _SeasonBanner()),
-            if (dismissed) ...[
-              const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
-              const Padding(padding: inset, child: _SlimPromptCard()),
-            ] else ...[
-              // The header row is as tall as the 48 px "See all" target,
-              // so the visible gap to the title is 18.
-              const SizedBox(height: AppSpacing.sm),
-              const Padding(padding: inset, child: _PromptHeader()),
-              const SizedBox(height: AppSpacing.md),
-              const _Carousel(),
-              const SizedBox(height: AppSpacing.xl),
-              Center(
-                child: GeauxButton(
-                  label: "I'll pick later",
-                  variant: GeauxButtonVariant.text,
-                  onPressed: () => ref
-                      .read(firstPlantPromptDismissedProvider.notifier)
-                      .dismiss(),
+        child: RefreshIndicator(
+          color: AppColors.leaf500,
+          onRefresh: _onRefresh,
+          child: ListView(
+            controller: _scroll,
+            // Pull-to-refresh works even when HM-01b is shorter than the
+            // screen.
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(
+              top: AppSpacing.md,
+              bottom: AppSpacing.xl,
+            ),
+            children: [
+              const Padding(padding: inset, child: _Header()),
+              // Nothing while the profile loads; WX-01 has no route yet, so
+              // the card is not tappable.
+              if (location != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                Padding(
+                  padding: inset,
+                  child: WeatherMiniCard(lat: location.$1, lon: location.$2),
                 ),
-              ),
+                const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
+              ] else
+                const SizedBox(height: AppSpacing.lg),
+              const Padding(padding: inset, child: _SeasonBanner()),
+              if (dismissed) ...[
+                const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
+                const Padding(padding: inset, child: _SlimPromptCard()),
+              ] else ...[
+                // The header row is as tall as the 48 px "See all" target,
+                // so the visible gap to the title is 18.
+                const SizedBox(height: AppSpacing.sm),
+                const Padding(padding: inset, child: _PromptHeader()),
+                const SizedBox(height: AppSpacing.md),
+                const _Carousel(),
+                const SizedBox(height: AppSpacing.xl),
+                Center(
+                  child: GeauxButton(
+                    label: "I'll pick later",
+                    variant: GeauxButtonVariant.text,
+                    onPressed: () => ref
+                        .read(firstPlantPromptDismissedProvider.notifier)
+                        .dismiss(),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: GeauxBottomNav(
