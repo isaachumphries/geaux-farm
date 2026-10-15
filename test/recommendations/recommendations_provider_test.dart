@@ -36,6 +36,7 @@ ProviderContainer _container({
         AsyncData(fx.loadReferencePlants().values.toList()),
       ),
       clockProvider.overrideWithValue(clock),
+      climateProvider.overrideWith(_SettableClimate.new),
       // The profile streams read Drift; feed them the defaults instead.
       userProfileProvider.overrideWith(
         (ref) => Stream.value(defaultUserProfile),
