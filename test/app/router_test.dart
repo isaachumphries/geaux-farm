@@ -8,6 +8,7 @@ import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../helpers/app_harness.dart';
 
@@ -179,6 +180,17 @@ void main() {
     await tester.pump();
     expect(_location(router).path, '/home');
     expect(find.byType(HomeFirstRunScreen), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('the Home gear opens Settings', (tester) async {
+    final router = await _pumpApp(tester, onboardedProfile);
+    await tester.tap(find.byIcon(Symbols.settings_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    // Settings is pushed over Home, so Back returns there.
+    expect(find.text('ST-01 Settings'), findsOneWidget);
+    expect(router.canPop(), isTrue);
     await tester.pumpWidget(const SizedBox());
   });
 }
