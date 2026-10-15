@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../app/theme.dart';
@@ -36,18 +37,6 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
   void dispose() {
     _scroll.dispose();
     super.dispose();
-  }
-
-  /// Home is the only tab built so far; tapping it again scrolls to the
-  /// top. Garden, Care, and Community open once the router (#41) lands.
-  void _onTab(int index) {
-    if (index == 0 && _scroll.hasClients) {
-      _scroll.animateTo(
-        0,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    }
   }
 
   /// Pull-to-refresh always refetches the forecast (plan/06). With no
@@ -120,16 +109,6 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: GeauxBottomNav(
-        currentIndex: 0,
-        onTap: _onTab,
-        items: const [
-          GeauxNavItem(icon: Symbols.home_rounded, label: 'Home'),
-          GeauxNavItem(icon: Symbols.yard_rounded, label: 'Garden'),
-          GeauxNavItem(icon: Symbols.event_available_rounded, label: 'Care'),
-          GeauxNavItem(icon: Symbols.groups_rounded, label: 'Community'),
-        ],
       ),
     );
   }
@@ -255,7 +234,7 @@ class _LocationPill extends StatelessWidget {
   }
 }
 
-/// Opens settings once `/settings` exists (#41); inert until then.
+/// Opens ST-01 Settings.
 class _GearButton extends StatelessWidget {
   const _GearButton();
 
@@ -264,16 +243,20 @@ class _GearButton extends StatelessWidget {
     return Semantics(
       label: 'Settings',
       button: true,
-      child: const SizedBox.square(
-        dimension: AppSpacing.minTouchTarget,
-        child: _LedgeCapsule(
-          padding: EdgeInsets.zero,
-          child: Center(
-            child: Icon(
-              Symbols.settings_rounded,
-              size: AppIconSize.lg,
-              color: AppColors.soil900,
-              fill: 1,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => context.push('/settings'),
+        child: const SizedBox.square(
+          dimension: AppSpacing.minTouchTarget,
+          child: _LedgeCapsule(
+            padding: EdgeInsets.zero,
+            child: Center(
+              child: Icon(
+                Symbols.settings_rounded,
+                size: AppIconSize.lg,
+                color: AppColors.soil900,
+                fill: 1,
+              ),
             ),
           ),
         ),

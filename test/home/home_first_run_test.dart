@@ -25,6 +25,7 @@ import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import '../helpers/fixed_climate.dart';
 import '../recommendations/fixtures/scored.dart';
 
 /// [n] distinct recommendations, best first.
@@ -104,12 +105,17 @@ Future<ProviderContainer> _pump(
         recommendationsProvider.overrideWithValue(AsyncData(recs)),
       if (recsValue != null)
         recommendationsProvider.overrideWithValue(recsValue),
-      if (climate != null) climateProvider.overrideWith(climate),
+      // The real provider builds from the archive; use the fixture.
+      climateProvider.overrideWith(climate ?? FixedClimate.new),
       forecastClientProvider.overrideWithValue(
         (forecast ?? _FakeForecast()).client,
       ),
       weatherClockProvider.overrideWithValue(() => DateTime(2026, 10, 13, 17)),
-      if (profile != null) userProfileProvider.overrideWith((ref) => profile),
+      // The profile streams read Drift; feed them the defaults instead.
+      userProfileProvider.overrideWith(
+        (ref) => profile ?? Stream.value(defaultUserProfile),
+      ),
+      primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
     ],
   );
   await tester.pumpWidget(

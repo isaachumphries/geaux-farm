@@ -1,18 +1,61 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/db/app_database.dart';
 import '../domain/space.dart';
 import '../domain/user_profile.dart';
 import 'default_profile.dart';
 
-/// The local user profile. Drift (#43) replaces the body with a stream of
-/// the `user_profile` row; until then it yields [defaultUserProfile].
-final userProfileProvider = StreamProvider<UserProfile>(
-  (ref) => Stream.value(defaultUserProfile),
+/// The `user_profile` row (id 1). Until onboarding saves one (#69) it
+/// yields [defaultUserProfile], whose null `onboardingCompletedAt` keeps
+/// the router's onboarding redirect on.
+final userProfileProvider = StreamProvider<UserProfile>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final query = db.select(db.userProfileTable)..where((t) => t.id.equals(1));
+  return query.watchSingleOrNull().map(
+    (row) => row == null ? defaultUserProfile : _profileFromRow(row),
+  );
+});
+
+/// The `spaces` row where `is_primary` is true. Until onboarding saves one
+/// (#69) it yields [defaultSpace].
+final primarySpaceProvider = StreamProvider<Space>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final query = db.select(db.spacesTable)
+    ..where((t) => t.isPrimary.equals(true))
+    ..limit(1);
+  return query.watchSingleOrNull().map(
+    (row) => row == null ? defaultSpace : _spaceFromRow(row),
+  );
+});
+
+UserProfile _profileFromRow(UserProfileRow r) => UserProfile(
+  city: r.city,
+  admin1: r.admin1,
+  countryCode: r.countryCode,
+  postcode: r.postcode,
+  lat: r.lat,
+  lon: r.lon,
+  timezone: r.timezone,
+  goals: r.goals,
+  goalOtherText: r.goalOtherText,
+  experience: r.experience,
+  heardFrom: r.heardFrom,
+  heardOtherText: r.heardOtherText,
+  availability: r.availability,
+  units: r.units,
+  notificationsEnabled: r.notificationsEnabled,
+  notificationPermissionAsked: r.notificationPermissionAsked,
+  firstPlantPromptDismissed: r.firstPlantPromptDismissed,
+  onboardingCompletedAt: r.onboardingCompletedAt,
 );
 
-/// The primary growing space. Drift (#43) replaces the body with a stream of
-/// the `spaces` row where `is_primary` is true; until then it yields
-/// [defaultSpace].
-final primarySpaceProvider = StreamProvider<Space>(
-  (ref) => Stream.value(defaultSpace),
+Space _spaceFromRow(SpaceRow r) => Space(
+  id: r.id,
+  type: r.type,
+  areaSqFt: r.areaSqFt,
+  sun: r.sun,
+  sunUnsure: r.sunUnsure,
+  rainExposed: r.rainExposed,
+  inContainerDefault: r.inContainerDefault,
+  isPrimary: r.isPrimary,
 );
