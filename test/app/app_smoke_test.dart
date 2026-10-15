@@ -1,47 +1,23 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
-import 'package:geaux_farm/features/climate/data/climate_provider.dart';
-import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
-import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_card.dart';
-import 'package:geaux_farm/features/weather/data/forecast_client.dart';
-import 'package:geaux_farm/features/weather/data/weather_provider.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 
-import '../helpers/fixed_climate.dart';
+import '../helpers/app_harness.dart';
 
 void main() {
-  testWidgets('the app opens on Home and fills the carousel from the '
+  testWidgets('an onboarded app opens on Home and fills the carousel from the '
       'bundled catalog', (tester) async {
-    final forecast = File('test/fixtures/open_meteo/forecast_baton_rouge.json')
-        .readAsStringSync();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          // The profile streams read Drift; feed them the defaults instead.
-          userProfileProvider.overrideWith(
-            (ref) => Stream.value(defaultUserProfile),
-          ),
-          primarySpaceProvider.overrideWith(
-            (ref) => Stream.value(defaultSpace),
-          ),
-          // The real provider builds from the archive; use the fixture.
-          climateProvider.overrideWith(FixedClimate.new),
-          // Home's weather card must not reach Open-Meteo from a test.
-          forecastClientProvider.overrideWithValue(
-            OpenMeteoForecastClient(
-              MockClient((_) async => http.Response(forecast, 200)),
-            ),
-          ),
-        ],
+        overrides: appOverrides(profile: onboardedProfile),
         child: const GeauxFarmApp(),
       ),
     );
+    // One frame for the profile stream, one for the router.
+    await tester.pump();
+    await tester.pump();
     expect(find.text('Geaux Farm'), findsNothing);
     expect(find.text('Pick your first plant'), findsOneWidget);
 

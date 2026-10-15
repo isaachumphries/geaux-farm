@@ -38,18 +38,6 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
     super.dispose();
   }
 
-  /// Home is the only tab built so far; tapping it again scrolls to the
-  /// top. Garden, Care, and Community open once the router (#41) lands.
-  void _onTab(int index) {
-    if (index == 0 && _scroll.hasClients) {
-      _scroll.animateTo(
-        0,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-
   /// Pull-to-refresh always refetches the forecast (plan/06). With no
   /// profile yet there is no weather card, so there is nothing to refresh.
   Future<void> _onRefresh() async {
@@ -120,16 +108,6 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: GeauxBottomNav(
-        currentIndex: 0,
-        onTap: _onTab,
-        items: const [
-          GeauxNavItem(icon: Symbols.home_rounded, label: 'Home'),
-          GeauxNavItem(icon: Symbols.yard_rounded, label: 'Garden'),
-          GeauxNavItem(icon: Symbols.event_available_rounded, label: 'Care'),
-          GeauxNavItem(icon: Symbols.groups_rounded, label: 'Community'),
-        ],
       ),
     );
   }
