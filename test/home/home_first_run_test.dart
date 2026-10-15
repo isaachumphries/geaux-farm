@@ -109,7 +109,11 @@ Future<ProviderContainer> _pump(
         (forecast ?? _FakeForecast()).client,
       ),
       weatherClockProvider.overrideWithValue(() => DateTime(2026, 10, 13, 17)),
-      if (profile != null) userProfileProvider.overrideWith((ref) => profile),
+      // The profile streams read Drift; feed them the defaults instead.
+      userProfileProvider.overrideWith(
+        (ref) => profile ?? Stream.value(defaultUserProfile),
+      ),
+      primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
     ],
   );
   await tester.pumpWidget(

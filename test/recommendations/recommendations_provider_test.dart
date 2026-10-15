@@ -36,8 +36,11 @@ ProviderContainer _container({
         AsyncData(fx.loadReferencePlants().values.toList()),
       ),
       clockProvider.overrideWithValue(clock),
-      if (space != null)
-        primarySpaceProvider.overrideWithValue(AsyncData(space)),
+      // The profile streams read Drift; feed them the defaults instead.
+      userProfileProvider.overrideWith(
+        (ref) => Stream.value(defaultUserProfile),
+      ),
+      primarySpaceProvider.overrideWithValue(AsyncData(space ?? defaultSpace)),
     ],
   );
   if (disposeOnTearDown) addTearDown(container.dispose);
