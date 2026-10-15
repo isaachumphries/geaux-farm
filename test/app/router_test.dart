@@ -7,6 +7,7 @@ import 'package:geaux_farm/app/titled_scaffold.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
+import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -49,7 +50,7 @@ void main() {
 
       // The initial location is /home; the redirect sends it to OB-01.
       expect(_location(router).path, onboardingStart);
-      expect(_title(tester), 'OB-01 Welcome');
+      expect(find.byType(WelcomeScreen), findsOneWidget);
 
       await _go(tester, router, '/garden');
       expect(_location(router).path, onboardingStart);
@@ -104,7 +105,6 @@ void main() {
   ) async {
     final router = await _pumpApp(tester, onboardedProfile);
     const placeholders = {
-      '/onboarding/welcome': 'OB-01 Welcome',
       '/onboarding/location': 'OB-02 Location',
       '/onboarding/climate': 'OB-02b Climate reveal',
       '/onboarding/space': 'OB-03 Space',
@@ -132,6 +132,8 @@ void main() {
       expect(_title(tester), title, reason: path);
     }
 
+    await _go(tester, router, onboardingStart);
+    expect(find.byType(WelcomeScreen), findsOneWidget);
     await _go(tester, router, '/home');
     expect(find.byType(HomeFirstRunScreen), findsOneWidget);
     await tester.pumpWidget(const SizedBox());

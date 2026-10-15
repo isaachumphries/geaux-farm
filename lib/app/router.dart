@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
 import '../features/onboarding/data/profile_providers.dart';
 import '../features/onboarding/domain/user_profile.dart';
+import '../features/onboarding/presentation/onboarding_routes.dart';
+import '../features/onboarding/presentation/welcome_screen.dart';
 import 'tab_shell.dart';
 import 'titled_scaffold.dart';
 
 /// Where a fresh install starts (OB-01).
-const onboardingStart = '/onboarding/welcome';
+const onboardingStart = OnboardingRoutes.welcome;
 
 /// The `date` query parameter of `/care?date=2026-10-07`, or null when it
 /// is missing or not a `yyyy-MM-dd` date.
@@ -53,7 +55,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         onboardingRedirect(ref.read(userProfileProvider), state.uri),
     routes: [
       GoRoute(path: '/', redirect: (_, _) => '/home'),
-      _placeholder(onboardingStart, 'OB-01 Welcome'),
+      GoRoute(
+        path: onboardingStart,
+        builder: (context, state) => const WelcomeScreen(),
+      ),
       _placeholder('/onboarding/location', 'OB-02 Location'),
       _placeholder('/onboarding/climate', 'OB-02b Climate reveal'),
       _placeholder('/onboarding/space', 'OB-03 Space'),
