@@ -374,8 +374,9 @@ class _PromptHeader extends ConsumerWidget {
 }
 
 /// First [homeCarouselCount] recommendations as compact cards. Loading
-/// while the catalog or the climate is pending, and while the climate
-/// build has failed (#26: consumers keep loading until a build succeeds).
+/// while the catalog or the climate is pending. A failed climate build
+/// shows an error with Retry: the provider never retries on its own, so
+/// without it the spinner would never end (offline, timeout).
 class _Carousel extends ConsumerWidget {
   const _Carousel();
 
@@ -384,6 +385,12 @@ class _Carousel extends ConsumerWidget {
     final climate = ref.watch(climateProvider);
     final recs = ref.watch(recommendationsProvider);
     final space = ref.watch(primarySpaceProvider).value;
+    if (climate is AsyncError && !climate.isLoading) {
+      return _CarouselMessage(
+        "Couldn't load plants.",
+        onRetry: () => ref.read(climateProvider.notifier).rebuild(),
+      );
+    }
     if (climate is! AsyncData || space == null) return const _CarouselLoading();
     return switch (recs) {
       AsyncData(:final value) => _CarouselRow(
@@ -441,19 +448,31 @@ class _CarouselLoading extends StatelessWidget {
 }
 
 class _CarouselMessage extends StatelessWidget {
-  const _CarouselMessage(this.text);
+  const _CarouselMessage(this.text, {this.onRetry});
 
   final String text;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: _carouselSlotHeight,
       child: Center(
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: AppText.bodySm.copyWith(color: AppColors.soil600),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: AppText.bodySm.copyWith(color: AppColors.soil600),
+            ),
+            if (onRetry != null)
+              GeauxButton(
+                label: 'Retry',
+                variant: GeauxButtonVariant.text,
+                onPressed: onRetry,
+              ),
+          ],
         ),
       ),
     );
