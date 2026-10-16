@@ -85,4 +85,21 @@ void main() {
     expect(draft.experience, Experience.beginner);
     expect(draft.goals, {Goal.hobby});
   });
+
+  testWidgets('unticking Other clears its text', (tester) async {
+    final h = await pumpOnboardingStep(
+      tester,
+      route: OnboardingRoutes.goals,
+      screen: const GoalsStepScreen(),
+    );
+    await tester.tap(find.text('Other'));
+    await tester.pump();
+    await tester.enterText(find.byType(TextField), 'Medicinal herbs');
+    await tester.tap(find.text('Other'));
+    await tester.pump();
+    expect(h.container.read(onboardingDraftProvider).goalOtherText, isNull);
+    await tester.tap(find.text('Other'));
+    await tester.pump();
+    expect(find.text('Medicinal herbs'), findsNothing);
+  });
 }

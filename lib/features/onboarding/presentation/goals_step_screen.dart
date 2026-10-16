@@ -99,7 +99,13 @@ class _GoalsStepScreenState extends ConsumerState<GoalsStepScreen> {
               icon: icon,
               multiSelect: true,
               selected: draft.goals.contains(goal),
-              onTap: () => notifier.toggleGoal(goal),
+              onTap: () {
+                // Unticking Other drops its text in the draft; match it here.
+                if (goal == Goal.other && draft.goals.contains(goal)) {
+                  _other.clear();
+                }
+                notifier.toggleGoal(goal);
+              },
             ),
             const SizedBox(height: AppSpacing.sm),
           ],
