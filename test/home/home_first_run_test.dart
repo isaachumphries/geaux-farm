@@ -25,6 +25,7 @@ import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import '../helpers/fixed_climate.dart';
 import '../recommendations/fixtures/scored.dart';
 
 /// [n] distinct recommendations, best first.
@@ -48,6 +49,21 @@ class _PendingClimate extends ClimateNotifier {
 class _FailedClimate extends ClimateNotifier {
   @override
   Future<ClimateProfile> build() async => throw StateError('build failed');
+}
+
+/// Fails its first build; [rebuild] then succeeds with the fixture instead
+/// of calling the archive.
+class _RetryableClimate extends ClimateNotifier {
+  int rebuilds = 0;
+
+  @override
+  Future<ClimateProfile> build() async => throw StateError('build failed');
+
+  @override
+  Future<void> rebuild() async {
+    rebuilds++;
+    state = AsyncData(await FixedClimate().build());
+  }
 }
 
 final _wednesdayMorning = DateTime(2026, 10, 7, 9, 41);
@@ -104,12 +120,17 @@ Future<ProviderContainer> _pump(
         recommendationsProvider.overrideWithValue(AsyncData(recs)),
       if (recsValue != null)
         recommendationsProvider.overrideWithValue(recsValue),
-      if (climate != null) climateProvider.overrideWith(climate),
+      // The real provider builds from the archive; use the fixture.
+      climateProvider.overrideWith(climate ?? FixedClimate.new),
       forecastClientProvider.overrideWithValue(
         (forecast ?? _FakeForecast()).client,
       ),
       weatherClockProvider.overrideWithValue(() => DateTime(2026, 10, 13, 17)),
-      if (profile != null) userProfileProvider.overrideWith((ref) => profile),
+      // The profile streams read Drift; feed them the defaults instead.
+      userProfileProvider.overrideWith(
+        (ref) => profile ?? Stream.value(defaultUserProfile),
+      ),
+      primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
     ],
   );
   await tester.pumpWidget(
@@ -197,14 +218,35 @@ void main() {
     await _unmount(tester, c);
   });
 
-  testWidgets('a failed climate build keeps loading instead of erroring', (
+  testWidgets('a failed climate build shows the error line with Retry', (
     tester,
   ) async {
     final c = await _pump(tester, recs: _recs(5), climate: _FailedClimate.new);
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text("Couldn't load plants."), findsOneWidget);
+    expect(find.text('RETRY'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(find.byType(PlantCard), findsNothing);
+    await _unmount(tester, c);
+  });
+
+  testWidgets('Retry rebuilds the climate and shows the carousel', (
+    tester,
+  ) async {
+    final c = await _pump(
+      tester,
+      recs: _recs(5),
+      climate: _RetryableClimate.new,
+    );
+    expect(find.text('RETRY'), findsOneWidget);
+
+    await tester.tap(find.text('RETRY'));
+    await tester.pumpAndSettle();
+
+    final notifier = c.read(climateProvider.notifier) as _RetryableClimate;
+    expect(notifier.rebuilds, 1);
     expect(find.text("Couldn't load plants."), findsNothing);
+    expect(find.byType(PlantCard), findsWidgets);
     await _unmount(tester, c);
   });
 
