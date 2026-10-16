@@ -8,6 +8,7 @@ import '../features/onboarding/domain/user_profile.dart';
 import '../features/onboarding/presentation/availability_step_screen.dart';
 import '../features/onboarding/presentation/climate_reveal_screen.dart';
 import '../features/onboarding/presentation/goals_step_screen.dart';
+import '../features/onboarding/presentation/heard_about_us_screen.dart';
 import '../features/onboarding/presentation/location_screen.dart';
 import '../features/onboarding/presentation/onboarding_placeholder.dart';
 import '../features/onboarding/presentation/onboarding_routes.dart';
@@ -90,7 +91,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: OnboardingRoutes.time,
         builder: (context, state) => const AvailabilityStepScreen(),
       ),
-      _onboardingPlaceholder(OnboardingRoutes.source, 'OB-06 Heard about us'),
+      GoRoute(
+        path: OnboardingRoutes.source,
+        builder: (context, state) => const HeardAboutUsScreen(),
+      ),
       _onboardingPlaceholder(OnboardingRoutes.summary, 'OB-07 Profile summary'),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => TabShell(navigationShell: shell),

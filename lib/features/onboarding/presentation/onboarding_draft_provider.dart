@@ -69,6 +69,16 @@ class OnboardingDraftNotifier extends Notifier<OnboardingDraft> {
   void setAvailability(List<int> days) =>
       state = state.copyWith(availability: List.unmodifiable(days));
 
+  /// OB-06: the chosen source. Leaving Other clears its text.
+  void setHeardFrom(HeardFrom? source) => state = state.copyWith(
+    heardFrom: source,
+    heardOtherText: source == HeardFrom.other ? state.heardOtherText : null,
+  );
+
+  void setHeardOtherText(String text) => state = state.copyWith(
+    heardOtherText: text.trim().isEmpty ? null : text.trim(),
+  );
+
   /// Back to an empty draft.
   void reset() => state = const OnboardingDraft();
 }

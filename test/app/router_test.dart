@@ -9,6 +9,7 @@ import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/onboarding/presentation/availability_step_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/climate_reveal_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/goals_step_screen.dart';
+import 'package:geaux_farm/features/onboarding/presentation/heard_about_us_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/location_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/space_step_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
@@ -113,7 +114,6 @@ void main() {
   ) async {
     final router = await _pumpApp(tester, onboardedProfile);
     const placeholders = {
-      '/onboarding/source': 'OB-06 Heard about us',
       '/onboarding/summary': 'OB-07 Profile summary',
       '/home/recommendations': 'RC-01 Recommendations',
       '/plants/kale': 'PD-01 Plant detail',
@@ -142,6 +142,7 @@ void main() {
       '/onboarding/space': SpaceStepScreen,
       '/onboarding/goals': GoalsStepScreen,
       '/onboarding/time': AvailabilityStepScreen,
+      '/onboarding/source': HeardAboutUsScreen,
     };
     for (final MapEntry(key: path, value: type) in screens.entries) {
       await _go(tester, router, path);
