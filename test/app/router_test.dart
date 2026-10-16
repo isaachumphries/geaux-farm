@@ -7,7 +7,9 @@ import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/onboarding/presentation/climate_reveal_screen.dart';
+import 'package:geaux_farm/features/onboarding/presentation/goals_step_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/location_screen.dart';
+import 'package:geaux_farm/features/onboarding/presentation/space_step_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -110,8 +112,6 @@ void main() {
   ) async {
     final router = await _pumpApp(tester, onboardedProfile);
     const placeholders = {
-      '/onboarding/space': 'OB-03 Space',
-      '/onboarding/goals': 'OB-04 Goals',
       '/onboarding/time': 'OB-05 Availability',
       '/onboarding/source': 'OB-06 Heard about us',
       '/onboarding/summary': 'OB-07 Profile summary',
@@ -139,6 +139,8 @@ void main() {
       onboardingStart: WelcomeScreen,
       '/onboarding/location': LocationScreen,
       '/onboarding/climate': ClimateRevealScreen,
+      '/onboarding/space': SpaceStepScreen,
+      '/onboarding/goals': GoalsStepScreen,
     };
     for (final MapEntry(key: path, value: type) in screens.entries) {
       await _go(tester, router, path);

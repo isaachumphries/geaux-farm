@@ -6,9 +6,11 @@ import '../features/home/presentation/home_first_run_screen.dart';
 import '../features/onboarding/data/profile_providers.dart';
 import '../features/onboarding/domain/user_profile.dart';
 import '../features/onboarding/presentation/climate_reveal_screen.dart';
+import '../features/onboarding/presentation/goals_step_screen.dart';
 import '../features/onboarding/presentation/location_screen.dart';
 import '../features/onboarding/presentation/onboarding_placeholder.dart';
 import '../features/onboarding/presentation/onboarding_routes.dart';
+import '../features/onboarding/presentation/space_step_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
 import 'tab_shell.dart';
 import 'titled_scaffold.dart';
@@ -75,8 +77,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: OnboardingRoutes.climate,
         builder: (context, state) => const ClimateRevealScreen(),
       ),
-      _onboardingPlaceholder(OnboardingRoutes.space, 'OB-03 Space'),
-      _onboardingPlaceholder(OnboardingRoutes.goals, 'OB-04 Goals'),
+      GoRoute(
+        path: OnboardingRoutes.space,
+        builder: (context, state) => const SpaceStepScreen(),
+      ),
+      GoRoute(
+        path: OnboardingRoutes.goals,
+        builder: (context, state) => const GoalsStepScreen(),
+      ),
       _onboardingPlaceholder(OnboardingRoutes.time, 'OB-05 Availability'),
       _onboardingPlaceholder(OnboardingRoutes.source, 'OB-06 Heard about us'),
       _onboardingPlaceholder(OnboardingRoutes.summary, 'OB-07 Profile summary'),

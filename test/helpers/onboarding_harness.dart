@@ -6,7 +6,7 @@ import 'package:geaux_farm/app/theme.dart';
 import 'package:geaux_farm/features/onboarding/presentation/onboarding_routes.dart';
 import 'package:go_router/go_router.dart';
 
-/// Pumps one onboarding [screen] at [route] in a 360×800 view. Every other
+/// Pumps one onboarding [screen] at [route] in a 360×800 view (or [size]). Every other
 /// onboarding route, `/home`, and `/settings/edit/:step` is a stub that
 /// shows its path, so a test can check where a button went with
 /// `find.text(path)`. Returns the scope's container and the router.
@@ -16,8 +16,9 @@ Future<({ProviderContainer container, GoRouter router})> pumpOnboardingStep(
   required Widget screen,
   List<Override> overrides = const [],
   Map<String, Widget Function(GoRouterState)> screens = const {},
+  Size size = const Size(360, 800),
 }) async {
-  tester.view.physicalSize = const Size(360, 800);
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 
