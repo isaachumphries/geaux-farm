@@ -65,6 +65,10 @@ class OnboardingDraftNotifier extends Notifier<OnboardingDraft> {
   void setExperience(Experience experience) =>
       state = state.copyWith(experience: experience);
 
+  /// OB-05: the 7 Mon..Sun bitmasks from the grid.
+  void setAvailability(List<int> days) =>
+      state = state.copyWith(availability: List.unmodifiable(days));
+
   /// Back to an empty draft.
   void reset() => state = const OnboardingDraft();
 }

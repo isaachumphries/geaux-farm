@@ -52,9 +52,9 @@ void main() {
     // start at the first stand-in.
     ProviderScope.containerOf(tester.element(find.byType(GeauxFarmApp)))
         .read(goRouterProvider)
-        .go(OnboardingRoutes.time);
+        .go(OnboardingRoutes.source);
     await tester.pumpAndSettle();
-    for (final title in ['OB-05 Availability', 'OB-06 Heard about us']) {
+    for (final title in ['OB-06 Heard about us']) {
       expect(find.widgetWithText(AppBar, title), findsOneWidget);
       await tester.tap(find.text('CONTINUE'));
       await tester.pumpAndSettle();

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
 import '../features/onboarding/data/profile_providers.dart';
 import '../features/onboarding/domain/user_profile.dart';
+import '../features/onboarding/presentation/availability_step_screen.dart';
 import '../features/onboarding/presentation/climate_reveal_screen.dart';
 import '../features/onboarding/presentation/goals_step_screen.dart';
 import '../features/onboarding/presentation/location_screen.dart';
@@ -85,7 +86,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: OnboardingRoutes.goals,
         builder: (context, state) => const GoalsStepScreen(),
       ),
-      _onboardingPlaceholder(OnboardingRoutes.time, 'OB-05 Availability'),
+      GoRoute(
+        path: OnboardingRoutes.time,
+        builder: (context, state) => const AvailabilityStepScreen(),
+      ),
       _onboardingPlaceholder(OnboardingRoutes.source, 'OB-06 Heard about us'),
       _onboardingPlaceholder(OnboardingRoutes.summary, 'OB-07 Profile summary'),
       StatefulShellRoute.indexedStack(
