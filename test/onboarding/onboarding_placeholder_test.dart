@@ -52,10 +52,9 @@ void main() {
     // start at the first stand-in.
     ProviderScope.containerOf(tester.element(find.byType(GeauxFarmApp)))
         .read(goRouterProvider)
-        .go(OnboardingRoutes.climate);
+        .go(OnboardingRoutes.space);
     await tester.pumpAndSettle();
     for (final title in [
-      'OB-02b Climate reveal',
       'OB-03 Space',
       'OB-04 Goals',
       'OB-05 Availability',
