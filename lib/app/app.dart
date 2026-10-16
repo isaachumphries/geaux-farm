@@ -17,12 +17,14 @@ class GeauxFarmApp extends ConsumerWidget {
     if (!profile.hasValue && !profile.hasError) {
       return MaterialApp(
         title: 'Geaux Farm',
+        debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
         home: const Scaffold(),
       );
     }
     return MaterialApp.router(
       title: 'Geaux Farm',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       routerConfig: ref.watch(goRouterProvider),
     );
