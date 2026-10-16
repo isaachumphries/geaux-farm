@@ -31,8 +31,19 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
-  /// Opens the on-device database file.
-  AppDatabase.open() : super(driftDatabase(name: 'geaux_farm'));
+  /// Opens the on-device database file. On the web, drift runs SQLite from
+  /// `web/sqlite3.wasm` in `web/drift_worker.js`; both must match the
+  /// locked `sqlite3` and `drift` versions.
+  AppDatabase.open()
+    : super(
+        driftDatabase(
+          name: 'geaux_farm',
+          web: DriftWebOptions(
+            sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+            driftWorker: Uri.parse('drift_worker.js'),
+          ),
+        ),
+      );
 
   // Every schema change bumps this and adds a step to [migration].
   @override
