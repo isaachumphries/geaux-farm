@@ -6,6 +6,7 @@ import 'package:geaux_farm/app/router.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
+import 'package:geaux_farm/features/onboarding/presentation/location_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -108,7 +109,6 @@ void main() {
   ) async {
     final router = await _pumpApp(tester, onboardedProfile);
     const placeholders = {
-      '/onboarding/location': 'OB-02 Location',
       '/onboarding/climate': 'OB-02b Climate reveal',
       '/onboarding/space': 'OB-03 Space',
       '/onboarding/goals': 'OB-04 Goals',
@@ -135,8 +135,14 @@ void main() {
       expect(_title(tester), title, reason: path);
     }
 
-    await _go(tester, router, onboardingStart);
-    expect(find.byType(WelcomeScreen), findsOneWidget);
+    const screens = {
+      onboardingStart: WelcomeScreen,
+      '/onboarding/location': LocationScreen,
+    };
+    for (final MapEntry(key: path, value: type) in screens.entries) {
+      await _go(tester, router, path);
+      expect(find.byType(type), findsOneWidget, reason: path);
+    }
     await _go(tester, router, '/home');
     expect(find.byType(HomeFirstRunScreen), findsOneWidget);
     await tester.pumpWidget(const SizedBox());

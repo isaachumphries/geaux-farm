@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
 import '../features/onboarding/data/profile_providers.dart';
 import '../features/onboarding/domain/user_profile.dart';
+import '../features/onboarding/presentation/location_screen.dart';
 import '../features/onboarding/presentation/onboarding_placeholder.dart';
 import '../features/onboarding/presentation/onboarding_routes.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
@@ -65,7 +66,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: onboardingStart,
         builder: (context, state) => const WelcomeScreen(),
       ),
-      _onboardingPlaceholder(OnboardingRoutes.location, 'OB-02 Location'),
+      GoRoute(
+        path: OnboardingRoutes.location,
+        builder: (context, state) => const LocationScreen(),
+      ),
       _onboardingPlaceholder(OnboardingRoutes.climate, 'OB-02b Climate reveal'),
       _onboardingPlaceholder(OnboardingRoutes.space, 'OB-03 Space'),
       _onboardingPlaceholder(OnboardingRoutes.goals, 'OB-04 Goals'),

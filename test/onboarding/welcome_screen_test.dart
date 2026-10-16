@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
 import 'package:geaux_farm/app/router.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
+import 'package:geaux_farm/features/onboarding/presentation/location_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:go_router/go_router.dart';
 
@@ -65,7 +66,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.byType(WelcomeScreen, skipOffstage: false), findsOneWidget);
-    expect(find.text('OB-02 Location'), findsOneWidget);
+    expect(find.byType(LocationScreen), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
 }

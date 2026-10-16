@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
+import 'package:geaux_farm/app/router.dart';
 import 'package:geaux_farm/core/db/app_database.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/onboarding_placeholder.dart';
+import 'package:geaux_farm/features/onboarding/presentation/onboarding_routes.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
@@ -19,7 +21,7 @@ import '../helpers/fixed_climate.dart';
 import '../helpers/in_memory_database.dart';
 
 void main() {
-  testWidgets('Continue walks every stand-in step; Finish saves the '
+  testWidgets('Continue walks the remaining stand-in steps; Finish saves the '
       'onboarded profile and opens Home', (tester) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
@@ -46,10 +48,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(WelcomeScreen), findsOneWidget);
 
-    await tester.tap(find.text('GET STARTED'));
+    // Steps that have their own screen are covered by their own tests;
+    // start at the first stand-in.
+    ProviderScope.containerOf(tester.element(find.byType(GeauxFarmApp)))
+        .read(goRouterProvider)
+        .go(OnboardingRoutes.climate);
     await tester.pumpAndSettle();
     for (final title in [
-      'OB-02 Location',
       'OB-02b Climate reveal',
       'OB-03 Space',
       'OB-04 Goals',
