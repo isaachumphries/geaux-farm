@@ -10,8 +10,8 @@ import '../features/onboarding/presentation/climate_reveal_screen.dart';
 import '../features/onboarding/presentation/goals_step_screen.dart';
 import '../features/onboarding/presentation/heard_about_us_screen.dart';
 import '../features/onboarding/presentation/location_screen.dart';
-import '../features/onboarding/presentation/onboarding_placeholder.dart';
 import '../features/onboarding/presentation/onboarding_routes.dart';
+import '../features/onboarding/presentation/profile_summary_screen.dart';
 import '../features/onboarding/presentation/space_step_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
 import 'tab_shell.dart';
@@ -46,11 +46,6 @@ GoRoute _placeholder(String path, String title, {List<RouteBase>? routes}) =>
       builder: (context, state) => TitledScaffold(title),
       routes: routes ?? const [],
     );
-
-GoRoute _onboardingPlaceholder(String path, String title) => GoRoute(
-  path: path,
-  builder: (context, state) => OnboardingPlaceholder(title: title, route: path),
-);
 
 /// The app's route table (plan/09 § Routes). Local (`/local/...`) is a
 /// stretch tab and ships with its own issues.
@@ -95,7 +90,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: OnboardingRoutes.source,
         builder: (context, state) => const HeardAboutUsScreen(),
       ),
-      _onboardingPlaceholder(OnboardingRoutes.summary, 'OB-07 Profile summary'),
+      GoRoute(
+        path: OnboardingRoutes.summary,
+        builder: (context, state) => const ProfileSummaryScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => TabShell(navigationShell: shell),
         branches: [
