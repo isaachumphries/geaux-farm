@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../app/theme.dart';
@@ -36,18 +37,6 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
   void dispose() {
     _scroll.dispose();
     super.dispose();
-  }
-
-  /// Home is the only tab built so far; tapping it again scrolls to the
-  /// top. Garden, Care, and Community open once the router (#41) lands.
-  void _onTab(int index) {
-    if (index == 0 && _scroll.hasClients) {
-      _scroll.animateTo(
-        0,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    }
   }
 
   /// Pull-to-refresh always refetches the forecast (plan/06). With no
@@ -120,16 +109,6 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: GeauxBottomNav(
-        currentIndex: 0,
-        onTap: _onTab,
-        items: const [
-          GeauxNavItem(icon: Symbols.home_rounded, label: 'Home'),
-          GeauxNavItem(icon: Symbols.yard_rounded, label: 'Garden'),
-          GeauxNavItem(icon: Symbols.event_available_rounded, label: 'Care'),
-          GeauxNavItem(icon: Symbols.groups_rounded, label: 'Community'),
-        ],
       ),
     );
   }
@@ -255,7 +234,7 @@ class _LocationPill extends StatelessWidget {
   }
 }
 
-/// Opens settings once `/settings` exists (#41); inert until then.
+/// Opens ST-01 Settings.
 class _GearButton extends StatelessWidget {
   const _GearButton();
 
@@ -264,16 +243,20 @@ class _GearButton extends StatelessWidget {
     return Semantics(
       label: 'Settings',
       button: true,
-      child: const SizedBox.square(
-        dimension: AppSpacing.minTouchTarget,
-        child: _LedgeCapsule(
-          padding: EdgeInsets.zero,
-          child: Center(
-            child: Icon(
-              Symbols.settings_rounded,
-              size: AppIconSize.lg,
-              color: AppColors.soil900,
-              fill: 1,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => context.push('/settings'),
+        child: const SizedBox.square(
+          dimension: AppSpacing.minTouchTarget,
+          child: _LedgeCapsule(
+            padding: EdgeInsets.zero,
+            child: Center(
+              child: Icon(
+                Symbols.settings_rounded,
+                size: AppIconSize.lg,
+                color: AppColors.soil900,
+                fill: 1,
+              ),
             ),
           ),
         ),
@@ -391,8 +374,9 @@ class _PromptHeader extends ConsumerWidget {
 }
 
 /// First [homeCarouselCount] recommendations as compact cards. Loading
-/// while the catalog or the climate is pending, and while the climate
-/// build has failed (#26: consumers keep loading until a build succeeds).
+/// while the catalog or the climate is pending. A failed climate build
+/// shows an error with Retry: the provider never retries on its own, so
+/// without it the spinner would never end (offline, timeout).
 class _Carousel extends ConsumerWidget {
   const _Carousel();
 
@@ -401,6 +385,12 @@ class _Carousel extends ConsumerWidget {
     final climate = ref.watch(climateProvider);
     final recs = ref.watch(recommendationsProvider);
     final space = ref.watch(primarySpaceProvider).value;
+    if (climate is AsyncError && !climate.isLoading) {
+      return _CarouselMessage(
+        "Couldn't load plants.",
+        onRetry: () => ref.read(climateProvider.notifier).rebuild(),
+      );
+    }
     if (climate is! AsyncData || space == null) return const _CarouselLoading();
     return switch (recs) {
       AsyncData(:final value) => _CarouselRow(
@@ -458,19 +448,31 @@ class _CarouselLoading extends StatelessWidget {
 }
 
 class _CarouselMessage extends StatelessWidget {
-  const _CarouselMessage(this.text);
+  const _CarouselMessage(this.text, {this.onRetry});
 
   final String text;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: _carouselSlotHeight,
       child: Center(
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: AppText.bodySm.copyWith(color: AppColors.soil600),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: AppText.bodySm.copyWith(color: AppColors.soil600),
+            ),
+            if (onRetry != null)
+              GeauxButton(
+                label: 'Retry',
+                variant: GeauxButtonVariant.text,
+                onPressed: onRetry,
+              ),
+          ],
         ),
       ),
     );
