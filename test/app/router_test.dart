@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
 import 'package:geaux_farm/app/router.dart';
-import 'package:geaux_farm/app/titled_scaffold.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
@@ -37,8 +36,12 @@ Future<void> _go(WidgetTester tester, GoRouter router, String path) async {
   await tester.pump();
 }
 
-String _title(WidgetTester tester) =>
-    tester.widget<TitledScaffold>(find.byType(TitledScaffold).last).title;
+/// The app bar title of the top screen: a [TitledScaffold] or an
+/// onboarding step stand-in.
+String _title(WidgetTester tester) {
+  final appBar = tester.widget<AppBar>(find.byType(AppBar).last);
+  return (appBar.title! as Text).data!;
+}
 
 void main() {
   group('redirect', () {

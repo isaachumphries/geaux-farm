@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
 import '../features/onboarding/data/profile_providers.dart';
 import '../features/onboarding/domain/user_profile.dart';
+import '../features/onboarding/presentation/onboarding_placeholder.dart';
 import '../features/onboarding/presentation/onboarding_routes.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
 import 'tab_shell.dart';
@@ -40,6 +41,11 @@ GoRoute _placeholder(String path, String title, {List<RouteBase>? routes}) =>
       routes: routes ?? const [],
     );
 
+GoRoute _onboardingPlaceholder(String path, String title) => GoRoute(
+  path: path,
+  builder: (context, state) => OnboardingPlaceholder(title: title, route: path),
+);
+
 /// The app's route table (plan/09 § Routes). Local (`/local/...`) is a
 /// stretch tab and ships with its own issues.
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -59,13 +65,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: onboardingStart,
         builder: (context, state) => const WelcomeScreen(),
       ),
-      _placeholder('/onboarding/location', 'OB-02 Location'),
-      _placeholder('/onboarding/climate', 'OB-02b Climate reveal'),
-      _placeholder('/onboarding/space', 'OB-03 Space'),
-      _placeholder('/onboarding/goals', 'OB-04 Goals'),
-      _placeholder('/onboarding/time', 'OB-05 Availability'),
-      _placeholder('/onboarding/source', 'OB-06 Heard about us'),
-      _placeholder('/onboarding/summary', 'OB-07 Profile summary'),
+      _onboardingPlaceholder(OnboardingRoutes.location, 'OB-02 Location'),
+      _onboardingPlaceholder(OnboardingRoutes.climate, 'OB-02b Climate reveal'),
+      _onboardingPlaceholder(OnboardingRoutes.space, 'OB-03 Space'),
+      _onboardingPlaceholder(OnboardingRoutes.goals, 'OB-04 Goals'),
+      _onboardingPlaceholder(OnboardingRoutes.time, 'OB-05 Availability'),
+      _onboardingPlaceholder(OnboardingRoutes.source, 'OB-06 Heard about us'),
+      _onboardingPlaceholder(OnboardingRoutes.summary, 'OB-07 Profile summary'),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => TabShell(navigationShell: shell),
         branches: [
