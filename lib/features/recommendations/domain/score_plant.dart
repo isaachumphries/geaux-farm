@@ -95,10 +95,14 @@ double _annualClimateFit(Plant p, List<ClimateMonth> months) {
   return best / n;
 }
 
-double _indoorClimateFit(Plant p) {
+double _indoorClimateFit(Plant p) =>
+    (indoorTempsSuit(p) ? 1.0 : 0.5) *
+    humidityMultiplier(p.humidity, indoorRhPct);
+
+/// Whether the grow-temperature range covers the 65–75 °F indoor band.
+bool indoorTempsSuit(Plant p) {
   final g = p.growTempF!;
-  final fit = g.min <= 65 && g.max >= 75 ? 1.0 : 0.5;
-  return fit * humidityMultiplier(p.humidity, indoorRhPct);
+  return g.min <= 65 && g.max >= 75;
 }
 
 double humidityMultiplier(Humidity h, double rhPct) =>
