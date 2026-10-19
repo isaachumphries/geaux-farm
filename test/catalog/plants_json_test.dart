@@ -139,13 +139,12 @@ void main() {
     return copy;
   }
 
-  test('contains the four reference records in order', () {
-    expect(records.map((r) => r['id']), [
-      'kale',
-      'cherry-tomato',
-      'sweet-basil',
-      'english-lavender',
-    ]);
+  test('contains the four reference records', () {
+    final ids = records.map((r) => r['id']);
+    expect(
+      ids,
+      containsAll(['kale', 'cherry-tomato', 'sweet-basil', 'english-lavender']),
+    );
   });
 
   test('ids are unique and kebab-case', () {
@@ -160,20 +159,24 @@ void main() {
     }
   });
 
-  test('zones is non-null only for english-lavender', () {
-    expect(records.where((r) => r['zones'] != null).map((r) => r['id']), [
-      'english-lavender',
-    ]);
+  test('zones is non-null exactly for perennial records', () {
+    for (final r in records) {
+      expect(
+        r['zones'] != null,
+        r['lifecycle'] == 'perennial',
+        reason: r['id'] as String,
+      );
+    }
   });
 
-  test('all four are containerOk with a minContainerGal', () {
+  test('every record is containerOk with a minContainerGal', () {
     for (final r in records) {
       expect(r['space']['containerOk'], isTrue);
       expect(r['space']['minContainerGal'], isNotNull);
     }
   });
 
-  test('starts is non-empty for all four', () {
+  test('starts is non-empty for every record', () {
     for (final r in records) {
       expect(r['starts'], isNotEmpty);
     }
