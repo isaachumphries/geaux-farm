@@ -159,6 +159,12 @@ void main() {
     }
   });
 
+  test('every record derives scorable', () {
+    for (final r in records) {
+      expect(Plant.fromJson(r).scorable, isTrue, reason: r['id'] as String);
+    }
+  });
+
   test('zones is non-null exactly for perennial records', () {
     for (final r in records) {
       expect(
