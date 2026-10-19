@@ -73,6 +73,22 @@ void main() {
       expect(kinds, isNot(contains(CareTaskKind.prune)));
     });
 
+    test(
+      'keeps a task due on the last window day and drops one due after it',
+      () {
+        final tasks = _schedule(
+          today: DateTime(2026, 5, 4),
+          tasks: const [
+            {'type': 'other', 'everyDays': 9, 'note': 'Last day'},
+            {'type': 'other', 'everyDays': 10, 'note': 'First dropped'},
+          ],
+        );
+        final notes = tasks.map((t) => t.note).toSet();
+        expect(notes, contains('Last day'));
+        expect(notes, isNot(contains('First dropped')));
+      },
+    );
+
     test('flags a past-due task as overdue and places it from today', () {
       final tasks = _schedule(
         today: DateTime(2026, 5, 6),
