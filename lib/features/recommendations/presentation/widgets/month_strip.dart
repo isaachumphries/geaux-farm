@@ -17,7 +17,20 @@ const _monthNames = [
   'December',
 ];
 
-const _monthLetters = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+const _monthLetters = [
+  'J',
+  'F',
+  'M',
+  'A',
+  'M',
+  'J',
+  'J',
+  'A',
+  'S',
+  'O',
+  'N',
+  'D',
+];
 
 /// Twelve month cells, January first. Good planting months are filled gold;
 /// the current month is outlined (plan/04 § When to plant).
@@ -154,19 +167,13 @@ class _LegendItem extends StatelessWidget {
             color: swatch,
             borderRadius: BorderRadius.circular(AppRadii.chip),
             border: outlined
-                ? Border.all(
-                    color: AppColors.soil900,
-                    width: AppBorders.width,
-                  )
+                ? Border.all(color: AppColors.soil900, width: AppBorders.width)
                 : null,
           ),
           child: const SizedBox.square(dimension: AppIconSize.sm),
         ),
         const SizedBox(width: AppSpacing.xs),
-        Text(
-          label,
-          style: AppText.caption.copyWith(color: AppColors.soil600),
-        ),
+        Text(label, style: AppText.caption.copyWith(color: AppColors.soil600)),
       ],
     );
   }

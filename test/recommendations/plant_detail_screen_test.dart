@@ -154,7 +154,9 @@ void main() {
     expect(find.text('Image credit: TBD · TBD'), findsOneWidget);
     expect(find.text('Indoor / greenhouse'), findsNothing);
 
-    final tops = [for (final tip in plant.tips) tester.getTopLeft(find.text(tip)).dy];
+    final tops = [
+      for (final tip in plant.tips) tester.getTopLeft(find.text(tip)).dy,
+    ];
     expect(tops, hasLength(plant.tips.length));
     for (var i = 1; i < tops.length; i++) {
       expect(tops[i], greaterThan(tops[i - 1]), reason: plant.tips[i]);
@@ -212,10 +214,7 @@ void main() {
     final whyBefore = tester.getTopLeft(find.text('Why it fits')).dy;
     expect(buttonBefore.bottom, lessThanOrEqualTo(800));
     expect(
-      find.ancestor(
-        of: button,
-        matching: find.byType(SingleChildScrollView),
-      ),
+      find.ancestor(of: button, matching: find.byType(SingleChildScrollView)),
       findsNothing,
     );
 

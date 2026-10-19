@@ -305,10 +305,7 @@ void main() {
         climate: workedExample.climate,
       );
       final rows = rowsFor(plants['kale']!, ctx, GrowSetup.outdoor);
-      expect(
-        reasonFor(rows, ScoreFactor.goals),
-        'No specific goals to match',
-      );
+      expect(reasonFor(rows, ScoreFactor.goals), 'No specific goals to match');
     });
   });
 

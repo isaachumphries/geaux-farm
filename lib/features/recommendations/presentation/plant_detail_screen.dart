@@ -257,7 +257,10 @@ class _Section extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.md,
-      children: [Text(title, style: AppText.h2), child],
+      children: [
+        Text(title, style: AppText.h2),
+        child,
+      ],
     );
   }
 }
