@@ -47,25 +47,48 @@ DateTime waterDue(
     return addDays(last, water.everyDaysIndoor);
   }
 
+  return addDays(last, deficitTrace(pl, p, s, last, days).length);
+}
+
+/// Soil-water deficit after each day past [last], one entry per day.
+///
+/// Stops at the first day whose deficit reaches the threshold; that day is the
+/// last entry. Otherwise the trace covers `3 * everyDaysOutdoor` days. The due
+/// date is therefore `last + trace.length`. A day missing from [days] uses the
+/// no-rain fallback.
+///
+/// Exposed so the fixture tests can check the per-day deficits directly.
+List<double> deficitTrace(
+  Planting pl,
+  Plant p,
+  Space s,
+  DateTime last,
+  Map<DateTime, WeatherDay> days,
+) {
+  final water = p.water;
+  if (water == null) {
+    throw ArgumentError.value(p.id, 'p', 'has no water data');
+  }
   final n = water.everyDaysOutdoor;
   final threshold = _threshold(water.need) * (pl.inContainer ? 0.5 : 1.0);
   final kc = _kc(water.need);
   final fallbackPerDay = threshold / n;
   final window = 3 * n;
 
+  final trace = <double>[];
   var deficit = 0.0;
   for (var i = 1; i <= window; i++) {
-    final d = addDays(last, i);
-    final wx = days[d];
+    final wx = days[addDays(last, i)];
     if (wx == null) {
       deficit = max(0.0, deficit + fallbackPerDay);
     } else {
       final effRain = s.rainExposed ? 0.8 * wx.precipIn : 0.0;
       deficit = max(0.0, deficit + kc * wx.et0In - effRain);
     }
-    if (deficit >= threshold - _eps) return d;
+    trace.add(deficit);
+    if (deficit >= threshold - _eps) break;
   }
-  return addDays(last, window);
+  return trace;
 }
 
 double _threshold(WaterNeed need) => switch (need) {

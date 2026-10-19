@@ -90,6 +90,16 @@ DateTime _waterDue({
   today ?? _planted,
 );
 
+List<double> _trace({required List<WeatherDay> weather}) =>
+    deficitTrace(_planting(), _kale(), _space(), _day(0), _days(weather));
+
+void _expectDeficits(List<double> actual, List<double> expected) {
+  expect(actual, hasLength(expected.length));
+  for (var i = 0; i < expected.length; i++) {
+    expect(actual[i], closeTo(expected[i], 1e-9), reason: 'day ${i + 1}');
+  }
+}
+
 void main() {
   final water0 = [_event(CareEventType.water, 0)];
 
@@ -114,6 +124,55 @@ void main() {
         ],
       );
       expect(due, _day(6));
+    });
+
+    test('per-day deficits for fixture 1 (container kale, no rain)', () {
+      final trace = _trace(
+        weather: [_wx(1, et0: 0.17), _wx(2, et0: 0.19), _wx(3, et0: 0.17)],
+      );
+      _expectDeficits(trace, [0.136, 0.288, 0.424]);
+    });
+
+    test(
+      'per-day deficits for fixture 2 (0.8 rain factor, day 6 fallback)',
+      () {
+        final trace = _trace(
+          weather: [
+            _wx(1, et0: 0.17),
+            _wx(2, et0: 0.19),
+            _wx(3, et0: 0.17, precipIn: 0.5),
+            _wx(4, et0: 0.15),
+            _wx(5, et0: 0.16),
+          ],
+        );
+        _expectDeficits(trace, [0.136, 0.288, 0.024, 0.144, 0.272, 0.372]);
+      },
+    );
+
+    test('deficit within 1e-9 of the threshold still counts as due', () {
+      // Ten fallback steps of 0.1 sum to 0.9999999999999999 in doubles.
+      final plant = _kale({
+        'water': {'need': 'low', 'everyDaysOutdoor': 10, 'everyDaysIndoor': 3},
+      });
+      final trace = deficitTrace(
+        _planting(inContainer: false),
+        plant,
+        _space(),
+        _day(0),
+        const {},
+      );
+      expect(trace, hasLength(10));
+      expect(trace.last, lessThan(1.0));
+      expect(trace.last, closeTo(1.0, 1e-9));
+      expect(
+        _waterDue(
+          events: water0,
+          weather: const [],
+          inContainer: false,
+          plant: plant,
+        ),
+        _day(10),
+      );
     });
 
     test('rain is ignored when the space is not rain-exposed', () {
