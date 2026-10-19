@@ -38,6 +38,14 @@ class CareReminder {
   final String payload;
 }
 
+/// Payload prefix for care reminders. A recompute cancels only ids whose
+/// payload carries it, so weather notifications keep their schedule.
+const careReminderPayloadPrefix = 'care?date=';
+
+/// True when [payload] belongs to a care reminder.
+bool isCareReminderPayload(String? payload) =>
+    payload != null && payload.startsWith(careReminderPayloadPrefix);
+
 /// Notification id for a slot: its start in whole UTC minutes since the Unix
 /// epoch, mod 2^31. It depends only on the slot, so a restart produces the
 /// same ids and a recompute can cancel them.
@@ -71,7 +79,7 @@ List<CareReminder> planCareReminders({
         id: careReminderId(start),
         start: start,
         body: body,
-        payload: 'care?date=${_isoDate(dayOf(start))}',
+        payload: '$careReminderPayloadPrefix${_isoDate(dayOf(start))}',
       ),
     );
     if (reminders.length == careReminderBudget) break;
