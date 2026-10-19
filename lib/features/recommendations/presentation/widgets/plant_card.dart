@@ -224,7 +224,11 @@ const double _highlightInset = _haloSize * 0.1;
 const double _listArtSize = 80;
 
 class CategoryArt extends StatelessWidget {
-  const CategoryArt({required this.category, this.height = _artHeight});
+  const CategoryArt({
+    super.key,
+    required this.category,
+    this.height = _artHeight,
+  });
 
   final PlantCategory category;
   final double height;
@@ -390,7 +394,7 @@ class _IconLine extends StatelessWidget {
 }
 
 class IndoorChip extends StatelessWidget {
-  const IndoorChip();
+  const IndoorChip({super.key});
 
   @override
   Widget build(BuildContext context) {
