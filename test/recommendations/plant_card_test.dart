@@ -4,6 +4,7 @@ import 'package:geaux_farm/app/theme.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_card.dart';
+import 'package:geaux_farm/features/recommendations/presentation/widgets/season_chip.dart';
 
 import 'fixtures/baton_rouge.dart';
 import 'fixtures/scored.dart';
@@ -94,6 +95,28 @@ void main() {
 
     await _pump(tester, kale);
     expect(find.text('Indoor / greenhouse'), findsNothing);
+  });
+
+  testWidgets('shows at most two season chips from the plant tags', (
+    tester,
+  ) async {
+    final plant = scored(
+      kaleWith({
+        'seasonTags': ['cool-season', 'warm-season', 'year-round'],
+      }),
+    );
+    await _pump(tester, plant);
+    expect(find.byType(SeasonChip), findsNWidgets(2));
+    expect(find.text('Cool-season'), findsOneWidget);
+    expect(find.text('Warm-season'), findsOneWidget);
+    expect(find.text('Year-round'), findsNothing);
+  });
+
+  testWidgets('no season chips when the plant has no season tags', (
+    tester,
+  ) async {
+    await _pump(tester, scored(kaleWith({'seasonTags': <String>[]})));
+    expect(find.byType(SeasonChip), findsNothing);
   });
 
   group('PlantCardState.of', () {

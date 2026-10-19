@@ -9,6 +9,7 @@ import '../../domain/compatibility.dart';
 import '../../domain/scored_plant.dart';
 import 'compat_badge.dart';
 import 'maintenance_pill.dart';
+import 'season_chip.dart';
 
 /// Which flag a [PlantCard] shows: the "Plant now" ribbon, the "Indoor /
 /// greenhouse" chip, or neither. `default` is a reserved word, hence
@@ -58,7 +59,6 @@ class PlantCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = plant.plant;
-    final timeToGrow = p.timeToGrowLabel;
     return SizedBox(
       width: plantCardCompactWidth,
       child: GeauxCard(
@@ -94,42 +94,56 @@ class PlantCard extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    p.commonName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppText.cardTitle.copyWith(color: AppColors.soil900),
-                  ),
-                  const SizedBox(height: AppSpacing.xs + 2),
-                  CompatBadge(score: plant.compatibility.score),
-                  const SizedBox(height: AppSpacing.xs + 2),
-                  if (timeToGrow != null)
-                    _IconLine(
-                      icon: Symbols.schedule_rounded,
-                      filled: false,
-                      color: AppColors.leaf700,
-                      text: timeToGrow,
-                    ),
-                  const SizedBox(height: AppSpacing.xs),
-                  _IconLine(
-                    icon: Symbols.water_drop_rounded,
-                    color: AppColors.frost,
-                    text: careTimeLabel(p.care),
-                  ),
-                  const SizedBox(height: AppSpacing.xs + 2),
-                  MaintenancePill(level: p.maintenanceLevel),
-                  if (state == PlantCardState.indoorOnly) ...[
-                    const SizedBox(height: AppSpacing.xs),
-                    const _IndoorChip(),
-                  ],
-                ],
+                children: _details(p),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// Name through indoor chip, shared by the compact and list layouts.
+  List<Widget> _details(Plant p) {
+    final timeToGrow = p.timeToGrowLabel;
+    return [
+      Text(
+        p.commonName,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: AppText.cardTitle.copyWith(color: AppColors.soil900),
+      ),
+      const SizedBox(height: AppSpacing.xs + 2),
+      CompatBadge(score: plant.compatibility.score),
+      const SizedBox(height: AppSpacing.xs + 2),
+      if (timeToGrow != null)
+        _IconLine(
+          icon: Symbols.schedule_rounded,
+          filled: false,
+          color: AppColors.leaf700,
+          text: timeToGrow,
+        ),
+      const SizedBox(height: AppSpacing.xs),
+      _IconLine(
+        icon: Symbols.water_drop_rounded,
+        color: AppColors.frost,
+        text: careTimeLabel(p.care),
+      ),
+      const SizedBox(height: AppSpacing.xs + 2),
+      Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.xs,
+        children: [
+          MaintenancePill(level: p.maintenanceLevel),
+          for (final tag in p.seasonTags.take(_seasonChipLimit))
+            SeasonChip(tag: tag),
+        ],
+      ),
+      if (state == PlantCardState.indoorOnly) ...[
+        const SizedBox(height: AppSpacing.xs),
+        const _IndoorChip(),
+      ],
+    ];
   }
 }
 
@@ -138,6 +152,9 @@ const double _ribbonInset = AppSpacing.sm - AppBorders.width;
 /// Side padding of the card body; with the border, text sits 12 from the
 /// card edge.
 const double _bodyInset = AppSpacing.md - AppBorders.width;
+
+/// Season chips per card: two, as on RC-01.
+const int _seasonChipLimit = 2;
 
 // Category art, measured on the HM-01 export (2x, halved): the tinted band
 // is 88 tall, the halo disc 80 across, and the icon glyph about 31 wide,
