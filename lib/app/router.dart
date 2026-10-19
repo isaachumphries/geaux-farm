@@ -14,6 +14,7 @@ import '../features/onboarding/presentation/onboarding_routes.dart';
 import '../features/onboarding/presentation/profile_summary_screen.dart';
 import '../features/onboarding/presentation/space_step_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
+import '../features/recommendations/presentation/plant_detail_screen.dart';
 import 'tab_shell.dart';
 import 'titled_scaffold.dart';
 
@@ -139,7 +140,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       // Full-screen routes above the tab bar.
-      _placeholder('/plants/:plantId', 'PD-01 Plant detail'),
+      GoRoute(
+        path: '/plants/:plantId',
+        builder: (context, state) =>
+            PlantDetailScreen(plantId: state.pathParameters['plantId']!),
+      ),
       _placeholder('/weather', 'WX-01 Weather'),
       _placeholder(
         '/settings',
