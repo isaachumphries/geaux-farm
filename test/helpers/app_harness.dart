@@ -1,6 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:geaux_farm/core/db/app_database.dart';
+import 'package:geaux_farm/core/notifications/notification_providers.dart';
+import 'package:geaux_farm/core/notifications/notification_service.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
@@ -11,6 +14,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import 'fixed_climate.dart';
+import 'in_memory_database.dart';
+import 'inert_notification_plugin.dart';
 
 /// [defaultUserProfile] with onboarding finished.
 final onboardedProfile = UserProfile(
@@ -34,6 +39,14 @@ List<Override> appOverrides({required UserProfile profile}) {
   final forecast = File('test/fixtures/open_meteo/forecast_baton_rouge.json')
       .readAsStringSync();
   return [
+    inMemoryDatabaseOverride(),
+    notificationServiceProvider.overrideWith(
+      (ref) => NotificationService(
+        InertNotificationPlugin(),
+        ref.watch(appDatabaseProvider),
+        () async => 'UTC',
+      ),
+    ),
     userProfileProvider.overrideWith((ref) => Stream.value(profile)),
     primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
     climateProvider.overrideWith(FixedClimate.new),
