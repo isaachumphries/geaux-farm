@@ -110,8 +110,8 @@ class NotificationService {
     await _plugin.cancelAll();
   }
 
-  Future<List<int>> pendingIds() async {
+  Future<List<({int id, String? payload})>> pending() async {
     await init();
-    return _plugin.pendingIds();
+    return _plugin.pending();
   }
 }

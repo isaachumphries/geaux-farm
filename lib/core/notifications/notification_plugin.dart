@@ -28,7 +28,7 @@ abstract interface class NotificationPlugin {
 
   Future<void> cancelAll();
 
-  Future<List<int>> pendingIds();
+  Future<List<({int id, String? payload})>> pending();
 }
 
 class FlutterNotificationPlugin implements NotificationPlugin {
@@ -121,8 +121,11 @@ class FlutterNotificationPlugin implements NotificationPlugin {
   Future<void> cancelAll() => _plugin.cancelAll();
 
   @override
-  Future<List<int>> pendingIds() async {
-    final pending = await _plugin.pendingNotificationRequests();
-    return [for (final request in pending) request.id];
+  Future<List<({int id, String? payload})>> pending() async {
+    final requests = await _plugin.pendingNotificationRequests();
+    return [
+      for (final request in requests)
+        (id: request.id, payload: request.payload),
+    ];
   }
 }
