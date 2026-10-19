@@ -123,7 +123,7 @@
     "sun": ["partial", "full"],
     "zones": null,
     "plantTempF": {"min": 50, "max": 80},
-    "growTempF": {"min": 35, "max": 75},
+    "growTempF": {"min": 35, "max": 82},
     "frostTolerance": "hard",
     "humidity": "any",
     "starts": [
@@ -160,7 +160,7 @@
     "sun": ["partial", "full"],
     "zones": null,
     "plantTempF": {"min": 50, "max": 80},
-    "growTempF": {"min": 35, "max": 80},
+    "growTempF": {"min": 35, "max": 82},
     "frostTolerance": "light",
     "humidity": "any",
     "starts": [
