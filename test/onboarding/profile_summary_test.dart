@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
 import 'package:geaux_farm/app/router.dart';
 import 'package:geaux_farm/core/db/app_database.dart';
+import 'package:geaux_farm/core/notifications/notification_providers.dart';
+import 'package:geaux_farm/core/notifications/notification_service.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/home/application/first_plant_prompt_provider.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
@@ -21,6 +23,7 @@ import 'package:http/testing.dart';
 
 import '../helpers/fixed_climate.dart';
 import '../helpers/in_memory_database.dart';
+import '../helpers/inert_notification_plugin.dart';
 import 'finished_draft.dart';
 
 final _finishedAt = DateTime(2026, 10, 7, 9, 41);
@@ -37,6 +40,14 @@ Future<ProviderContainer> _pumpSummary(WidgetTester tester) async {
     ProviderScope(
       overrides: [
         inMemoryDatabaseOverride(),
+        // The app root now starts care reminders; keep them off the OS.
+        notificationServiceProvider.overrideWith(
+          (ref) => NotificationService(
+            InertNotificationPlugin(),
+            ref.watch(appDatabaseProvider),
+            () async => 'UTC',
+          ),
+        ),
         clockProvider.overrideWithValue(() => _finishedAt),
         climateProvider.overrideWith(FixedClimate.new),
         forecastClientProvider.overrideWithValue(
