@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../catalog/data/catalog_provider.dart';
 import '../../catalog/domain/plant.dart';
 import '../../climate/data/climate_provider.dart';
+import '../../garden/domain/planting.dart';
 import '../../onboarding/data/profile_providers.dart';
 import '../domain/compatibility.dart';
 import '../domain/score_plant.dart';
