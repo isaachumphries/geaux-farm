@@ -978,7 +978,7 @@
     "sun": ["full"],
     "zones": {"min": "8a", "max": "10b"},
     "plantTempF": {"min": 50, "max": 65},
-    "growTempF": {"min": 45, "max": 95},
+    "growTempF": {"min": 40, "max": 95},
     "frostTolerance": "light",
     "humidity": "any",
     "starts": [
