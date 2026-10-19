@@ -336,8 +336,7 @@ class _SeasonBanner extends ConsumerWidget {
   }
 }
 
-/// "Pick your first plant" with "See all" and the space subline. "See all"
-/// opens RC-01 once it and the router (#41, #71) exist.
+/// "Pick your first plant" with "See all" (opens RC-01) and the space subline.
 class _PromptHeader extends ConsumerWidget {
   const _PromptHeader();
 
@@ -356,10 +355,10 @@ class _PromptHeader extends ConsumerWidget {
                 style: AppText.h2.copyWith(color: AppColors.soil900),
               ),
             ),
-            const GeauxButton(
+            GeauxButton(
               label: 'See all',
               variant: GeauxButtonVariant.text,
-              onPressed: null,
+              onPressed: () => context.push('/home/recommendations'),
             ),
           ],
         ),
@@ -419,11 +418,11 @@ class _CarouselRow extends StatelessWidget {
         children: [
           for (final (i, s) in plants.indexed) ...[
             if (i > 0) const SizedBox(width: AppSpacing.md),
-            // Card tap opens PD-01 once it and the router exist (#74, #41).
             PlantCard(
               key: ValueKey(s.plant.id),
               plant: s,
               state: PlantCardState.of(s.compatibility, setup),
+              onTap: () => context.push('/plants/${s.plant.id}'),
             ),
           ],
         ],
@@ -479,8 +478,7 @@ class _CarouselMessage extends StatelessWidget {
   }
 }
 
-/// HM-01b: the carousel collapsed into one card. Opens RC-01 once it and
-/// the router exist (#71, #41).
+/// HM-01b: the carousel collapsed into one card. Tapping it opens RC-01.
 class _SlimPromptCard extends ConsumerWidget {
   const _SlimPromptCard();
 
@@ -492,6 +490,7 @@ class _SlimPromptCard extends ConsumerWidget {
         ? null
         : slimCardLine([for (final s in recs) s.plant.commonName], space.type);
     return GeauxCard(
+      onTap: () => context.push('/home/recommendations'),
       child: Row(
         children: [
           const _SlimArt(),
