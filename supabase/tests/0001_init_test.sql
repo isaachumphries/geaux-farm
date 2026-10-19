@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(14);
+select plan(16);
 
 -- Fixtures. Inserted as postgres (bypasses RLS); triggers still run.
 insert into auth.users (id, email) values
@@ -70,6 +70,36 @@ select is((select title from public.guides where id = 'aaaaaaaa-0000-0000-0000-0
   'Kale starter bed', 'Case 2: A''s title is unchanged');
 select is((select count(*)::int from public.guides where id = 'aaaaaaaa-0000-0000-0000-000000000001'),
   1, 'Case 2: A''s guide still exists');
+
+-- Case 2 (stars): user B cannot delete author A's star (0 rows, no error).
+-- A then deletes that star again, so Case 4 still starts from star_count 0.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+insert into public.guide_stars (user_id, guide_id)
+  values ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001');
+set local request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+do $$
+declare n int;
+begin
+  delete from public.guide_stars
+   where user_id = '11111111-1111-1111-1111-111111111111'
+     and guide_id = 'aaaaaaaa-0000-0000-0000-000000000001';
+  get diagnostics n = row_count;
+  perform set_config('test.rows', n::text, true);
+end $$;
+select is(current_setting('test.rows')::int, 0, 'Case 2: user B cannot delete A''s star');
+set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+do $$
+declare n int;
+begin
+  delete from public.guide_stars
+   where user_id = '11111111-1111-1111-1111-111111111111'
+     and guide_id = 'aaaaaaaa-0000-0000-0000-000000000001';
+  get diagnostics n = row_count;
+  perform set_config('test.rows', n::text, true);
+end $$;
+reset role;
+select is(current_setting('test.rows')::int, 1, 'Case 2: author can delete own star (positive control)');
 
 -- Case 3: authenticated cannot write star_count (column grant).
 set local role authenticated;
