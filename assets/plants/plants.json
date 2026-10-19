@@ -408,6 +408,43 @@
     "source": "curated"
   },
   {
+    "id": "green-onion",
+    "commonName": "Green Onion",
+    "scientificName": "Allium fistulosum",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "6a", "max": "9b"},
+    "plantTempF": {"min": 40, "max": 85},
+    "growTempF": {"min": 35, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 65, "daysMax": 65}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.25, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Cut outer stalks about 2 inches above the soil; the clump regrows"},
+        {"type": "fertilize", "everyDays": 30, "note": "Side-dress with compost or balanced fertilizer during active growth"}
+      ]
+    },
+    "tips": [
+      "Divide crowded clumps every two to three years to keep stalks thick.",
+      "Let a few plants flower in late spring if you want seed; cut the rest before they go woody."
+    ],
+    "image": {"asset": "assets/plants/images/green-onion.webp", "credit": "PumpkinSky", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Scallions_and_Basil_in_Snow.jpg"},
+    "source": "curated"
+  },
+  {
     "id": "cherry-tomato",
     "commonName": "Cherry Tomato",
     "scientificName": "Solanum lycopersicum var. cerasiforme",
