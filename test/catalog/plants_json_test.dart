@@ -11,10 +11,6 @@ import 'package:geaux_farm/features/catalog/domain/plant.dart';
 
 const bool strictCatalog = false;
 
-const _photoSkip =
-    'Plant photos are a follow-up to #37; the image files and real '
-    'credits are not in this change.';
-
 final _kebab = RegExp(r'^[a-z0-9]+(-[a-z0-9]+)*$');
 
 const _seedIds = [
@@ -213,7 +209,7 @@ void main() {
       final asset = r['image']['asset'] as String;
       expect(File(asset).existsSync(), isTrue, reason: asset);
     }
-  }, skip: _photoSkip);
+  });
 
   test('strict: credits are filled and every seed id is present', () {
     for (final r in records) {
