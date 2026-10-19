@@ -33,4 +33,18 @@ class CareEvent {
   final DateTime at;
   final String? note;
   final String? photoPath;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CareEvent &&
+          other.id == id &&
+          other.plantingId == plantingId &&
+          other.type == type &&
+          other.at == at &&
+          other.note == note &&
+          other.photoPath == photoPath;
+
+  @override
+  int get hashCode => Object.hash(id, plantingId, type, at, note, photoPath);
 }
