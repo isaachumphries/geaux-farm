@@ -38,6 +38,117 @@
     "source": "curated"
   },
   {
+    "id": "collard-greens",
+    "commonName": "Collard Greens",
+    "scientificName": "Brassica oleracea var. viridis",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 85},
+    "growTempF": {"min": 35, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 70, "daysMax": 75}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Pick the lower leaves first; leave the center growing"},
+        {"type": "fertilize", "everyDays": 21, "note": "Side-dress with a nitrogen-rich fertilizer"}
+      ]
+    },
+    "tips": [
+      "Plant in fall or early spring; Louisiana summer heat makes collards bolt.",
+      "Collard leaves get sweeter after a light frost, so harvest after cool nights."
+    ],
+    "image": {"asset": "assets/plants/images/collard-greens.webp", "credit": "Ann Perry", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Collard_Leaves.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "swiss-chard",
+    "commonName": "Swiss Chard",
+    "scientificName": "Beta vulgaris var. cicla",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 85},
+    "growTempF": {"min": 40, "max": 90},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 45, "daysMax": 55}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Cut the outer stalks near the base; leave the center leaves"},
+        {"type": "fertilize", "everyDays": 30, "note": "Side-dress with compost or a balanced fertilizer"}
+      ]
+    },
+    "tips": [
+      "Chard handles more heat than spinach, so it can carry through a Louisiana fall.",
+      "Harvest the outer leaves first; the plant keeps producing from the center."
+    ],
+    "image": {"asset": "assets/plants/images/swiss-chard.webp", "credit": "August Geyler", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bl%C3%A4tter_vom_Roten_Mangold_(Chard).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "spinach",
+    "commonName": "Spinach",
+    "scientificName": "Spinacia oleracea",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 2,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 80},
+    "growTempF": {"min": 35, "max": 75},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 35, "daysMax": 45}
+    ],
+    "productiveDays": 20,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.25, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Pick the outer leaves once they reach 3 to 4 inches"},
+        {"type": "other", "everyDays": 14, "note": "Keep the bed evenly moist; heat and long days trigger bolting"}
+      ]
+    },
+    "tips": [
+      "Sow in fall or early spring; spinach bolts quickly in Louisiana summer heat.",
+      "Harvest while the leaves are tender; mature leaves turn bitter."
+    ],
+    "image": {"asset": "assets/plants/images/spinach.webp", "credit": "HaJunkiyada", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Fresh_spinach_leaves.jpg"},
+    "source": "curated"
+  },
+  {
     "id": "cherry-tomato",
     "commonName": "Cherry Tomato",
     "scientificName": "Solanum lycopersicum var. cerasiforme",
