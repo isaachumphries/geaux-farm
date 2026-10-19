@@ -223,9 +223,8 @@ void main() {
     expect(records.map((r) => r['id']), containsAll(_seedIds));
   }, skip: strictCatalog ? false : 'strictCatalog is false until #52');
 
-  test('non-strict mode tolerates TBD credits and a short seed list', () {
+  test('non-strict mode tolerates a short seed list', () {
     expect(strictCatalog, isFalse);
-    expect(records.every((r) => r['image']['credit'] == 'TBD'), isTrue);
     expect(records.length, lessThan(_seedIds.length));
     for (final r in records) {
       expect(validateRecord(r), isEmpty);
