@@ -925,5 +925,199 @@
     ],
     "image": {"asset": "assets/plants/images/black-eyed-susan.webp", "credit": "Acabashi", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:%22Rudbeckia_hirta%22_Black-eyed_Susan_Gibberd_Garden_Essex_England_(cropped).JPG"},
     "source": "curated"
+  },
+  {
+    "id": "strawberry",
+    "commonName": "Strawberry",
+    "scientificName": "Fragaria × ananassa",
+    "category": "fruit",
+    "purposes": ["food"],
+    "lifecycle": "perennial",
+    "seasonTags": ["cool-season", "perennial"],
+    "difficulty": 2,
+    "sun": ["full", "partial"],
+    "zones": {"min": "5a", "max": "9b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 90, "daysMax": 100},
+      {"method": "seed", "daysMin": 120, "daysMax": 150}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 2, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 5,
+      "weeklyMinutes": 30,
+      "tasks": [
+        {"type": "prune", "everyDays": 14, "note": "Year 1: remove runners and pinch early flower buds"},
+        {"type": "fertilize", "everyDays": 90, "note": "Feed in early spring"},
+        {"type": "harvest", "everyDays": 3, "note": "Pick ripe fruit every 2-3 days in season"}
+      ]
+    },
+    "tips": [
+      "Plant in full sun (6+ hours a day); each plant needs about 1 sq ft, spaced 12-18 in apart.",
+      "Water about 1 inch per week; water daily for the first 1-2 weeks after planting.",
+      "Plant in fall for winter-spring harvest: Sept 15-Nov 15 in north LA, Sept 25-Nov 25 in south LA."
+    ],
+    "image": {"asset": "assets/plants/images/strawberry.webp", "credit": "Ivar Leidus", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Garden_strawberry_(Fragaria_%C3%97_ananassa)_single2.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "satsuma",
+    "commonName": "Satsuma mandarin",
+    "scientificName": "Citrus unshiu",
+    "category": "fruit",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "winter-interest"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": {"min": "8a", "max": "10b"},
+    "plantTempF": {"min": 50, "max": 65},
+    "growTempF": {"min": 40, "max": 95},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 1095, "daysMax": 1460}
+    ],
+    "productiveDays": 3650,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 490, "containerOk": true, "minContainerGal": 15, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 5,
+      "weeklyMinutes": 30,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 90, "note": "Mid-March feeding; trees 4+ yrs also get late May-June nitrogen; no nitrogen after June"},
+        {"type": "prune", "everyDays": 365, "note": "Prune freeze-damaged trees only after damage is evident, July-Aug"},
+        {"type": "harvest", "everyDays": 7, "note": "Owari picked Nov to early Dec; all fruit off by end of Jan or early Feb"}
+      ]
+    },
+    "tips": [
+      "Plant Jan-Feb in full sun in well-drained soil; trees planted after December handle February freezes better.",
+      "Owari matures early to mid-Nov and is picked through early Dec; pick all fruit by end of Jan or early Feb.",
+      "Mid-to-low teens for 5+ hours kills trees; no nitrogen after June, since late feeding cuts cold hardiness."
+    ],
+    "image": {"asset": "assets/plants/images/satsuma.webp", "credit": "Batholith", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Citrus_unshiu_20101127_c.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "azalea",
+    "commonName": "Azalea",
+    "scientificName": "Rhododendron indicum",
+    "category": "shrub",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "perennial"],
+    "difficulty": 2,
+    "sun": ["partial"],
+    "zones": {"min": "7a", "max": "8b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 30, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 120}
+    ],
+    "productiveDays": 30,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 9, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Remove spent flower clusters after bloom"},
+        {"type": "fertilize", "everyDays": 180, "note": "Feed sparingly; excess fertilizer harms this azalea"},
+        {"type": "other", "everyDays": 365, "note": "Keep soil acidic (pH below 6.0) and well-drained"}
+      ]
+    },
+    "tips": [
+      "Plant in partial shade (direct sun 2-6 hours a day) in acid, well-drained soil high in organic matter.",
+      "Remove spent flower clusters after bloom; avoid excess fertilizer and heavy or wet soil.",
+      "Susceptible to Phytophthora root rot; keep soil drained. Rabbit resistant, but deer browse it."
+    ],
+    "image": {"asset": "assets/plants/images/azalea.webp", "credit": "David J. Stang", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rhododendron_indicum_1zz.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "pothos",
+    "commonName": "Pothos",
+    "scientificName": "Epipremnum aureum",
+    "category": "houseplant",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["year-round", "evergreen"],
+    "difficulty": 1,
+    "sun": ["shade", "partial"],
+    "zones": {"min": "10a", "max": "12b"},
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 55, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "cutting", "daysMin": 30, "daysMax": 60}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "foliage",
+    "space": {"sqFtPerPlant": 4, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 60, "note": "Every other month, skipping winter dormancy"},
+        {"type": "prune", "everyDays": 90, "note": "Prune for a bushier habit"}
+      ]
+    },
+    "tips": [
+      "Bright indirect light is best, but it survives long periods in low light.",
+      "Let the medium dry between waterings; overwatering causes root rot.",
+      "Toxic to dogs and cats: chewing releases calcium oxalate crystals that irritate the mouth and cause vomiting."
+    ],
+    "image": {"asset": "assets/plants/images/pothos.webp", "credit": "Joydeep", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Epipremnum_aureum_31082012.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "snake-plant",
+    "commonName": "Snake plant",
+    "scientificName": "Dracaena trifasciata",
+    "category": "houseplant",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["year-round", "evergreen"],
+    "difficulty": 1,
+    "sun": ["shade", "partial"],
+    "zones": {"min": "10a", "max": "12b"},
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 50, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "low",
+    "starts": [
+      {"method": "cutting", "daysMin": 30, "daysMax": 60}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "foliage",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 2, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 14, "everyDaysIndoor": 21},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 60, "note": "Light feeding in spring and summer only"},
+        {"type": "other", "everyDays": 30, "note": "Check for mealybugs and spider mites"}
+      ]
+    },
+    "tips": [
+      "Let soil dry between waterings in spring-autumn; in winter water only every 1-2 months.",
+      "Tolerates very low light, low humidity, and cool temperatures near 50 F; rarely blooms indoors.",
+      "Overwatering causes root rot; watch for mealybugs and spider mites."
+    ],
+    "image": {"asset": "assets/plants/images/snake-plant.webp", "credit": "Tangopaso", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sansevieria_trifasciata_D190512.jpg"},
+    "source": "curated"
   }
 ]
