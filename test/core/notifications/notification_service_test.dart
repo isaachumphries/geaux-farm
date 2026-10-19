@@ -319,6 +319,7 @@ void main() {
       ('care?date=2028-02-29', '/care?date=2028-02-29'),
       ('care?date=bad', '/care'),
       ('care?date=2026-05-14x', '/care'),
+      ('care?date=x2026-05-14', '/care'),
       ('care?date=2026-05-14T10:00:00', '/care'),
       ('care?date=2026-13-45', '/care'),
       ('care?date=2026-02-30', '/care'),
