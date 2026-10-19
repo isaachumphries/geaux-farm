@@ -260,6 +260,154 @@
     "source": "curated"
   },
   {
+    "id": "bush-bean",
+    "commonName": "Bush Bean",
+    "scientificName": "Phaseolus vulgaris",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 50, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 48, "daysMax": 55}
+    ],
+    "productiveDays": 30,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 2, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 2, "note": "Pick pods when firm and before the seeds bulge"},
+        {"type": "other", "everyDays": 14, "note": "Hoe shallowly to control weeds; bean roots sit near the surface"}
+      ]
+    },
+    "tips": [
+      "Avoid working among bean plants while they are wet to limit disease spread.",
+      "Sow after the soil warms; cold, wet soil makes seed rot before it sprouts."
+    ],
+    "image": {"asset": "assets/plants/images/bush-bean.webp", "credit": "Juan Emilio Prades Bel", "license": "CC BY 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jud%C3%ADas_verdes_(Phaseolus_vulgaris).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "carrot",
+    "commonName": "Carrot",
+    "scientificName": "Daucus carota subsp. sativus",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 2,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 80},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 70, "daysMax": 75}
+    ],
+    "productiveDays": 0,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.15, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "other", "everyDays": 14, "note": "Thin seedlings to 2 to 3 inches apart once tops are about 2 inches tall"},
+        {"type": "harvest", "everyDays": 7, "note": "Check root size; pull before roots crack or turn woody"}
+      ]
+    },
+    "tips": [
+      "Sow thinly; carrot seed sprouts slowly and needs constant surface moisture.",
+      "Loosen clay soil or grow short varieties; compacted soil makes forked roots."
+    ],
+    "image": {"asset": "assets/plants/images/carrot.webp", "credit": "Adimora chidinma", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pile_of_Carrots.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "okra",
+    "commonName": "Okra",
+    "scientificName": "Abelmoschus esculentus",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 65, "max": 90},
+    "growTempF": {"min": 65, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 60, "daysMax": 60}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "harvest", "everyDays": 2, "note": "Pick pods at 2 to 4 inches; oversized pods turn tough"},
+        {"type": "fertilize", "everyDays": 30, "note": "Light side-dress of balanced fertilizer mid-season"}
+      ]
+    },
+    "tips": [
+      "Pick every other day; pods grow fast and toughen if left on the plant.",
+      "Okra needs warm soil; seed sown into cold ground often rots before it sprouts."
+    ],
+    "image": {"asset": "assets/plants/images/okra.webp", "credit": "ADARSHluck", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Okra_(Abelmoschus_esculentus)_Feb_2019._DSC_0060_01.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "microgreens",
+    "commonName": "Microgreens",
+    "scientificName": "Various (young seedlings)",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["year-round"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 85},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 10, "daysMax": 25}
+    ],
+    "productiveDays": 0,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.02, "containerOk": true, "minContainerGal": 0.5, "indoorOk": true},
+    "water": {"need": "high", "everyDaysOutdoor": 1, "everyDaysIndoor": 1},
+    "care": {
+      "dailyMinutes": 3,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "harvest", "everyDays": 14, "note": "Cut at the soil line once the first true leaves open"},
+        {"type": "other", "everyDays": 1, "note": "Water or mist trays daily so the surface stays moist"}
+      ]
+    },
+    "tips": [
+      "Use a shallow tray with drainage holes and a few inches of seed-starting mix.",
+      "Harvest once the first true leaves open; waiting longer makes the greens tougher."
+    ],
+    "image": {"asset": "assets/plants/images/microgreens.webp", "credit": "Pannet", "license": "CC BY 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sunflower_microgreens_01.jpg"},
+    "source": "curated"
+  },
+  {
     "id": "cherry-tomato",
     "commonName": "Cherry Tomato",
     "scientificName": "Solanum lycopersicum var. cerasiforme",
