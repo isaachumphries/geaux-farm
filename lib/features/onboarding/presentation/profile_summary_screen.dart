@@ -117,7 +117,8 @@ class _ProfileSummaryScreenState extends ConsumerState<ProfileSummaryScreen> {
     }
     if (!mounted) return;
     if (later) {
-      ref.read(firstPlantPromptDismissedProvider.notifier).dismiss();
+      await ref.read(firstPlantPromptDismissedProvider.notifier).dismiss();
+      if (!mounted) return;
     }
     context.go('/home');
   }
