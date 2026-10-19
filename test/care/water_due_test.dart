@@ -65,16 +65,13 @@ Space _space({bool rainExposed = true}) => Space(
   inContainerDefault: true,
 );
 
-CareEvent _event(
-  CareEventType type,
-  int offset, {
-  String plantingId = 'p1',
-}) => CareEvent(
-  id: '$plantingId-${type.name}-$offset',
-  plantingId: plantingId,
-  type: type,
-  at: _day(offset),
-);
+CareEvent _event(CareEventType type, int offset, {String plantingId = 'p1'}) =>
+    CareEvent(
+      id: '$plantingId-${type.name}-$offset',
+      plantingId: plantingId,
+      type: type,
+      at: _day(offset),
+    );
 
 DateTime _waterDue({
   required List<CareEvent> events,
@@ -100,11 +97,7 @@ void main() {
     test('container kale with no rain is due on day 3 (fixture 1)', () {
       final due = _waterDue(
         events: water0,
-        weather: [
-          _wx(1, et0: 0.17),
-          _wx(2, et0: 0.19),
-          _wx(3, et0: 0.17),
-        ],
+        weather: [_wx(1, et0: 0.17), _wx(2, et0: 0.19), _wx(3, et0: 0.17)],
       );
       expect(due, _day(3));
     });
@@ -151,11 +144,7 @@ void main() {
         events: water0,
         inContainer: false,
         plant: _kale({
-          'water': {
-            'need': 'low',
-            'everyDaysOutdoor': 3,
-            'everyDaysIndoor': 3,
-          },
+          'water': {'need': 'low', 'everyDaysOutdoor': 3, 'everyDaysIndoor': 3},
         }),
         weather: [_wx(1, et0: 2.0)],
       );
@@ -179,11 +168,7 @@ void main() {
           _event(CareEventType.water, 0),
           _event(CareEventType.skipWater, 2, plantingId: 'p2'),
         ],
-        weather: [
-          _wx(1, et0: 0.17),
-          _wx(2, et0: 0.19),
-          _wx(3, et0: 0.17),
-        ],
+        weather: [_wx(1, et0: 0.17), _wx(2, et0: 0.19), _wx(3, et0: 0.17)],
       );
       expect(due, _day(3));
     });
@@ -195,9 +180,7 @@ void main() {
     test('returns the end of the 3x window when nothing qualifies', () {
       final due = _waterDue(
         events: water0,
-        weather: [
-          for (var i = 1; i <= 9; i++) _wx(i, et0: 0, precipIn: 1.0),
-        ],
+        weather: [for (var i = 1; i <= 9; i++) _wx(i, et0: 0, precipIn: 1.0)],
       );
       expect(due, _day(9));
     });
@@ -206,11 +189,7 @@ void main() {
       final due = _waterDue(
         events: water0,
         today: _day(10),
-        weather: [
-          _wx(1, et0: 0.17),
-          _wx(2, et0: 0.19),
-          _wx(3, et0: 0.17),
-        ],
+        weather: [_wx(1, et0: 0.17), _wx(2, et0: 0.19), _wx(3, et0: 0.17)],
       );
       expect(due, _day(3));
     });
@@ -239,9 +218,7 @@ void main() {
             'everyDaysIndoor': 5,
           },
         }),
-        weather: [
-          for (var i = 1; i <= 9; i++) _wx(i, et0: 9, precipIn: 9),
-        ],
+        weather: [for (var i = 1; i <= 9; i++) _wx(i, et0: 9, precipIn: 9)],
       );
       expect(due, _day(5));
     });

@@ -9,10 +9,11 @@ DateTime addDays(DateTime d, int days) =>
     DateTime(d.year, d.month, d.day + days);
 
 /// Whole calendar days from [from] to [to]. UTC keeps DST out of the count.
-int daysBetween(DateTime from, DateTime to) =>
-    DateTime.utc(to.year, to.month, to.day)
-        .difference(DateTime.utc(from.year, from.month, from.day))
-        .inDays;
+int daysBetween(DateTime from, DateTime to) => DateTime.utc(
+  to.year,
+  to.month,
+  to.day,
+).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
 
 /// Latest local day among this planting's events that satisfy [matches], or
 /// null when none does.

@@ -61,31 +61,19 @@ bool _hint({
 
 void main() {
   test('shows the hint at 0.25 in and 70% for an outdoor exposed task', () {
-    expect(
-      _hint(days: _days(_wx(precipIn: 0.25, precipProb: 70))),
-      isTrue,
-    );
+    expect(_hint(days: _days(_wx(precipIn: 0.25, precipProb: 70))), isTrue);
   });
 
   test('hides the hint just below 0.25 in', () {
-    expect(
-      _hint(days: _days(_wx(precipIn: 0.24, precipProb: 70))),
-      isFalse,
-    );
+    expect(_hint(days: _days(_wx(precipIn: 0.24, precipProb: 70))), isFalse);
   });
 
   test('hides the hint just below 70%', () {
-    expect(
-      _hint(days: _days(_wx(precipIn: 0.25, precipProb: 69))),
-      isFalse,
-    );
+    expect(_hint(days: _days(_wx(precipIn: 0.25, precipProb: 69))), isFalse);
   });
 
   test('a null precipitation probability counts as no rain', () {
-    expect(
-      _hint(days: _days(_wx(precipIn: 0.5, precipProb: null))),
-      isFalse,
-    );
+    expect(_hint(days: _days(_wx(precipIn: 0.5, precipProb: null))), isFalse);
   });
 
   test('hides the hint for indoor plantings', () {
@@ -97,16 +85,10 @@ void main() {
   });
 
   test('hides the hint when the task is due after tomorrow', () {
-    expect(
-      _hint(due: DateTime(2026, 5, 12)),
-      isFalse,
-    );
+    expect(_hint(due: DateTime(2026, 5, 12)), isFalse);
   });
 
   test('shows the hint for a task already overdue', () {
-    expect(
-      _hint(due: DateTime(2026, 5, 8)),
-      isTrue,
-    );
+    expect(_hint(due: DateTime(2026, 5, 8)), isTrue);
   });
 }

@@ -46,6 +46,5 @@ class CareEvent {
           other.photoPath == photoPath;
 
   @override
-  int get hashCode =>
-      Object.hash(id, plantingId, type, at, note, photoPath);
+  int get hashCode => Object.hash(id, plantingId, type, at, note, photoPath);
 }

@@ -31,11 +31,7 @@ class PlantingTask {
 
 /// Next due day for [task] on [pl]. The clock restarts from the last event
 /// that completes the task, or from planting day when none exists.
-PlantingTask planCareTask(
-  Planting pl,
-  CareTask task,
-  List<CareEvent> events,
-) {
+PlantingTask planCareTask(Planting pl, CareTask task, List<CareEvent> events) {
   final last = lastEventDay(pl.id, events, _completes(task));
   final anchor = last ?? _plantedDay(pl);
   return PlantingTask(
@@ -55,8 +51,7 @@ bool Function(CareEvent) _completes(CareTask task) => switch (task.type) {
   TaskType.fertilize => (e) => e.type == CareEventType.fertilize,
   TaskType.prune => (e) => e.type == CareEventType.prune,
   TaskType.harvest => (e) => e.type == CareEventType.harvest,
-  TaskType.other =>
-    (e) => e.type == CareEventType.note && e.note == task.note,
+  TaskType.other => (e) => e.type == CareEventType.note && e.note == task.note,
 };
 
 DateTime _plantedDay(Planting pl) {

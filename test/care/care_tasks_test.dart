@@ -167,11 +167,9 @@ void main() {
 
     test('different due day is not equal', () {
       final a = planCareTask(_planting(), prune, const []);
-      final b = planCareTask(
-        _planting(),
-        prune,
-        [_event(CareEventType.prune, DateTime(2026, 5, 3))],
-      );
+      final b = planCareTask(_planting(), prune, [
+        _event(CareEventType.prune, DateTime(2026, 5, 3)),
+      ]);
       expect(a == b, isFalse);
     });
   });
