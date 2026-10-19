@@ -9,6 +9,8 @@ import 'package:geaux_farm/app/theme.dart';
 import 'package:geaux_farm/core/db/app_database.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
+import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
+import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/home/application/first_plant_prompt_provider.dart';
 import 'package:geaux_farm/features/home/domain/home_copy.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
@@ -113,6 +115,7 @@ Future<ProviderContainer> _pump(
   Size size = const Size(390, 844),
   _FakeForecast? forecast,
   Stream<UserProfile>? profile,
+  List<Planting>? plantings,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -136,6 +139,8 @@ Future<ProviderContainer> _pump(
         (ref) => profile ?? Stream.value(defaultUserProfile),
       ),
       primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
+      if (plantings != null)
+        plantingsProvider.overrideWith((ref) => Stream.value(plantings)),
       inMemoryDatabaseOverride(),
     ],
   );
@@ -169,10 +174,12 @@ Future<ProviderContainer> _pump(
 }
 
 /// Unmounts the screen so the midnight timer and container go away before
-/// the binding checks for pending timers.
+/// the binding checks for pending timers. The last pump runs the zero-length
+/// timer Drift schedules when a watched query (plantings) is cancelled.
 Future<void> _unmount(WidgetTester tester, ProviderContainer c) async {
   await tester.pumpWidget(const SizedBox());
   c.dispose();
+  await tester.pump(Duration.zero);
 }
 
 Future<void> _pickLater(WidgetTester tester) async {
@@ -305,6 +312,36 @@ void main() {
       find.text('Fall · Cool-season planting in Baton Rouge'),
       findsOneWidget,
     );
+    await _unmount(tester, c);
+  });
+
+  testWidgets('HM-01b with a planting present → slim card absent', (
+    tester,
+  ) async {
+    final c = await _pump(
+      tester,
+      recs: _recs(25),
+      plantings: [
+        Planting(
+          id: 'p1',
+          plantId: 'kale',
+          spaceId: defaultSpace.id,
+          nickname: 'Kale',
+          setup: GrowSetup.outdoor,
+          inContainer: true,
+          startMethod: 'transplant',
+          plantedOn: DateTime(2026, 10, 1),
+          status: PlantingStatus.active,
+          createdAt: DateTime(2026, 10, 1),
+        ),
+      ],
+    );
+
+    await _pickLater(tester);
+
+    expect(c.read(firstPlantPromptDismissedProvider), isTrue);
+    expect(find.text('Pick your first plant'), findsNothing);
+    expect(find.byType(PlantCard), findsNothing);
     await _unmount(tester, c);
   });
 

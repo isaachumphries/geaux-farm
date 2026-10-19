@@ -6,6 +6,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../climate/data/climate_provider.dart';
+import '../../garden/data/plantings_provider.dart';
 import '../../garden/domain/planting.dart';
 import '../../onboarding/data/profile_providers.dart';
 import '../../recommendations/application/clock_provider.dart';
@@ -51,6 +52,8 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
   @override
   Widget build(BuildContext context) {
     final dismissed = ref.watch(firstPlantPromptDismissedProvider);
+    // HM-01b only nudges until the first planting exists (plan/01).
+    final hasPlanting = ref.watch(plantingsProvider).value?.isNotEmpty ?? false;
     final profile = ref.watch(userProfileProvider).value;
     final location = profile == null
         ? null
@@ -86,8 +89,10 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
                 const SizedBox(height: AppSpacing.lg),
               const Padding(padding: inset, child: _SeasonBanner()),
               if (dismissed) ...[
-                const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
-                const Padding(padding: inset, child: _SlimPromptCard()),
+                if (!hasPlanting) ...[
+                  const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
+                  const Padding(padding: inset, child: _SlimPromptCard()),
+                ],
               ] else ...[
                 // The header row is as tall as the 48 px "See all" target,
                 // so the visible gap to the title is 18.
