@@ -10,7 +10,8 @@ import 'compatibility.dart';
 import 'in_season.dart';
 import 'indoor_climate.dart';
 
-const _weights = {
+/// Points each factor adds to the 0–100 score; the values sum to 100.
+const scoreWeights = {
   'climate': 35,
   'light': 20,
   'space': 15,
@@ -44,7 +45,7 @@ Compatibility scorePlant(
     'goals': goalsFit(ctx.profile.goals, p.purposes),
     'experience': experienceFit(p.difficulty, ctx.profile.experience),
   };
-  final score = _weights.entries
+  final score = scoreWeights.entries
       .fold<double>(0, (sum, e) => sum + e.value * fits[e.key]!)
       .round();
 
