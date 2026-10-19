@@ -35,7 +35,7 @@ Compatibility scorePlant(
 
   final fits = <String, double>{
     'climate': outdoor ? outdoorClimate : _indoorClimateFit(p),
-    'light': lightFit(_userSun(ctx.space, setup), p.sun!),
+    'light': lightFit(userSun(ctx.space, setup), p.sun!),
     'space': _spaceFit(p, ctx.space, setup),
     'care': careFit(
       outdoor ? p.water!.everyDaysOutdoor : p.water!.everyDaysIndoor,
@@ -75,7 +75,7 @@ double _outdoorClimateFit(Plant p, ClimateProfile climate) {
     // share of growing-window months that pass.
     fit = _annualClimateFit(p, climate.months);
   }
-  return fit * _humidityMultiplier(p.humidity, climate.annualRhPct);
+  return fit * humidityMultiplier(p.humidity, climate.annualRhPct);
 }
 
 double _annualClimateFit(Plant p, List<ClimateMonth> months) {
@@ -97,15 +97,15 @@ double _annualClimateFit(Plant p, List<ClimateMonth> months) {
 double _indoorClimateFit(Plant p) {
   final g = p.growTempF!;
   final fit = g.min <= 65 && g.max >= 75 ? 1.0 : 0.5;
-  return fit * _humidityMultiplier(p.humidity, indoorRhPct);
+  return fit * humidityMultiplier(p.humidity, indoorRhPct);
 }
 
-double _humidityMultiplier(Humidity h, double rhPct) =>
+double humidityMultiplier(Humidity h, double rhPct) =>
     (h == Humidity.low && rhPct >= 70) || (h == Humidity.high && rhPct < 45)
     ? 0.8
     : 1.0;
 
-SunLevel _userSun(Space space, GrowSetup setup) => switch (setup) {
+SunLevel userSun(Space space, GrowSetup setup) => switch (setup) {
   GrowSetup.outdoor => space.sun,
   GrowSetup.indoor =>
     space.type == SpaceType.windowsill ? space.sun : SunLevel.partial,

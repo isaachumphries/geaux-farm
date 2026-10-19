@@ -88,7 +88,7 @@ class PlantCard extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              _CategoryArt(category: p.category),
+              CategoryArt(category: p.category),
               if (state == PlantCardState.inSeason)
                 const Positioned(
                   left: _ribbonInset,
@@ -127,7 +127,7 @@ class PlantCard extends StatelessWidget {
           ),
           child: SizedBox(
             width: _listArtSize,
-            child: _CategoryArt(category: p.category, height: _listArtSize),
+            child: CategoryArt(category: p.category, height: _listArtSize),
           ),
         ),
         Expanded(
@@ -193,7 +193,7 @@ class PlantCard extends StatelessWidget {
       ),
       if (state == PlantCardState.indoorOnly) ...[
         const SizedBox(height: AppSpacing.xs),
-        const _IndoorChip(),
+        const IndoorChip(),
       ],
     ];
   }
@@ -223,8 +223,8 @@ const double _highlightInset = _haloSize * 0.1;
 // RC-01 list art: an 80-square tile on the left of each list card.
 const double _listArtSize = 80;
 
-class _CategoryArt extends StatelessWidget {
-  const _CategoryArt({required this.category, this.height = _artHeight});
+class CategoryArt extends StatelessWidget {
+  const CategoryArt({required this.category, this.height = _artHeight});
 
   final PlantCategory category;
   final double height;
@@ -389,8 +389,8 @@ class _IconLine extends StatelessWidget {
   }
 }
 
-class _IndoorChip extends StatelessWidget {
-  const _IndoorChip();
+class IndoorChip extends StatelessWidget {
+  const IndoorChip();
 
   @override
   Widget build(BuildContext context) {
