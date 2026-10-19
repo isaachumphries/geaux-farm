@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/onboarding/data/profile_providers.dart';
+import 'notification_wiring.dart';
 import 'router.dart';
 import 'theme.dart';
 
@@ -11,6 +12,7 @@ class GeauxFarmApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(notificationStartupProvider);
     // Hold a blank cream screen until the first profile read lands, so the
     // onboarding redirect is decided before any screen shows.
     final profile = ref.watch(userProfileProvider);
