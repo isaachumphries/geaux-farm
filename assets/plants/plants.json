@@ -555,5 +555,375 @@
     ],
     "image": {"asset": "assets/plants/images/english-lavender.webp", "credit": "Norbert Nagel", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lavandula_angustifolia_-_lavender_-_Lavendel_-_01.jpg"},
     "source": "curated"
+  },
+  {
+    "id": "thyme",
+    "commonName": "Thyme",
+    "scientificName": "Thymus vulgaris",
+    "category": "herb",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial", "evergreen"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "5a", "max": "9b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 90},
+      {"method": "seed", "daysMin": 90, "daysMax": 120}
+    ],
+    "productiveDays": 365,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 5, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "prune", "everyDays": 30, "note": "Snip stems to keep the plant bushy and compact"}
+      ]
+    },
+    "tips": [
+      "Let the soil dry out between waterings; thyme rots in wet ground.",
+      "Cut back by about a third after the first flush of bloom."
+    ],
+    "image": {"asset": "assets/plants/images/thyme.webp", "credit": "Christian Ferrer", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Eristalinus_aeneus_on_Thymus_vulgaris,_S%C3%A8te_03.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "oregano",
+    "commonName": "Oregano",
+    "scientificName": "Origanum vulgare",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "4a", "max": "8b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 45, "daysMax": 60},
+      {"method": "seed", "daysMin": 80, "daysMax": 100}
+    ],
+    "productiveDays": 365,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 2, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 14, "note": "Snip stems before flowering for the strongest flavor"}
+      ]
+    },
+    "tips": [
+      "Harvest before the plant flowers; leaf flavor fades once it blooms.",
+      "Divide crowded clumps every few years to keep the plant vigorous."
+    ],
+    "image": {"asset": "assets/plants/images/oregano.webp", "credit": "Ivar Leidus", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Origanum_vulgare_inflorescence_-_Keila.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "parsley",
+    "commonName": "Parsley",
+    "scientificName": "Petroselinum crispum",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 55, "max": 75},
+    "growTempF": {"min": 40, "max": 80},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 75},
+      {"method": "seed", "daysMin": 80, "daysMax": 100}
+    ],
+    "productiveDays": 120,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Cut outer stems at the base; leave the center growing"},
+        {"type": "fertilize", "everyDays": 30, "note": "Feed with a balanced fertilizer every few weeks"}
+      ]
+    },
+    "tips": [
+      "Parsley seed is slow to sprout, often taking 14 to 30 days; keep the soil moist.",
+      "Plant in part sun; summer heat makes parsley bolt and turn bitter."
+    ],
+    "image": {"asset": "assets/plants/images/parsley.webp", "credit": "H. Zell", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Petroselinum_crispum_003.JPG"},
+    "source": "curated"
+  },
+  {
+    "id": "mint",
+    "commonName": "Spearmint",
+    "scientificName": "Mentha spicata",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": {"min": "5a", "max": "9b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 45},
+      {"method": "cutting", "daysMin": 14, "daysMax": 21}
+    ],
+    "productiveDays": 365,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "high", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 14, "note": "Pinch growing tips to keep leaves tender and bushy"}
+      ]
+    },
+    "tips": [
+      "Grow mint in a container; it spreads aggressively through garden beds.",
+      "Pinch off flower buds to keep the leaves flavorful."
+    ],
+    "image": {"asset": "assets/plants/images/mint.webp", "credit": "Commonists", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mint_leaves_(Mentha_spicata).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "rosemary",
+    "commonName": "Rosemary",
+    "scientificName": "Rosmarinus officinalis",
+    "category": "herb",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial", "evergreen"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": {"min": "8a", "max": "10b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "light",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 90},
+      {"method": "seed", "daysMin": 120, "daysMax": 150}
+    ],
+    "productiveDays": 365,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 4, "containerOk": true, "minContainerGal": 3, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 10},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "prune", "everyDays": 30, "note": "Trim soft tips to keep the shrub full and encourage new growth"}
+      ]
+    },
+    "tips": [
+      "Plant in fast-draining soil; rosemary dislikes wet roots.",
+      "Harvest the soft tips in spring and summer; avoid cutting into old woody growth."
+    ],
+    "image": {"asset": "assets/plants/images/rosemary.webp", "credit": "THOR", "license": "CC BY 2.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rosmarinus_officinalis133095382.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "marigold",
+    "commonName": "Marigold",
+    "scientificName": "Tagetes patula",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 60, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 35, "daysMax": 45},
+      {"method": "seed", "daysMin": 50, "daysMax": 60}
+    ],
+    "productiveDays": 90,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 7, "note": "Pinch off spent blooms to keep flowers coming until frost"}
+      ]
+    },
+    "tips": [
+      "Set transplants out after the last frost; marigolds stall in cold soil.",
+      "Water the soil rather than the leaves to reduce fungal spots in humid weather."
+    ],
+    "image": {"asset": "assets/plants/images/marigold.webp", "credit": "Reinhold Möller Ermell", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Gro%C3%9Fe_Blaue_Holzbiene_Tagetes-20241026-RM-152720.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "zinnia",
+    "commonName": "Zinnia",
+    "scientificName": "Zinnia elegans",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 60, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 40},
+      {"method": "seed", "daysMin": 60, "daysMax": 70}
+    ],
+    "productiveDays": 90,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 2, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 7, "note": "Pick blooms regularly; cutting encourages more flowers"}
+      ]
+    },
+    "tips": [
+      "Water at the base; wet foliage in humid weather invites mildew.",
+      "Pick flowers often to keep the plant blooming until frost."
+    ],
+    "image": {"asset": "assets/plants/images/zinnia.webp", "credit": "Simon Koopmann", "license": "CC BY-SA 2.0 de", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Zinnia_elegans_with_Bombus_01.JPG"},
+    "source": "curated"
+  },
+  {
+    "id": "cosmos",
+    "commonName": "Cosmos",
+    "scientificName": "Cosmos bipinnatus",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 80},
+    "growTempF": {"min": 60, "max": 85},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 90, "daysMax": 110}
+    ],
+    "productiveDays": 90,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 5, "everyDaysIndoor": 5},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 14, "note": "Pinch young plants and deadhead to keep flowers coming"}
+      ]
+    },
+    "tips": [
+      "Direct-sow after the last frost; cosmos seedlings dislike transplanting.",
+      "Pinch young plants for bushier growth and more flowers."
+    ],
+    "image": {"asset": "assets/plants/images/cosmos.webp", "credit": "Wilfredor", "license": "CC0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cosmos_bipinnatus_in_Jardin_universitaire_Roger-Van_den_Hende,_Quebec_city,_Quebec,_Canada.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "purple-coneflower",
+    "commonName": "Purple Coneflower",
+    "scientificName": "Echinacea purpurea",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["full", "partial"],
+    "zones": {"min": "3a", "max": "8b"},
+    "plantTempF": {"min": 55, "max": 80},
+    "growTempF": {"min": 40, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 90},
+      {"method": "seed", "daysMin": 120, "daysMax": 150}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Cut stems back to the ground in late fall or early spring"}
+      ]
+    },
+    "tips": [
+      "Deadhead spent blooms to extend flowering into late summer.",
+      "Leave seed heads standing in fall; goldfinches feed on them through winter."
+    ],
+    "image": {"asset": "assets/plants/images/purple-coneflower.webp", "credit": "Diego Delso", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Echinacea_purpurea,_Jard%C3%ADn_Bot%C3%A1nico,_M%C3%BAnich,_Alemania,_2013-09-08,_DD_01.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "black-eyed-susan",
+    "commonName": "Black-Eyed Susan",
+    "scientificName": "Rudbeckia hirta",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "3a", "max": "8b"},
+    "plantTempF": {"min": 55, "max": 80},
+    "growTempF": {"min": 40, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 75},
+      {"method": "seed", "daysMin": 90, "daysMax": 120}
+    ],
+    "productiveDays": 120,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 14, "note": "Deadhead to keep flowers coming; leave a few to self-seed"}
+      ]
+    },
+    "tips": [
+      "Deadhead spent blooms to keep the plant flowering from June until frost.",
+      "Leave a few seed heads standing to reseed the bed for next year."
+    ],
+    "image": {"asset": "assets/plants/images/black-eyed-susan.webp", "credit": "Acabashi", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:%22Rudbeckia_hirta%22_Black-eyed_Susan_Gibberd_Garden_Essex_England_(cropped).JPG"},
+    "source": "curated"
   }
 ]
