@@ -1,16 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/features/care/application/care_schedule_provider.dart';
-import 'package:geaux_farm/features/care/data/drift_care_schedule_repository.dart';
 import 'package:geaux_farm/features/care/domain/care_event.dart';
 import 'package:geaux_farm/features/care/domain/care_schedule.dart';
-import 'package:geaux_farm/features/care/domain/care_schedule_repository.dart';
 import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
+import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
-import 'package:geaux_farm/features/onboarding/domain/availability.dart';
-import 'package:geaux_farm/features/onboarding/domain/space.dart';
+import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
+import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
+import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
 import 'package:geaux_farm/features/weather/data/weather_provider.dart';
@@ -19,9 +20,10 @@ import 'package:http/testing.dart';
 
 import '../helpers/care_fixtures.dart';
 
-/// Fake repository whose planting stream can be pushed to after the first read.
-class _FakeCareRepo implements CareScheduleRepository {
-  _FakeCareRepo(this._plantings);
+/// Planting feed the re-emit test can push to after the first read. Each new
+/// listener gets the current list first, then every [emit].
+class _PlantingFeed {
+  _PlantingFeed(this._plantings);
 
   final _controller = StreamController<List<Planting>>.broadcast();
   List<Planting> _plantings;
@@ -33,44 +35,52 @@ class _FakeCareRepo implements CareScheduleRepository {
 
   Future<void> close() => _controller.close();
 
-  @override
-  Stream<List<Planting>> watchPlantings() async* {
+  Stream<List<Planting>> watch() async* {
     yield _plantings;
     yield* _controller.stream;
   }
-
-  @override
-  Stream<List<Space>> watchSpaces() => Stream.value([careSpace()]);
-
-  @override
-  Stream<List<CareEvent>> watchCareEvents() => Stream.value(const []);
-
-  @override
-  Stream<Availability> watchAvailability() => Stream.value(careAllFree);
-
-  @override
-  Stream<(double, double)> watchLocation() => Stream.value((40.0, -90.0));
 }
 
+/// Free all week at fixed coordinates, so slots are predictable. Only the
+/// coordinates and availability reach the schedule; the rest copies the
+/// default profile so the fixture needs no enum imports.
+UserProfile _profile() => UserProfile(
+  city: defaultUserProfile.city,
+  admin1: defaultUserProfile.admin1,
+  countryCode: defaultUserProfile.countryCode,
+  lat: 40.0,
+  lon: -90.0,
+  timezone: defaultUserProfile.timezone,
+  goals: defaultUserProfile.goals,
+  experience: defaultUserProfile.experience,
+  availability: careAllFree,
+);
+
+/// Every source the schedule reads is faked, so no database or network runs.
+/// The clock is fixed at [now], and weather fails so water takes the no-rain
+/// fallback.
+List<Override> _overrides({
+  required Stream<List<Planting>> plantings,
+  required DateTime now,
+}) => [
+  plantingsProvider.overrideWith((ref) => plantings),
+  spacesProvider.overrideWith((ref) => Stream.value([careSpace()])),
+  userProfileProvider.overrideWith((ref) => Stream.value(_profile())),
+  careEventsProvider.overrideWith((ref) => Stream.value(const <CareEvent>[])),
+  catalogProvider.overrideWith((ref) async => [carePlant()]),
+  clockProvider.overrideWithValue(() => now),
+  forecastClientProvider.overrideWithValue(
+    OpenMeteoForecastClient(MockClient((_) async => http.Response('', 500))),
+  ),
+];
+
 /// Reads the schedule once for [plantings], with the clock fixed at [now].
-/// Weather fails on purpose, so water uses waterDue's no-rain fallback.
 Future<List<ScheduledCareTask>> _readSchedule(
   List<Planting> plantings, {
   required DateTime now,
 }) async {
-  final repo = _FakeCareRepo(plantings);
-  addTearDown(repo.close);
   final container = ProviderContainer(
-    overrides: [
-      careScheduleRepositoryProvider.overrideWithValue(repo),
-      catalogProvider.overrideWith((ref) async => [carePlant()]),
-      clockProvider.overrideWithValue(() => now),
-      forecastClientProvider.overrideWithValue(
-        OpenMeteoForecastClient(
-          MockClient((_) async => http.Response('', 500)),
-        ),
-      ),
-    ],
+    overrides: _overrides(plantings: Stream.value(plantings), now: now),
   );
   addTearDown(container.dispose);
   final sub = container.listen(careScheduleProvider, (_, _) {});
@@ -80,19 +90,13 @@ Future<List<ScheduledCareTask>> _readSchedule(
 
 void main() {
   test('re-emits when the planting stream changes', () async {
-    final repo = _FakeCareRepo([carePlanting(nickname: 'Kale')]);
-    addTearDown(repo.close);
+    final feed = _PlantingFeed([carePlanting(nickname: 'Kale')]);
+    addTearDown(feed.close);
     final container = ProviderContainer(
-      overrides: [
-        careScheduleRepositoryProvider.overrideWithValue(repo),
-        catalogProvider.overrideWith((ref) async => [carePlant()]),
-        clockProvider.overrideWithValue(() => DateTime(2026, 5, 1, 7)),
-        forecastClientProvider.overrideWithValue(
-          OpenMeteoForecastClient(
-            MockClient((_) async => http.Response('', 500)),
-          ),
-        ),
-      ],
+      overrides: _overrides(
+        plantings: feed.watch(),
+        now: DateTime(2026, 5, 1, 7),
+      ),
     );
     addTearDown(container.dispose);
     // Keep the auto-dispose provider alive so the second read sees the
@@ -104,7 +108,7 @@ void main() {
     expect(first, isNotEmpty);
     expect(first.every((t) => t.nickname == 'Kale'), isTrue);
 
-    repo.emit([
+    feed.emit([
       carePlanting(nickname: 'Kale'),
       carePlanting(id: 'p2', nickname: 'Basil'),
     ]);
