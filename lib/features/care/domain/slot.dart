@@ -12,6 +12,9 @@ const _windowDays = 14;
 /// Start hour used when nothing is free in the window (plan/05 § Scheduling).
 const _outsideFreeHour = 8;
 
+/// Copy a care slot shows when no free block exists in the window.
+const outsideFreeTimesCopy = 'Outside your free times';
+
 /// Where a care task lands in the user's free time.
 class CareSlot {
   const CareSlot({required this.start, required this.outsideFreeTimes});
@@ -20,7 +23,7 @@ class CareSlot {
   final DateTime start;
 
   /// True when no free block exists in the window. [start] is then 08:00 on
-  /// the due date, and the UI shows "Outside your free times".
+  /// the due date, and the UI shows [outsideFreeTimesCopy].
   final bool outsideFreeTimes;
 
   @override
