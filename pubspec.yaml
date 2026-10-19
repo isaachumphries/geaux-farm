@@ -71,6 +71,7 @@ flutter:
 
   assets:
     - assets/plants/
+    - assets/plants/images/
 
   fonts:
     - family: Nunito
