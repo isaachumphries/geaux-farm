@@ -34,7 +34,7 @@
       "Light frost sweetens the leaves, so fall and winter crops taste best.",
       "Check leaf undersides for cabbage worms and pick them off."
     ],
-    "image": {"asset": "assets/plants/images/kale.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "image": {"asset": "assets/plants/images/kale.webp", "credit": "Evan-Amos", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:CSA-Red-Russian-Kale.jpg"},
     "source": "curated"
   },
   {
@@ -72,7 +72,7 @@
       "Water at the soil, not the leaves, to slow leaf disease.",
       "Pick fruit as soon as it colors so heavy rain doesn't split it."
     ],
-    "image": {"asset": "assets/plants/images/cherry-tomato.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "image": {"asset": "assets/plants/images/cherry-tomato.webp", "credit": "Evan-Amos", "license": "CC0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cherry-Tomatoes-in-Pack.jpg"},
     "source": "curated"
   },
   {
@@ -110,7 +110,7 @@
       "Pinch off flower buds to keep the leaves coming.",
       "Bring pots indoors before nights turn cold."
     ],
-    "image": {"asset": "assets/plants/images/sweet-basil.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "image": {"asset": "assets/plants/images/sweet-basil.webp", "credit": "PumpkinSky", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ocimum_basilicum_CG_NBG_LR.jpg"},
     "source": "curated"
   },
   {
@@ -146,7 +146,7 @@
       "Use a gravelly, fast-draining mix — humid Gulf summers cause root rot.",
       "Let the soil dry out between waterings."
     ],
-    "image": {"asset": "assets/plants/images/english-lavender.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "image": {"asset": "assets/plants/images/english-lavender.webp", "credit": "Norbert Nagel", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lavandula_angustifolia_-_lavender_-_Lavendel_-_01.jpg"},
     "source": "curated"
   }
 ]
