@@ -180,6 +180,14 @@ abstract final class AppBorders {
   static const cardSide = BorderSide(color: AppColors.stone200, width: width);
 }
 
+abstract final class AppSizes {
+  /// PD-01 hero band. Frame band measures ~282 dp from the top edge.
+  static const double heroHeight = 280;
+
+  /// PD-01 score breakdown bar thickness (frame bars ~10 dp tall).
+  static const double scoreBarHeight = 10;
+}
+
 abstract final class AppTheme {
   static ThemeData light() {
     const scheme = ColorScheme(
