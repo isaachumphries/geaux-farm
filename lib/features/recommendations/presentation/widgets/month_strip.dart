@@ -118,11 +118,13 @@ class _MonthCell extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          child: Text(
-            letter,
-            textAlign: TextAlign.center,
-            style: AppText.label.copyWith(
-              color: inSeason ? AppColors.soil900 : AppColors.soil600,
+          child: ExcludeSemantics(
+            child: Text(
+              letter,
+              textAlign: TextAlign.center,
+              style: AppText.label.copyWith(
+                color: inSeason ? AppColors.soil900 : AppColors.soil600,
+              ),
             ),
           ),
         ),
