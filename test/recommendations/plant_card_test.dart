@@ -5,6 +5,7 @@ import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_card.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/season_chip.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import 'fixtures/baton_rouge.dart';
 import 'fixtures/scored.dart';
@@ -19,6 +20,30 @@ Future<void> _pump(
     home: Align(
       alignment: Alignment.topLeft,
       child: PlantCard(plant: plant, state: state),
+    ),
+  ),
+);
+
+Future<void> _pumpList(
+  WidgetTester tester,
+  ScoredPlant plant, {
+  PlantCardState state = PlantCardState.defaultState,
+  VoidCallback? onTap,
+  double width = 360,
+}) => tester.pumpWidget(
+  MaterialApp(
+    theme: AppTheme.light(),
+    home: Align(
+      alignment: Alignment.topLeft,
+      child: SizedBox(
+        width: width,
+        child: PlantCard(
+          plant: plant,
+          state: state,
+          size: PlantCardSize.list,
+          onTap: onTap,
+        ),
+      ),
     ),
   ),
 );
@@ -187,5 +212,85 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('45 · Possible with care'), findsOneWidget);
+  });
+
+  group('list layout', () {
+    testWidgets('fills the width it is given', (tester) async {
+      await _pumpList(tester, scored(kaleWith({})), width: 300);
+
+      expect(tester.getSize(find.byType(PlantCard)).width, 300);
+    });
+
+    testWidgets('grows taller with a wrapping name at a narrow width', (
+      tester,
+    ) async {
+      await _pumpList(
+        tester,
+        scored(kaleWith({'commonName': 'Kale'})),
+        width: 220,
+      );
+      final short = tester.getSize(find.byType(PlantCard));
+
+      await _pumpList(
+        tester,
+        scored(kaleWith({'commonName': 'Kale Kale Kale Kale Kale Kale'})),
+        width: 220,
+      );
+      final long = tester.getSize(find.byType(PlantCard));
+
+      expect(long.height, greaterThan(short.height));
+    });
+
+    testWidgets('draws the category art for the plant category', (
+      tester,
+    ) async {
+      await _pumpList(
+        tester,
+        scored(kaleWith({'category': 'fruit', 'seasonTags': <String>[]})),
+      );
+
+      expect(find.byIcon(Symbols.nutrition_rounded), findsOneWidget);
+    });
+
+    testWidgets('shows PLANT NOW only in the inSeason state', (tester) async {
+      await _pumpList(
+        tester,
+        scored(kaleWith({})),
+        state: PlantCardState.inSeason,
+      );
+      expect(find.text('PLANT NOW'), findsOneWidget);
+
+      await _pumpList(tester, scored(kaleWith({})));
+      expect(find.text('PLANT NOW'), findsNothing);
+    });
+
+    testWidgets('shows the indoor chip only in the indoorOnly state', (
+      tester,
+    ) async {
+      await _pumpList(
+        tester,
+        scored(kaleWith({})),
+        state: PlantCardState.indoorOnly,
+      );
+      expect(find.text('Indoor / greenhouse'), findsOneWidget);
+
+      await _pumpList(tester, scored(kaleWith({})));
+      expect(find.text('Indoor / greenhouse'), findsNothing);
+    });
+
+    testWidgets('tapping the card fires onTap once', (tester) async {
+      var taps = 0;
+      await _pumpList(
+        tester,
+        scored(kaleWith({})),
+        onTap: () {
+          taps++;
+        },
+      );
+
+      await tester.tap(find.byType(PlantCard));
+
+      expect(taps, 1);
+    });
   });
 }
