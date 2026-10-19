@@ -6,6 +6,7 @@ import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../data/weather_provider.dart';
 import '../domain/weather.dart';
+import 'weather_icons.dart';
 
 /// WeatherMini for one location, wired to [weatherProvider].
 ///
@@ -97,25 +98,6 @@ String updatedAgo(DateTime fetchedAt, DateTime now) {
   return 'Updated ${minutes ~/ 60} h ago';
 }
 
-const _icons = <String, IconData>{
-  'clear_day': Symbols.clear_day_rounded,
-  'clear_night': Symbols.clear_night_rounded,
-  'partly_cloudy_day': Symbols.partly_cloudy_day_rounded,
-  'cloud': Symbols.cloud_rounded,
-  'foggy': Symbols.foggy_rounded,
-  'rainy_light': Symbols.rainy_light_rounded,
-  'rainy': Symbols.rainy_rounded,
-  'weather_snowy': Symbols.weather_snowy_rounded,
-  'thunderstorm': Symbols.thunderstorm_rounded,
-};
-
-Color _iconColor(String iconName) => switch (iconName) {
-  'clear_day' || 'partly_cloudy_day' => AppColors.geauxGold,
-  'clear_night' => AppColors.tigerPurple,
-  'rainy_light' || 'rainy' || 'thunderstorm' => AppColors.frost,
-  _ => AppColors.soil600,
-};
-
 class _Data extends StatelessWidget {
   const _Data({
     required this.state,
@@ -144,10 +126,10 @@ class _Data extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadii.card),
           ),
           child: Icon(
-            _icons[condition.iconName],
+            weatherIcons[condition.iconName],
             size: _conditionIconSize,
             fill: 1,
-            color: _iconColor(condition.iconName),
+            color: weatherIconColor(condition.iconName),
           ),
         ),
         const SizedBox(width: _tileGap),
