@@ -149,6 +149,117 @@
     "source": "curated"
   },
   {
+    "id": "lettuce",
+    "commonName": "Lettuce",
+    "scientificName": "Lactuca sativa",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 80},
+    "growTempF": {"min": 35, "max": 80},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 45, "daysMax": 80}
+    ],
+    "productiveDays": 20,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Pick outer leaves, or cut whole heads at maturity"},
+        {"type": "fertilize", "everyDays": 21, "note": "Side-dress with a balanced fertilizer"}
+      ]
+    },
+    "tips": [
+      "Sow seed shallow and keep the bed moist until seedlings emerge.",
+      "Harvest in the cool morning; heat makes lettuce bolt and turn bitter."
+    ],
+    "image": {"asset": "assets/plants/images/lettuce.webp", "credit": "Rainer Zenz", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Romaine_lettuce.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "radish",
+    "commonName": "Radish",
+    "scientificName": "Raphanus sativus",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 85},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 22, "daysMax": 28}
+    ],
+    "productiveDays": 0,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.1, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 3, "note": "Pull roots when they reach size; overgrown radishes turn woody"}
+      ]
+    },
+    "tips": [
+      "Thin seedlings to about 2 inches apart so the roots can swell.",
+      "Keep the soil evenly moist so roots do not crack or turn pithy."
+    ],
+    "image": {"asset": "assets/plants/images/radish.webp", "credit": "Self, en:User:Jengod", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Radish_3371103037_4ab07db0bf_o.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "bell-pepper",
+    "commonName": "Bell Pepper",
+    "scientificName": "Capsicum annuum",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 60, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 80},
+      {"method": "seed", "daysMin": 100, "daysMax": 150}
+    ],
+    "productiveDays": 90,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2.25, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 3,
+      "weeklyMinutes": 20,
+      "tasks": [
+        {"type": "harvest", "everyDays": 3, "note": "Pick when fruit is firm and full-sized to keep plants producing"},
+        {"type": "fertilize", "everyDays": 21, "note": "Balanced fertilizer, shifting to lower nitrogen once flowering starts"}
+      ]
+    },
+    "tips": [
+      "Stake plants early; heavy fruit can snap branches.",
+      "Blossoms drop when nights stay above 75 F or below 60 F, so plant to avoid those extremes."
+    ],
+    "image": {"asset": "assets/plants/images/bell-pepper.webp", "credit": "Brocken Inaglory", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Baby_Bell_pepper_%27%27Capsicum_annuum%27%27_.jpg"},
+    "source": "curated"
+  },
+  {
     "id": "cherry-tomato",
     "commonName": "Cherry Tomato",
     "scientificName": "Solanum lycopersicum var. cerasiforme",
