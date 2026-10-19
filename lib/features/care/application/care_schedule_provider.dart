@@ -1,9 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../catalog/data/catalog_provider.dart';
-import '../../garden/domain/planting.dart';
-import '../../onboarding/domain/availability.dart';
-import '../../onboarding/domain/space.dart';
+import '../../garden/data/plantings_provider.dart';
+import '../../onboarding/data/profile_providers.dart';
 import '../../recommendations/application/clock_provider.dart';
 import '../../weather/data/weather_provider.dart';
 import '../../weather/domain/weather.dart';
@@ -12,24 +11,8 @@ import '../domain/care_event.dart';
 import '../domain/care_schedule.dart';
 import '../domain/schedule_math.dart';
 
-final carePlantingsProvider = StreamProvider<List<Planting>>(
-  (ref) => ref.watch(careScheduleRepositoryProvider).watchPlantings(),
-);
-
-final careSpacesProvider = StreamProvider<List<Space>>(
-  (ref) => ref.watch(careScheduleRepositoryProvider).watchSpaces(),
-);
-
 final careEventsProvider = StreamProvider<List<CareEvent>>(
   (ref) => ref.watch(careScheduleRepositoryProvider).watchCareEvents(),
-);
-
-final careAvailabilityProvider = StreamProvider<Availability>(
-  (ref) => ref.watch(careScheduleRepositoryProvider).watchAvailability(),
-);
-
-final careLocationProvider = StreamProvider<(double lat, double lon)>(
-  (ref) => ref.watch(careScheduleRepositoryProvider).watchLocation(),
 );
 
 /// The care list: this week's tasks plus overdue ones, each placed in free
@@ -42,11 +25,10 @@ final careLocationProvider = StreamProvider<(double lat, double lon)>(
 /// uses an empty forecast, so [waterDue] falls back to its no-rain estimate.
 final careScheduleProvider =
     FutureProvider.autoDispose<List<ScheduledCareTask>>((ref) async {
-      final plantings = await ref.watch(carePlantingsProvider.future);
-      final spaces = await ref.watch(careSpacesProvider.future);
+      final plantings = await ref.watch(plantingsProvider.future);
+      final spaces = await ref.watch(spacesProvider.future);
       final events = await ref.watch(careEventsProvider.future);
-      final availability = await ref.watch(careAvailabilityProvider.future);
-      final location = await ref.watch(careLocationProvider.future);
+      final profile = await ref.watch(userProfileProvider.future);
       final plants = await ref.watch(catalogProvider.future);
       final today = ref.watch(todayProvider);
       final now = ref.read(clockProvider)();
@@ -54,7 +36,7 @@ final careScheduleProvider =
       var days = const <DateTime, WeatherDay>{};
       try {
         final weather = await ref.watch(
-          weatherProvider(forecastLocation(location.$1, location.$2)).future,
+          weatherProvider(forecastLocation(profile.lat, profile.lon)).future,
         );
         days = {
           for (final d in weather.snapshot.days)
@@ -71,7 +53,7 @@ final careScheduleProvider =
         plantsById: {for (final p in plants) p.id: p},
         spacesById: {for (final s in spaces) s.id: s},
         events: events,
-        availability: availability,
+        availability: profile.availability,
         days: days,
       );
     });
