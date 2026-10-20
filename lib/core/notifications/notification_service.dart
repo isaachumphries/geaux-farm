@@ -63,12 +63,18 @@ class NotificationService {
   Future<bool> requestPermission() async {
     await init();
     final granted = await _plugin.requestPermission();
+    await markPermissionAsked();
+    return granted;
+  }
+
+  /// Records that the user has answered the PD-03 pre-prompt without showing
+  /// the OS prompt ("Not now"). Reminders can be turned on in Settings.
+  Future<void> markPermissionAsked() async {
     final update = _db.update(_db.userProfileTable)
       ..where((t) => t.id.equals(1));
     await update.write(
       const UserProfileTableCompanion(notificationPermissionAsked: Value(true)),
     );
-    return granted;
   }
 
   /// Schedules a notification on [channel]. Always inexact: exact alarms need
