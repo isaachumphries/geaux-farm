@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import 'fixed_climate.dart';
+import 'in_memory_database.dart';
 
 /// [defaultUserProfile] with onboarding finished.
 final onboardedProfile = UserProfile(
@@ -29,9 +30,9 @@ final onboardedProfile = UserProfile(
 );
 
 /// Overrides for pumping the whole app: [profile] instead of the Drift
-/// row, the default space, no plantings, the plan/04 climate instead of an
-/// archive build, and the recorded Baton Rouge forecast instead
-/// of Open-Meteo.
+/// row, the default space, no plantings, an in-memory database, the
+/// plan/04 climate instead of an archive build, and the recorded Baton
+/// Rouge forecast instead of Open-Meteo.
 List<Override> appOverrides({required UserProfile profile}) {
   final forecast = File('test/fixtures/open_meteo/forecast_baton_rouge.json')
       .readAsStringSync();
@@ -45,5 +46,9 @@ List<Override> appOverrides({required UserProfile profile}) {
         MockClient((_) async => http.Response(forecast, 200)),
       ),
     ),
+    // Home reads gardenProvider, which reaches the database through
+    // gardenSpacesProvider. Without this the whole-app tests open the real
+    // on-device database a second time.
+    inMemoryDatabaseOverride(),
   ];
 }
