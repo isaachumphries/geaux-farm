@@ -14,7 +14,7 @@ import '../../../onboarding/data/profile_providers.dart';
 class CareRemindersTile extends ConsumerWidget {
   const CareRemindersTile({super.key});
 
-  static const double _tile = 32;
+  static const double _tile = 36;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,14 +48,11 @@ class CareRemindersTile extends ConsumerWidget {
               children: [
                 Text(
                   'Care reminders',
-                  style: AppText.body.copyWith(
-                    color: AppColors.soil900,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppText.body.copyWith(color: AppColors.soil900),
                 ),
                 Text(
                   'Only during your free times',
-                  style: AppText.bodySm.copyWith(color: AppColors.soil600),
+                  style: AppText.caption.copyWith(color: AppColors.soil600),
                 ),
               ],
             ),
