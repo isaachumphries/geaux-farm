@@ -15,6 +15,8 @@ import 'package:geaux_farm/features/onboarding/presentation/profile_summary_scre
 import 'package:geaux_farm/features/onboarding/presentation/space_step_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:geaux_farm/features/recommendations/presentation/plant_detail_screen.dart';
+import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
+import 'package:geaux_farm/features/weather/presentation/weather_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -117,7 +119,6 @@ void main() {
     final router = await _pumpApp(tester, onboardedProfile);
     const placeholders = {
       '/home/recommendations': 'RC-01 Recommendations',
-      '/weather': 'WX-01 Weather',
       '/settings': 'ST-01 Settings',
       '/settings/edit/space': 'OB-07 Edit step',
       '/garden': 'GD-01 My Garden',
@@ -145,6 +146,7 @@ void main() {
       '/onboarding/source': HeardAboutUsScreen,
       '/onboarding/summary': ProfileSummaryScreen,
       '/plants/kale': PlantDetailScreen,
+      '/weather': WeatherScreen,
     };
     for (final MapEntry(key: path, value: type) in screens.entries) {
       await _go(tester, router, path);
@@ -209,6 +211,32 @@ void main() {
     // Settings is pushed over Home, so Back returns there.
     expect(find.text('ST-01 Settings'), findsOneWidget);
     expect(router.canPop(), isTrue);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('the Home weather card opens WX-01 and Back returns Home', (
+    tester,
+  ) async {
+    final router = await _pumpApp(tester, onboardedProfile);
+    // The forecast resolves on the next frames; the card is tappable then.
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.byType(WeatherMini), findsOneWidget);
+    expect(find.byIcon(Symbols.chevron_right_rounded), findsOneWidget);
+
+    await tester.tap(find.byType(WeatherMini));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    // Pushed over Home, so Back pops it.
+    expect(find.byType(WeatherScreen), findsOneWidget);
+    expect(router.canPop(), isTrue);
+
+    await tester.tap(find.byIcon(Symbols.chevron_left_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(WeatherScreen), findsNothing);
+    expect(find.byType(HomeFirstRunScreen), findsOneWidget);
+    expect(router.canPop(), isFalse);
     await tester.pumpWidget(const SizedBox());
   });
 }
