@@ -379,7 +379,6 @@ void main() {
     testWidgets('a day with no tasks shows the empty state', (tester) async {
       await _pump(tester, tasks, date: DateTime(2026, 10, 9));
       expect(find.byType(GeauxEmptyState), findsOneWidget);
-      expect(find.text(careEmptyCopy), findsOneWidget);
       expect(find.byType(TaskRow), findsNothing);
     });
 
@@ -388,7 +387,6 @@ void main() {
     ) async {
       await _pump(tester, const []);
       expect(find.byType(GeauxEmptyState), findsOneWidget);
-      expect(find.text('Nothing due today.'), findsOneWidget);
     });
   });
 

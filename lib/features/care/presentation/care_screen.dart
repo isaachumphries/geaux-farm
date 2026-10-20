@@ -14,8 +14,8 @@ import '../domain/slot.dart';
 import 'widgets/day_selector.dart';
 import 'widgets/task_row.dart';
 
-/// Placeholder until the team confirms the copy (issue #34).
-const careEmptyCopy = 'Nothing due today.';
+/// Team-approved empty-state copy (issue #34).
+const careEmptyCopy = 'Nothing due this day.';
 
 /// Days the selector shows: today and the next six.
 const careSelectorDays = 7;
