@@ -55,6 +55,39 @@ jobs:
           name: app-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
 
+  coverage:
+    name: Test coverage gate
+    runs-on: ubuntu-latest
+    env:
+      # Minimum line coverage for hand-written code (*.g.dart excluded).
+      MIN_LINE_COVERAGE: '90'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Report and enforce line coverage
+        run: .github/scripts/coverage_gate.sh coverage/lcov.info "$MIN_LINE_COVERAGE"
+
+      - name: Upload lcov report
+        if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov
+          path: coverage/lcov.info
+
   supabase-tests:
     name: Supabase migrations and pgTAP
     runs-on: ubuntu-latest
