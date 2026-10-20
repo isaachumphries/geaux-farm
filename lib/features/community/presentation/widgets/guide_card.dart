@@ -9,6 +9,7 @@ import 'guide_cover.dart';
 
 const double _statIcon = AppIconSize.sm;
 const double _avatarSize = 20;
+const double _authorRowHeight = 22;
 const double _growMarkSize = 14;
 const double _bodyInset = 14;
 
@@ -41,7 +42,7 @@ class GuideCard extends StatelessWidget {
                 _bodyInset,
                 AppSpacing.md,
                 _bodyInset,
-                AppSpacing.md,
+                AppSpacing.md + 2,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,29 +53,32 @@ class GuideCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: AppText.cardTitle.copyWith(color: AppColors.soil900),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Row(
-                    children: [
-                      Container(
-                        width: _avatarSize,
-                        height: _avatarSize,
-                        decoration: const BoxDecoration(
-                          color: AppColors.tileSkyLedge,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          '@${guide.authorUsername}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppText.bodySm.copyWith(
-                            color: AppColors.soil600,
+                  const SizedBox(height: AppSpacing.xs + 2),
+                  SizedBox(
+                    height: _authorRowHeight,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: _avatarSize,
+                          height: _avatarSize,
+                          decoration: const BoxDecoration(
+                            color: AppColors.tileSkyLedge,
+                            shape: BoxShape.circle,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            '@${guide.authorUsername}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.bodySm.copyWith(
+                              color: AppColors.soil600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Wrap(
@@ -144,7 +148,7 @@ class _Stat extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         icon,
-        const SizedBox(width: AppSpacing.xs + 2),
+        const SizedBox(width: AppSpacing.xs),
         Text(text, style: AppText.bodySm.copyWith(color: AppColors.soil900)),
       ],
     );

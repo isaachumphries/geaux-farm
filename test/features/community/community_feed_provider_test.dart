@@ -96,23 +96,37 @@ void main() {
     );
 
     test('rows that shifted between pages are not repeated', () async {
-      // A guide published meanwhile pushes g19 onto page 2 as well.
+      // A guide published meanwhile pushes g19 onto page 2 as well, so the
+      // next offset counts rows fetched (40), not guides shown (39).
+      List<Guide> ids(int from, int to) => [
+        for (var i = from; i < to; i++) testGuide('g$i'),
+      ];
       final repo = FakeGuideRepository(
-        pages: (query, offset) => offset == 0
-            ? [for (var i = 0; i < 20; i++) testGuide('g$i')]
-            : [for (var i = 19; i < 29; i++) testGuide('g$i')],
+        pages: (query, offset) => switch (offset) {
+          0 => ids(0, 20),
+          20 => ids(19, 39),
+          40 => ids(39, 45),
+          _ => const [],
+        },
       );
       final c = _container(repo);
       const query = GuideFeedQuery();
       await _open(c, query);
+      final notifier = c.read(communityFeedProvider(query).notifier);
 
-      await c.read(communityFeedProvider(query).notifier).loadMore();
+      await notifier.loadMore();
+      expect(
+        c.read(communityFeedProvider(query)).requireValue.guides,
+        hasLength(39),
+      );
+      await notifier.loadMore();
 
       final state = c.read(communityFeedProvider(query)).requireValue;
-      final ids = state.guides.map((g) => g.id).toList();
-      expect(ids, [for (var i = 0; i < 29; i++) 'g$i']);
-      expect(ids.toSet(), hasLength(ids.length));
+      final seen = state.guides.map((g) => g.id).toList();
+      expect(seen, [for (var i = 0; i < 45; i++) 'g$i']);
+      expect(seen.toSet(), hasLength(seen.length));
       expect(state.hasMore, isFalse);
+      expect(repo.fetches.map((f) => f.$2), [0, 20, 40]);
     });
 
     test('overlapping loadMore calls fetch the page once', () async {

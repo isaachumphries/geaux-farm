@@ -40,7 +40,7 @@ class FeedChip extends StatelessWidget {
             ledgeColor: selected ? AppColors.leafLedge : AppColors.stone200,
             padding: const EdgeInsets.symmetric(
               horizontal: _chipPaddingH,
-              vertical: AppSpacing.sm,
+              vertical: AppSpacing.sm + 1,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

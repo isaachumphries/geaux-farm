@@ -37,13 +37,15 @@ class GuideCover extends StatelessWidget {
 class _CoverArt extends StatelessWidget {
   const _CoverArt();
 
+  // (tint, icon, ink, filled): the fruit is drawn as an outline.
   static const _discs = [
-    (AppColors.tilePeach, Symbols.nutrition_rounded, AppColors.heat),
-    (AppColors.leaf100, Symbols.spa_rounded, AppColors.leaf700),
+    (AppColors.tilePeach, Symbols.nutrition_rounded, AppColors.heat, 0.0),
+    (AppColors.leaf100, Symbols.spa_rounded, AppColors.leaf700, 1.0),
     (
       AppColors.gold100,
       Symbols.local_fire_department_rounded,
       AppColors.goldLedge,
+      1.0,
     ),
   ];
 
@@ -75,7 +77,7 @@ class _CoverArt extends StatelessWidget {
                       _discs[i].$2,
                       size: 32,
                       color: _discs[i].$3,
-                      fill: 1,
+                      fill: _discs[i].$4,
                     ),
                   ),
                 ),

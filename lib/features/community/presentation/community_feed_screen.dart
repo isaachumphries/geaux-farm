@@ -107,7 +107,7 @@ class _CommunityFeedScreenState extends ConsumerState<CommunityFeedScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.screenPadding,
-                AppSpacing.md,
+                AppSpacing.sm,
                 AppSpacing.screenPadding,
                 0,
               ),
@@ -142,7 +142,7 @@ class _CommunityFeedScreenState extends ConsumerState<CommunityFeedScreen> {
             ),
             const SizedBox(height: AppSpacing.md + AppSpacing.xs),
             FeedFilterRow(query: _query, onChanged: _setQuery),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.md + 2),
             Expanded(
               child: _FeedList(query: _query, controller: _scroll),
             ),
@@ -303,7 +303,7 @@ class _Tab extends StatelessWidget {
                   ),
                 ),
                 child: SizedBox(
-                  height: AppSpacing.minTouchTarget - AppSpacing.sm - 2,
+                  height: AppSpacing.minTouchTarget - AppSpacing.sm - 1,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -373,7 +373,7 @@ class _NewGuideButton extends StatelessWidget {
   }
 }
 
-const double _fabSize = 56;
+const double _fabSize = 60;
 
 /// The guides under the filters: skeleton while the first page loads, the
 /// empty and error states, or the cards with a footer for the next page.
@@ -430,7 +430,7 @@ class _FeedList extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: inset,
         itemCount: state.guides.length + 1,
-        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
         itemBuilder: (context, i) {
           if (i == state.guides.length) {
             return _Footer(
