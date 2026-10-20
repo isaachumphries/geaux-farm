@@ -8,6 +8,7 @@ import 'package:geaux_farm/features/catalog/domain/plant.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
 import 'package:geaux_farm/features/recommendations/application/recommendations_provider.dart';
+import 'package:geaux_farm/features/recommendations/domain/recommendation_filter.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/recommendations_screen.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_list_card.dart';
@@ -195,5 +196,41 @@ void main() {
     await tester.tap(find.text('Sweet Basil'));
     await tester.pumpAndSettle();
     expect(find.text('PD-01 stub: herb'), findsOneWidget);
+  });
+
+  testWidgets('chips in plan/04 order, All selected on open', (tester) async {
+    await _pump(tester);
+    final labels = [
+      'All',
+      'Food',
+      'Herbs',
+      'Flowers',
+      'Shrubs',
+      'Indoor',
+      'Low maintenance',
+    ];
+    expect([
+      for (final chip in RecommendationChip.values)
+        recommendationChipLabel(chip),
+    ], labels);
+    final selected = find.byWidgetPredicate(
+      (w) => w is Semantics && w.properties.selected == true,
+    );
+    expect(
+      find.descendant(of: selected, matching: find.text('All')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: selected, matching: find.text('Food')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Low maintenance → herb only (15 is Low; 16 and 40 are not)', (
+    tester,
+  ) async {
+    await _pump(tester);
+    await _chip(tester, 'Low maintenance');
+    expect(_shown(tester), ['herb']);
   });
 }

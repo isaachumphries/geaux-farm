@@ -21,7 +21,7 @@ String recommendationChipLabel(RecommendationChip chip) => switch (chip) {
   RecommendationChip.flowers => 'Flowers',
   RecommendationChip.shrubs => 'Shrubs',
   RecommendationChip.indoor => 'Indoor',
-  RecommendationChip.lowMaintenance => 'Low care',
+  RecommendationChip.lowMaintenance => 'Low maintenance',
 };
 
 /// RC-01 "Plants for you": every recommendation, best fit first, with
