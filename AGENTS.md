@@ -1,14 +1,29 @@
 # AGENTS.md
 
 Instructions for AI coding agents and humans contributing to Geaux Farm.
-The app repo is `geaux_farm/` (GitHub `isaachumphries/geaux-farm`). The planning set in `plan/` is the spec for behavior and copy. The team Figma is the spec for how the app looks (see "Design: match the Figma" below). If a plan doc and this file disagree on product behavior, the plan doc wins. If they disagree on process, this file wins.
+The app repo is `geaux_farm/` (GitHub `isaachumphries/geaux-farm`). The planning set is the spec for behavior and copy. It lives in the [GitHub wiki](https://github.com/isaachumphries/geaux-farm/wiki): every `plan/NN-name.md` cited in this file and in issues is the wiki page `NN-name` (for example `plan/05-garden-and-care.md` is [05-garden-and-care](https://github.com/isaachumphries/geaux-farm/wiki/05-garden-and-care)). The team Figma is the spec for how the app looks (see "Design: match the Figma" below). If a plan doc and this file disagree on product behavior, the plan doc wins. If they disagree on process, this file wins.
 
 ## 0. Where the work comes from
 
 - Every change starts from a GitHub issue on the **geaux-farm kanban** board (user project #2). Pick cards from **Ready**. Don't pick from **Backlog** until every issue listed under its "Depends on" is merged.
-- Board flow: `Backlog` → `Ready` → `In progress` (when you open the branch) → `In review` (when the PR is up) → `Done` (when the PR merges into its milestone branch). When a `Part of #N` PR merges, the card goes back to `In progress` until the last PR for the issue lands. The issue itself closes when the milestone branch lands on `main` (section 2, "Milestone branches"). Move the card yourself at each step.
+- Board flow: `Backlog` → `Ready` → `In progress` (when you open the branch) → `In review` (when the PR is up) → `Done` (when the PR merges into its milestone branch). When a `Part of #N` PR merges, the card goes back to `In progress` until the last PR for the issue lands. The issue itself closes when the milestone branch lands on `main` (section 2, "Milestone branches"). Move the card yourself at each step:
+  ```
+  # item id of issue N on the board
+  gh api graphql -f query='query($n:Int!){repository(owner:"isaachumphries",name:"geaux-farm"){issue(number:$n){projectItems(first:5){nodes{id}}}}}' -F n=N --jq '.data.repository.issue.projectItems.nodes[0].id'
+  # set its Status; option ids: Backlog f75ad846, Ready 61e4505c, In progress 47fc9ee4, In review df73e18b, Done 98236657
+  gh project item-edit --project-id PVT_kwHOCsQYRc4Bl-w3 --field-id PVTSSF_lAHOCsQYRc4Bl-w3zhkpgmY --id <item-id> --single-select-option-id <option-id>
+  ```
+  A new issue goes on the board with `gh project item-add 2 --owner isaachumphries --url <issue-url>`.
 - Issues are grouped under epics: #12 shell & onboarding, #10 data layer, #9 climate & weather, #7 catalog & recommendations, #8 garden & care, #6 community, #13 polish & demo, #14 local (stretch). Milestones are the plan's gates: Gate 1 (Day 7), Gate 2 (Day 14), Gate 3 (demo).
 - Read the issue's **Done when** and **References** before you write code. The issue body is the acceptance contract. If it's wrong or incomplete, comment on the issue. Don't silently build something else.
+- Gather only the context the task needs, in this order, and stop once you can meet every Done-when box:
+  1. The issue body, its comments, and the issues in its "Depends on".
+  2. The plan sections the issue cites (wiki pages; to grep them, `git clone https://github.com/isaachumphries/geaux-farm.wiki.git`).
+  3. The code and tests the issue names, plus merged PRs linked from the issue.
+  4. Only if those don't answer the question: other plan pages, the wiki [Progress](https://github.com/isaachumphries/geaux-farm/wiki/Progress) page (what's built, gate status, known bugs), or the board.
+
+  Don't read the whole wiki or list the whole board up front.
+- When a PR changes behavior, copy, or a contract that a plan page specifies, update that wiki page in the same change set and link the PR in the wiki edit message. The Progress page is a snapshot: update it when a milestone lands, not on every PR.
 - Labels: `area: *` names the SME who reviews first (`plan/10-team-and-timeline.md` § SME areas). `contract` marks a Day-2 frozen contract (section 4). `cut-candidate` and `stretch` items get dropped first when a gate slips.
 
 ## Design: match the Figma
