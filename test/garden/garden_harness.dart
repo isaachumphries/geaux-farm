@@ -12,7 +12,9 @@ import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
 import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/planting_detail_screen.dart';
+import 'package:geaux_farm/features/onboarding/domain/availability.dart';
 import 'package:geaux_farm/features/onboarding/domain/space.dart';
+import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:go_router/go_router.dart';
@@ -54,6 +56,31 @@ Future<void> seedSpace(
         rainExposed: true,
         inContainerDefault: inContainerDefault,
         isPrimary: isPrimary,
+      ),
+    );
+
+/// The `user_profile` row, in [city], with the reminder pre-prompt
+/// answered or not.
+Future<void> seedProfile(
+  AppDatabase db, {
+  String city = 'Baton Rouge',
+  bool permissionAsked = false,
+}) => db
+    .into(db.userProfileTable)
+    .insert(
+      UserProfileTableCompanion.insert(
+        id: const Value(1),
+        city: city,
+        admin1: 'Louisiana',
+        countryCode: 'US',
+        lat: 30.45,
+        lon: -91.19,
+        timezone: 'America/Chicago',
+        goals: [Goal.food],
+        experience: Experience.beginner,
+        availability: const Availability([64, 0, 64, 0, 0, 2, 2]),
+        units: 'imperial',
+        notificationPermissionAsked: Value(permissionAsked),
       ),
     );
 
