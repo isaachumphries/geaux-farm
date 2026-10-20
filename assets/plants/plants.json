@@ -1119,5 +1119,379 @@
     ],
     "image": {"asset": "assets/plants/images/snake-plant.webp", "credit": "Tangopaso", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sansevieria_trifasciata_D190512.jpg"},
     "source": "curated"
+  },
+  {
+    "id": "jalapeno",
+    "commonName": "Jalapeño",
+    "scientificName": "Capsicum annuum",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 55, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 70, "daysMax": 80},
+      {"method": "seed", "daysMin": 100, "daysMax": 120}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "harvest", "everyDays": 4, "note": "Pick firm, glossy green fruit; leaving them longer turns them red and hotter"},
+        {"type": "fertilize", "everyDays": 21, "note": "Balanced fertilizer, easing off nitrogen once flowering starts"}
+      ]
+    },
+    "tips": [
+      "Plant transplants after nights hold above 55 F; cold snaps stall growth and flowering.",
+      "Fruit with fine tan cracks (corking) is fully ripe and hotter, not diseased."
+    ],
+    "image": {"asset": "assets/plants/images/jalapeno.webp", "credit": "Conrads.wikipedia.account", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jalape%C3%B1o_Peppers_-_levels_of_ripening.JPG"},
+    "source": "curated"
+  },
+  {
+    "id": "eggplant",
+    "commonName": "Eggplant",
+    "scientificName": "Solanum melongena",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 65, "max": 90},
+    "growTempF": {"min": 60, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 80, "daysMax": 85},
+      {"method": "seed", "daysMin": 100, "daysMax": 120}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 3, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "harvest", "everyDays": 5, "note": "Cut fruit with a short stem while the skin is still glossy"},
+        {"type": "fertilize", "everyDays": 21, "note": "Balanced fertilizer once fruit sets; mulch to hold moisture"}
+      ]
+    },
+    "tips": [
+      "Set out transplants only after nights stay above 60 F; eggplant sulks in cool soil.",
+      "Watch for flea beetles on young leaves; row cover keeps them off until flowering."
+    ],
+    "image": {"asset": "assets/plants/images/eggplant.webp", "credit": "Joydeep", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Solanum_melongena_24_08_2012_(1).JPG"},
+    "source": "curated"
+  },
+  {
+    "id": "cucumber",
+    "commonName": "Cucumber",
+    "scientificName": "Cucumis sativus",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 62, "max": 90},
+    "growTempF": {"min": 50, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 50, "daysMax": 65}
+    ],
+    "productiveDays": 30,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "high", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 3,
+      "weeklyMinutes": 20,
+      "tasks": [
+        {"type": "harvest", "everyDays": 2, "note": "Pick fruit young and firm; leaving ripe ones on the vine slows new fruit"},
+        {"type": "fertilize", "everyDays": 14, "note": "Balanced fertilizer; keep the soil evenly moist"}
+      ]
+    },
+    "tips": [
+      "Grow it up a trellis to save space and keep fruit clean and straight.",
+      "Uneven watering makes fruit bitter; water deeply and mulch."
+    ],
+    "image": {"asset": "assets/plants/images/cucumber.webp", "credit": "Stephen Ausmus, USDA ARS", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:ARS_cucumber.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "zucchini",
+    "commonName": "Zucchini",
+    "scientificName": "Cucurbita pepo",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 50, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 45, "daysMax": 55}
+    ],
+    "productiveDays": 45,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 6, "containerOk": true, "minContainerGal": 10, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "harvest", "everyDays": 2, "note": "Pick fruit at 6 to 8 inches; oversize fruit slows the plant down"},
+        {"type": "fertilize", "everyDays": 21, "note": "Side-dress with a balanced fertilizer once vines start to run"}
+      ]
+    },
+    "tips": [
+      "Pick often: one plant can outrun a household once it starts fruiting.",
+      "Check stems for squash vine borer holes in early summer and cut out grubs."
+    ],
+    "image": {"asset": "assets/plants/images/zucchini.webp", "credit": "Rasbak", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Courgette_plant_%27Diamant%27.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "sweet-potato",
+    "commonName": "Sweet Potato",
+    "scientificName": "Ipomoea batatas",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 65, "max": 83},
+    "growTempF": {"min": 55, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 90, "daysMax": 120}
+    ],
+    "productiveDays": 0,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 3, "containerOk": true, "minContainerGal": 10, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 4, "everyDaysIndoor": 4},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 30, "note": "Go light on nitrogen; too much makes vines instead of roots"},
+        {"type": "harvest", "everyDays": 14, "note": "Dig a test hill from day 90; harvest all before the first frost"}
+      ]
+    },
+    "tips": [
+      "Plant rooted slips, not seed, once the soil is warm.",
+      "Cure dug roots in a warm, humid spot for 10 days to sweeten them."
+    ],
+    "image": {"asset": "assets/plants/images/sweet-potato.webp", "credit": "Melsj", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sweet_potatoes_2.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "snap-pea",
+    "commonName": "Snap Pea",
+    "scientificName": "Pisum sativum var. macrocarpon",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 70},
+    "growTempF": {"min": 30, "max": 82},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 60, "daysMax": 70}
+    ],
+    "productiveDays": 21,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.25, "containerOk": true, "minContainerGal": 2, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "harvest", "everyDays": 2, "note": "Pick plump pods before the peas inside bulge too much"},
+        {"type": "other", "everyDays": 7, "note": "Guide the vines up the trellis as they grow"}
+      ]
+    },
+    "tips": [
+      "Provide a 5-foot trellis at sowing; vines climb quickly once they start.",
+      "Plants fade when days warm up; sow in fall or late winter so pods set in cool weather."
+    ],
+    "image": {"asset": "assets/plants/images/snap-pea.webp", "credit": "Idéalités", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sugar_snap_pea_%22Cascadia%22.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "broccoli",
+    "commonName": "Broccoli",
+    "scientificName": "Brassica oleracea var. italica",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 75},
+    "growTempF": {"min": 25, "max": 85},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 50, "daysMax": 90},
+      {"method": "seed", "daysMin": 80, "daysMax": 100}
+    ],
+    "productiveDays": 30,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 21, "note": "Side-dress with nitrogen when plants are knee high"},
+        {"type": "harvest", "everyDays": 3, "note": "Cut the main head while buds are tight; side shoots keep coming"}
+      ]
+    },
+    "tips": [
+      "Cut the main head before the yellow flowers open, then harvest side shoots.",
+      "Check leaf undersides for cabbage loopers and pick them off."
+    ],
+    "image": {"asset": "assets/plants/images/broccoli.webp", "credit": "Forest and Kim Starr", "license": "CC BY 3.0 US", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Starr-091108-9387-Brassica_oleracea_var_botrytis-broccoli_florets-Olinda-Maui_(24962924176).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "cilantro",
+    "commonName": "Cilantro",
+    "scientificName": "Coriandrum sativum",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 75},
+    "growTempF": {"min": 30, "max": 82},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 45, "daysMax": 55}
+    ],
+    "productiveDays": 30,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.25, "containerOk": true, "minContainerGal": 2, "indoorOk": true},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Cut outer stems and leave the center to regrow"},
+        {"type": "other", "everyDays": 14, "note": "Sow a small new row so there is always young foliage"}
+      ]
+    },
+    "tips": [
+      "Sow in fall or winter; plants bolt quickly in Louisiana heat.",
+      "Let a plant flower and the seeds become coriander."
+    ],
+    "image": {"asset": "assets/plants/images/cilantro.webp", "credit": "Thamizhpparithi Maari", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_scene_of_Coriander_leaves.JPG"},
+    "source": "curated"
+  },
+  {
+    "id": "dill",
+    "commonName": "Dill",
+    "scientificName": "Anethum graveolens",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 80},
+    "growTempF": {"min": 30, "max": 85},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 40, "daysMax": 60}
+    ],
+    "productiveDays": 30,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Snip feathery fronds as needed; take no more than a third at once"},
+        {"type": "other", "everyDays": 21, "note": "Sow a new batch of seed so fresh fronds keep coming"}
+      ]
+    },
+    "tips": [
+      "Sow where it will grow; the long taproot resents being transplanted.",
+      "Dill is a host for swallowtail caterpillars, so plant extra to share."
+    ],
+    "image": {"asset": "assets/plants/images/dill.webp", "credit": "Bff", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Anethum_graveolens20090812_475.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "chives",
+    "commonName": "Chives",
+    "scientificName": "Allium schoenoprasum",
+    "category": "herb",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial", "cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": {"min": "3a", "max": "9b"},
+    "plantTempF": {"min": 45, "max": 80},
+    "growTempF": {"min": 20, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 45},
+      {"method": "seed", "daysMin": 60, "daysMax": 90}
+    ],
+    "productiveDays": 90,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.25, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 4},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 14, "note": "Snip leaves 2 inches above the soil; flowers are edible too"},
+        {"type": "prune", "everyDays": 90, "note": "Cut the clump back hard after flowering to renew the leaves"}
+      ]
+    },
+    "tips": [
+      "Divide clumps every 3 or 4 years to keep them vigorous.",
+      "Cutting back leaves after bloom keeps them tender and stops self-seeding."
+    ],
+    "image": {"asset": "assets/plants/images/chives.webp", "credit": "JarroNevsbaru", "license": "CC BY 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chives_1.jpg"},
+    "source": "curated"
   }
 ]
