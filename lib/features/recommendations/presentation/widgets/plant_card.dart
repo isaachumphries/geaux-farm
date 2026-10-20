@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../../app/theme.dart';
 import '../../../../app/widgets/widgets.dart';
 import '../../../catalog/domain/plant.dart';
+import '../../../catalog/presentation/plant_art.dart';
 import '../../../garden/domain/planting.dart';
 import '../../domain/compatibility.dart';
 import '../../domain/scored_plant.dart';
@@ -158,38 +159,7 @@ class _CategoryArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (Color tint, IconData icon, Color ink) = switch (category) {
-      PlantCategory.vegetable => (
-        AppColors.leaf100,
-        Symbols.eco_rounded,
-        AppColors.leaf500,
-      ),
-      PlantCategory.herb => (
-        AppColors.leaf100,
-        Symbols.spa_rounded,
-        AppColors.leaf700,
-      ),
-      PlantCategory.flower => (
-        AppColors.tileSky,
-        Symbols.local_florist_rounded,
-        AppColors.tileSkyLedge,
-      ),
-      PlantCategory.fruit => (
-        AppColors.tilePeach,
-        Symbols.nutrition_rounded,
-        AppColors.heat,
-      ),
-      PlantCategory.shrub => (
-        AppColors.tileSoil,
-        Symbols.park_rounded,
-        AppColors.tileSoilLedge,
-      ),
-      PlantCategory.houseplant => (
-        AppColors.leaf100,
-        Symbols.potted_plant_rounded,
-        AppColors.leaf700,
-      ),
-    };
+    final (:tint, :icon, :ink) = plantArtStyle(category);
     return Container(
       height: _artHeight,
       color: tint,

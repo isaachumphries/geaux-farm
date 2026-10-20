@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/garden/presentation/my_garden_screen.dart';
+import '../features/garden/presentation/planting_detail_screen.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
 import '../features/onboarding/data/profile_providers.dart';
 import '../features/onboarding/domain/user_profile.dart';
@@ -14,6 +16,7 @@ import '../features/onboarding/presentation/onboarding_routes.dart';
 import '../features/onboarding/presentation/profile_summary_screen.dart';
 import '../features/onboarding/presentation/space_step_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
+import '../features/recommendations/presentation/recommendations_screen.dart';
 import 'tab_shell.dart';
 import 'titled_scaffold.dart';
 
@@ -103,18 +106,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 path: '/home',
                 builder: (context, state) => const HomeFirstRunScreen(),
                 routes: [
-                  _placeholder('recommendations', 'RC-01 Recommendations'),
+                  GoRoute(
+                    path: 'recommendations',
+                    builder: (context, state) => const RecommendationsScreen(),
+                  ),
                 ],
               ),
             ],
           ),
           StatefulShellBranch(
             routes: [
-              _placeholder(
-                '/garden',
-                'GD-01 My Garden',
+              GoRoute(
+                path: '/garden',
+                builder: (context, state) => const MyGardenScreen(),
                 routes: [
-                  _placeholder('planting/:id', 'GD-02 Planting detail'),
+                  GoRoute(
+                    path: 'planting/:id',
+                    builder: (context, state) => PlantingDetailScreen(
+                      plantingId: state.pathParameters['id']!,
+                    ),
+                  ),
                   _placeholder('project/:id', 'GD-03 Guide project'),
                 ],
               ),
