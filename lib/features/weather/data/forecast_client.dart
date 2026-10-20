@@ -4,21 +4,8 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
+import '../../../core/http.dart';
 import '../domain/weather.dart';
-
-/// A failed network call: timeout, socket error, non-200 status, or a body
-/// that does not parse.
-///
-/// Lives here until #44 adds `lib/core/http.dart`, which then owns it.
-class NetworkException implements Exception {
-  const NetworkException(this.message, {this.statusCode});
-
-  final String message;
-  final int? statusCode;
-
-  @override
-  String toString() => 'NetworkException: $message';
-}
 
 /// Fetches the 14-day forecast (7 past + 7 ahead) from Open-Meteo using the
 /// request in plan/06 § Requests. One attempt per call, no retries.
