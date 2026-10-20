@@ -28,5 +28,7 @@ and profile creation must not restore that user or complete the sign-in sheet
 after logout. These races are covered in
 `test/community/supabase_auth_repository_test.dart`.
 
-Hosted email delivery, device acceptance, and final sign-in copy approval remain
-unverified; this branch is not ready to integrate until those checks are complete.
+Hosted email delivery and device/restart acceptance remain open on issue #20.
+The maintainer approved partial integration of the tested implementation,
+including the documented sign-in copy and visual deviations; that approval
+does not stand in for a hosted OTP or device test.
