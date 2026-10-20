@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme.dart';
+import '../theme.dart';
 
 /// A fully rounded ledge surface (the Figma pill chip, round icon button and
 /// FAB): a [color] face with an optional [borderColor] outline, sitting on a

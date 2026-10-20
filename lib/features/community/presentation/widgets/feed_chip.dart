@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme.dart';
-import 'ledge_capsule.dart';
+import '../../../../app/widgets/widgets.dart';
 
 /// Horizontal padding inside a chip, from the CM-01 export.
 const double _chipPaddingH = 14;

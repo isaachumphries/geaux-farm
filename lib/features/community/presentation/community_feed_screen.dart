@@ -13,7 +13,6 @@ import '../domain/guide_feed_query.dart';
 import 'widgets/feed_filters.dart';
 import 'widgets/guide_card.dart';
 import 'widgets/guide_card_skeleton.dart';
-import 'widgets/ledge_capsule.dart';
 
 /// How long typing pauses before the search runs.
 const searchDebounce = Duration(milliseconds: 300);
