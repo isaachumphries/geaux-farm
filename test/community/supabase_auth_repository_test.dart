@@ -273,7 +273,10 @@ void main() {
       final pending = repo.createProfile('isaac');
       await reached.future;
       await repo.signOut();
-      final rejected = expectLater(pending, throwsA(isA<AuthRequiredException>()));
+      final rejected = expectLater(
+        pending,
+        throwsA(isA<AuthRequiredException>()),
+      );
       response.complete(http.Response('', 201));
       await rejected;
 
