@@ -31,6 +31,11 @@ class CareReminderScheduler {
   final AppDatabase _db;
   final DateTime Function() _now;
 
+  /// Tail of the recompute queue. Runs go one at a time: a slower run that
+  /// started earlier must not finish after a newer one and bring back
+  /// reminders for tasks that no longer exist.
+  Future<void> _queue = Future.value();
+
   /// Stores the switch, then brings the device schedule in line with it.
   Future<void> setEnabled({
     required bool enabled,
@@ -45,6 +50,16 @@ class CareReminderScheduler {
   /// [enabled]. Cancelling first means a removed task or a switched-off
   /// toggle never leaves a stale reminder behind.
   Future<void> recompute({
+    required bool enabled,
+    required List<ScheduledCareTask> tasks,
+  }) {
+    final run = _queue.then((_) => _recompute(enabled: enabled, tasks: tasks));
+    // A failed run is reported to its own caller; the queue carries on.
+    _queue = run.catchError((Object _) {});
+    return run;
+  }
+
+  Future<void> _recompute({
     required bool enabled,
     required List<ScheduledCareTask> tasks,
   }) async {
@@ -107,6 +122,9 @@ final careRemindersSyncProvider = Provider<void>((ref) {
   );
   ref.onDispose(lifecycle.dispose);
   ref.listen(careScheduleProvider, (_, next) {
+    // A rebuild keeps the previous tasks while it loads. Wait for the fresh
+    // ones instead of planning from stale tasks first.
+    if (next.isLoading) return;
     final tasks = next.value;
     if (tasks != null) unawaited(sync(tasks));
   });
