@@ -81,8 +81,10 @@ class _CommunityFeedScreenState extends ConsumerState<CommunityFeedScreen> {
 
   void _onSearchChanged(String text) {
     _debounce?.cancel();
+    // The request trims anyway; trimming here too keeps "kale" and "kale "
+    // one feed instead of a second fetch and a jump back to the top.
     _debounce = Timer(searchDebounce, () {
-      if (mounted) _setQuery(_query.copyWith(search: text));
+      if (mounted) _setQuery(_query.copyWith(search: text.trim()));
     });
   }
 

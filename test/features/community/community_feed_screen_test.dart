@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
+import 'package:geaux_farm/features/community/application/community_feed_provider.dart';
 import 'package:geaux_farm/features/community/data/guide_repository_provider.dart';
 import 'package:geaux_farm/features/community/domain/guide.dart';
 import 'package:geaux_farm/features/community/domain/guide_feed_query.dart';
@@ -301,6 +302,37 @@ void main() {
       expect(repo.fetches, hasLength(1));
       expect(find.text('Filters'), findsOneWidget);
     });
+
+    testWidgets('the sheet reopens on the current filters and keeps the rest', (
+      tester,
+    ) async {
+      final repo = FakeGuideRepository(pages: _catalog(3));
+      await _pump(tester, repo);
+      await tester.tap(find.text('Trending'));
+      await tester.pump();
+      await _tapChip(tester, 'Balcony');
+      await tester.ensureVisible(find.text('Filters'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Filters'));
+      await tester.pumpAndSettle();
+      await tester.tap(_inSheet('Medium'));
+      await tester.tap(_inSheet('Kids'));
+      await tester.tap(_inSheet('APPLY'));
+      await tester.pumpAndSettle();
+      final applied = _lastQuery(repo);
+      final fetched = repo.fetches.length;
+
+      await tester.tap(find.text('Filters · 2'));
+      await tester.pumpAndSettle();
+      await tester.tap(_inSheet('APPLY'));
+      await tester.pumpAndSettle();
+
+      expect(applied.sort, GuideSort.trending);
+      expect(applied.spaceTypes, ['balcony']);
+      expect(applied.difficulty, 2);
+      expect(applied.tags, ['kids']);
+      expect(repo.fetches, hasLength(fetched));
+    });
   });
 
   group('search', () {
@@ -363,6 +395,63 @@ void main() {
           spaceTypes: ['balcony'],
           search: 'kale',
         ),
+      );
+    });
+
+    testWidgets('closing search inside the pause drops the typed text', (
+      tester,
+    ) async {
+      final repo = FakeGuideRepository(pages: _catalog(3));
+      await _pump(tester, repo);
+      await tester.tap(find.bySemanticsLabel('Search guides'));
+      await tester.pump();
+
+      await tester.enterText(find.byType(TextField), 'kale');
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(find.bySemanticsLabel('Close search'));
+      await tester.pump(searchDebounce * 2);
+      await tester.pump();
+
+      expect(repo.fetches.map((f) => f.$1.search), ['']);
+    });
+
+    testWidgets('spaces around the text are not a new search', (tester) async {
+      final repo = FakeGuideRepository(pages: _catalog(3));
+      await _pump(tester, repo);
+      await tester.tap(find.bySemanticsLabel('Search guides'));
+      await tester.pump();
+
+      await tester.enterText(find.byType(TextField), 'kale');
+      await tester.pump(searchDebounce);
+      await tester.pump();
+      await tester.enterText(find.byType(TextField), 'kale ');
+      await tester.pump(searchDebounce);
+      await tester.pump();
+      await tester.enterText(find.byType(TextField), ' ');
+      await tester.pump(searchDebounce);
+      await tester.pump();
+
+      expect(repo.fetches.map((f) => f.$1.search), ['', 'kale', '']);
+    });
+
+    testWidgets('a tab picked inside the pause keeps the typed text', (
+      tester,
+    ) async {
+      final repo = FakeGuideRepository(pages: _catalog(3));
+      await _pump(tester, repo);
+      await tester.tap(find.bySemanticsLabel('Search guides'));
+      await tester.pump();
+
+      await tester.enterText(find.byType(TextField), 'kale');
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(find.text('New'));
+      await tester.pump();
+      await tester.pump(searchDebounce);
+      await tester.pump();
+
+      expect(
+        _lastQuery(repo),
+        const GuideFeedQuery(sort: GuideSort.newest, search: 'kale'),
       );
     });
   });
@@ -435,6 +524,118 @@ void main() {
         0,
       ));
       expect(find.text('Guide number 0'), findsOneWidget);
+    });
+
+    testWidgets(
+      'paging still works after a first page that failed and retried',
+      (tester) async {
+        final repo = FakeGuideRepository(pages: _catalog(45), failFetch: true);
+        await _pump(tester, repo);
+        repo.failFetch = false;
+        await tester.tap(find.text('RETRY'));
+        await tester.pump();
+        await tester.pump();
+
+        await tester.drag(
+          find.byType(Scrollable).last,
+          const Offset(0, -20000),
+        );
+        await tester.pump();
+        await tester.pump();
+
+        expect(repo.fetches.map((f) => f.$2), [0, 0, 20]);
+        expect(find.text('Guide number 20'), findsOneWidget);
+        expect(find.byType(GuideCard), findsWidgets);
+      },
+    );
+
+    testWidgets('paging still works after pull to refresh', (tester) async {
+      final repo = FakeGuideRepository(pages: _catalog(45));
+      await _pump(tester, repo);
+
+      await tester.fling(
+        find.byType(Scrollable).last,
+        const Offset(0, 400),
+        1000,
+      );
+      await tester.pumpAndSettle();
+      expect(repo.fetches.map((f) => f.$2), [0, 0]);
+
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, -20000));
+      await tester.pumpAndSettle();
+
+      expect(repo.fetches.map((f) => f.$2), [0, 0, 20]);
+      await tester.scrollUntilVisible(
+        find.text('Guide number 20'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text('Guide number 20'), findsOneWidget);
+    });
+
+    testWidgets('every new tab, filter or search goes back to the top', (
+      tester,
+    ) async {
+      final repo = FakeGuideRepository(pages: _catalog(45));
+      await _pump(tester, repo);
+      // Another screen (Home's top guide) can keep a feed loaded, so the
+      // list below may not pass through a loading skeleton.
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(CommunityFeedScreen)),
+      );
+      const top = GuideFeedQuery();
+      final kept = [
+        top.withSort(GuideSort.newest),
+        top.copyWith(spaceTypes: ['balcony']),
+        top.copyWith(search: 'kale'),
+        top.withDifficulty(1),
+      ];
+      for (final query in kept) {
+        container.listen(communityFeedProvider(query), (_, _) {});
+      }
+      await tester.pump();
+      await tester.pump();
+
+      double offset() => tester
+          .state<ScrollableState>(find.byType(Scrollable).last)
+          .position
+          .pixels;
+      Future<void> scrollDown() async {
+        await tester.pumpAndSettle();
+        await tester.drag(find.byType(Scrollable).last, const Offset(0, -600));
+        await tester.pump();
+        expect(offset(), greaterThan(0));
+      }
+
+      await scrollDown();
+      await tester.tap(find.text('New'));
+      await tester.pump();
+      expect(offset(), 0, reason: 'tab');
+
+      await tester.tap(find.text('Top'));
+      await tester.pump();
+      await scrollDown();
+      await _tapChip(tester, 'Balcony');
+      expect(offset(), 0, reason: 'chip');
+
+      await _tapChip(tester, 'All');
+      await scrollDown();
+      await tester.tap(find.bySemanticsLabel('Search guides'));
+      await tester.pump();
+      await tester.enterText(find.byType(TextField), 'kale');
+      await tester.pump(searchDebounce);
+      await tester.pump();
+      expect(offset(), 0, reason: 'search');
+
+      await tester.tap(find.bySemanticsLabel('Close search'));
+      await tester.pump();
+      await scrollDown();
+      await tester.tap(find.text('Filters'));
+      await tester.pumpAndSettle();
+      await tester.tap(_inSheet('Easy'));
+      await tester.tap(_inSheet('APPLY'));
+      await tester.pumpAndSettle();
+      expect(offset(), 0, reason: 'sheet');
     });
   });
 
