@@ -403,18 +403,22 @@ class _FeedList extends ConsumerWidget {
     final state = feed.value;
     if (state == null) {
       if (feed.hasError) {
-        return _Message(
+        return GeauxEmptyState(
           icon: Symbols.cloud_off_rounded,
-          text: "Couldn't load guides.",
-          onRetry: () => ref.invalidate(provider),
+          message: "Couldn't load guides.",
+          action: GeauxButton(
+            label: 'Retry',
+            variant: GeauxButtonVariant.text,
+            onPressed: () => ref.invalidate(provider),
+          ),
         );
       }
       return const GuideCardSkeletonList(padding: inset);
     }
     if (state.guides.isEmpty) {
-      return _Message(
+      return GeauxEmptyState(
         icon: Symbols.menu_book_rounded,
-        text: query.isFiltered ? 'No guides match.' : 'No guides yet.',
+        message: query.isFiltered ? 'No guides match.' : 'No guides yet.',
       );
     }
     return RefreshIndicator(
@@ -491,53 +495,6 @@ class _Footer extends StatelessWidget {
             color: AppColors.leaf500,
             strokeWidth: 3,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The empty and error states: an icon tile over a message, with a Retry
-/// button when [onRetry] is given.
-class _Message extends StatelessWidget {
-  const _Message({required this.icon, required this.text, this.onRetry});
-
-  final IconData icon;
-  final String text;
-  final VoidCallback? onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: const BoxDecoration(
-                color: AppColors.leaf100,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 40, color: AppColors.leaf500),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: AppText.cardTitle.copyWith(color: AppColors.soil600),
-            ),
-            if (onRetry != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              GeauxButton(
-                label: 'Retry',
-                variant: GeauxButtonVariant.text,
-                onPressed: onRetry,
-              ),
-            ],
-          ],
         ),
       ),
     );
