@@ -76,13 +76,16 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
             ),
             children: [
               const Padding(padding: inset, child: _Header()),
-              // Nothing while the profile loads; WX-01 has no route yet, so
-              // the card is not tappable.
+              // Nothing while the profile loads.
               if (location != null) ...[
                 const SizedBox(height: AppSpacing.md),
                 Padding(
                   padding: inset,
-                  child: WeatherMiniCard(lat: location.$1, lon: location.$2),
+                  child: WeatherMiniCard(
+                    lat: location.$1,
+                    lon: location.$2,
+                    onTap: () => context.push('/weather'),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
               ] else
