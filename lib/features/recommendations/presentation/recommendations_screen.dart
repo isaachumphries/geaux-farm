@@ -6,7 +6,6 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../garden/domain/planting.dart';
-import '../../garden/presentation/grow_this_sheet.dart';
 import '../../onboarding/data/profile_providers.dart';
 import '../application/recommendations_provider.dart';
 import '../domain/recommendation_filter.dart';
@@ -26,7 +25,7 @@ String recommendationChipLabel(RecommendationChip chip) => switch (chip) {
 };
 
 /// RC-01 "Plants for you": every recommendation, best fit first, with
-/// search and filter chips. Tapping a plant opens PD-02 to add it.
+/// search and filter chips. Tapping a plant opens PD-01 (plan/01 RC-01).
 class RecommendationsScreen extends ConsumerStatefulWidget {
   const RecommendationsScreen({super.key});
 
@@ -159,7 +158,7 @@ class _List extends StatelessWidget {
               key: ValueKey(s.plant.id),
               plant: s,
               state: PlantCardState.of(s.compatibility, setup),
-              onTap: () => pickPlant(context, s),
+              onTap: () => context.push('/plants/${s.plant.id}'),
             ),
           ),
       ],

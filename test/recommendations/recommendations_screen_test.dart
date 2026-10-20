@@ -189,4 +189,11 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.byType(PlantListCard), findsNothing);
   });
+
+  testWidgets('tapping a card opens PD-01 for that plant', (tester) async {
+    await _pump(tester);
+    await tester.tap(find.text('Sweet Basil'));
+    await tester.pumpAndSettle();
+    expect(find.text('PD-01 stub: herb'), findsOneWidget);
+  });
 }
