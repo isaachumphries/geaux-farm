@@ -73,6 +73,16 @@ void main() {
       );
     });
 
+    test('guide detail and the star writes fail as unreachable', () async {
+      final c = _container();
+      final repo = c.read(guideRepositoryProvider);
+      final offline = throwsA(isA<NetworkException>());
+
+      await expectLater(repo.fetchGuide('g1'), offline);
+      await expectLater(repo.starGuide('g1'), offline);
+      await expectLater(repo.unstarGuide('g1'), offline);
+    });
+
     test('"Starred by me" is empty, as when signed out', () async {
       final c = _container();
 
