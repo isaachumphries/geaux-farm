@@ -195,6 +195,46 @@ void main() {
 
       await expectLater(loading, completes);
     });
+
+    test('after a refresh the next page loads again', () async {
+      final repo = FakeGuideRepository(pages: _catalog(45));
+      final c = _container(repo);
+      const query = GuideFeedQuery();
+      await _open(c, query);
+      c.invalidate(communityFeedProvider(query));
+      await c.read(communityFeedProvider(query).future);
+
+      await c.read(communityFeedProvider(query).notifier).loadMore();
+
+      final state = c.read(communityFeedProvider(query)).requireValue;
+      expect(state.guides, hasLength(40));
+      expect(state.loadingMore, isFalse);
+      expect(repo.fetches.map((f) => f.$2), [0, 0, 20]);
+    });
+
+    test(
+      'a page that lands after a refresh does not touch the new feed',
+      () async {
+        final gate = Completer<List<Guide>>();
+        final repo = _GatedRepository(gate);
+        final c = _container(repo);
+        const query = GuideFeedQuery();
+        await _open(c, query);
+        final stale = c.read(communityFeedProvider(query).notifier).loadMore();
+
+        c.invalidate(communityFeedProvider(query));
+        await c.read(communityFeedProvider(query).future);
+        gate.complete([testGuide('late')]);
+        await stale;
+
+        final state = c.read(communityFeedProvider(query)).requireValue;
+        expect(state.guides.map((g) => g.id), [
+          for (var i = 0; i < 20; i++) 'g$i',
+        ]);
+        expect(state.fetched, 20);
+        expect(state.loadingMore, isFalse);
+      },
+    );
   });
 
   group('keys', () {

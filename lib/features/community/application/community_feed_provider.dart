@@ -58,11 +58,8 @@ class CommunityFeedNotifier extends AsyncNotifier<GuideFeedState> {
 
   final GuideFeedQuery query;
 
-  var _disposed = false;
-
   @override
   Future<GuideFeedState> build() async {
-    ref.onDispose(() => _disposed = true);
     final page = await ref
         .read(guideRepositoryProvider)
         .fetchFeed(query, offset: 0);
@@ -81,11 +78,15 @@ class CommunityFeedNotifier extends AsyncNotifier<GuideFeedState> {
     final current = state.value;
     if (current == null || current.loadingMore || !current.hasMore) return;
     state = AsyncData(current.copyWith(loadingMore: true));
+    // A refresh rebuilds this notifier with a new ref, so a page requested
+    // before it must not land on the new first page; neither may one that
+    // lands after the feed was dropped.
+    final requestRef = ref;
     try {
       final page = await ref
           .read(guideRepositoryProvider)
           .fetchFeed(query, offset: current.fetched);
-      if (_disposed) return;
+      if (!requestRef.mounted) return;
       final seen = {for (final g in current.guides) g.id};
       state = AsyncData(
         GuideFeedState(
@@ -99,7 +100,7 @@ class CommunityFeedNotifier extends AsyncNotifier<GuideFeedState> {
         ),
       );
     } on Object catch (e) {
-      if (_disposed) return;
+      if (!requestRef.mounted) return;
       state = AsyncData(current.copyWith(loadingMore: false, loadMoreError: e));
     }
   }
