@@ -9,7 +9,11 @@ import 'package:geaux_farm/app/theme.dart';
 import 'package:geaux_farm/core/db/app_database.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
+import 'package:geaux_farm/features/garden/application/garden_provider.dart';
 import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
+import 'package:geaux_farm/features/garden/domain/growth.dart';
+import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
+import 'package:geaux_farm/features/garden/presentation/widgets/planting_card.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/home/application/first_plant_prompt_provider.dart';
 import 'package:geaux_farm/features/home/domain/home_copy.dart';
@@ -47,6 +51,30 @@ List<ScoredPlant> _recs(int n) => [
       inSeason: i.isEven,
     ),
 ];
+
+/// One resolved garden view for the first plant in [recs], so HM-02 can be
+/// exercised without waiting on the bundled catalog.
+PlantingView _plantedView(List<ScoredPlant> recs) {
+  final plant = recs.first.plant;
+  final planting = Planting(
+    id: 'p1',
+    plantId: plant.id,
+    spaceId: defaultSpace.id,
+    nickname: plant.commonName,
+    setup: GrowSetup.outdoor,
+    inContainer: true,
+    startMethod: 'transplant',
+    plantedOn: DateTime(2026, 10, 1),
+    status: PlantingStatus.active,
+    createdAt: DateTime(2026, 10, 1),
+  );
+  return PlantingView(
+    planting: planting,
+    plant: plant,
+    space: defaultSpace,
+    growth: growthOf(planting, plant, _wednesdayMorning),
+  );
+}
 
 class _PendingClimate extends ClimateNotifier {
   @override
@@ -116,6 +144,7 @@ Future<ProviderContainer> _pump(
   _FakeForecast? forecast,
   Stream<UserProfile>? profile,
   List<Planting>? plantings,
+  List<PlantingView>? garden,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -141,6 +170,9 @@ Future<ProviderContainer> _pump(
       primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
       if (plantings != null)
         plantingsProvider.overrideWith((ref) => Stream.value(plantings)),
+      // gardenProvider also awaits the bundled catalog, which needs more than
+      // the two pumps below; override the resolved views instead.
+      if (garden != null) gardenProvider.overrideWith((ref) async => garden),
       inMemoryDatabaseOverride(),
     ],
   );
@@ -315,33 +347,26 @@ void main() {
     await _unmount(tester, c);
   });
 
-  testWidgets('HM-01b with a planting present → slim card absent', (
+  testWidgets('a planting present → HM-02 sections, not the HM-01b prompt', (
     tester,
   ) async {
-    final c = await _pump(
-      tester,
-      recs: _recs(25),
-      plantings: [
-        Planting(
-          id: 'p1',
-          plantId: 'kale',
-          spaceId: defaultSpace.id,
-          nickname: 'Kale',
-          setup: GrowSetup.outdoor,
-          inContainer: true,
-          startMethod: 'transplant',
-          plantedOn: DateTime(2026, 10, 1),
-          status: PlantingStatus.active,
-          createdAt: DateTime(2026, 10, 1),
-        ),
-      ],
-    );
+    final recs = _recs(25);
+    final c = await _pump(tester, recs: recs, garden: [_plantedView(recs)]);
 
-    await _pickLater(tester);
-
-    expect(c.read(firstPlantPromptDismissedProvider), isTrue);
+    // HM-02 replaces the first-run prompt once the garden has a planting.
+    expect(find.text('Your garden'), findsOneWidget);
+    expect(find.text('In season now'), findsOneWidget);
     expect(find.text('Pick your first plant'), findsNothing);
-    expect(find.byType(PlantCard), findsNothing);
+    expect(find.byType(PlantingCard), findsOneWidget);
+
+    // The banner goes away with the prompt ('THIS SEASON' is its label), and
+    // the carousel drops the plant that is already growing.
+    expect(find.text('THIS SEASON'), findsNothing);
+    final shown = tester
+        .widgetList<PlantCard>(find.byType(PlantCard))
+        .map((card) => card.plant.plant.id);
+    expect(shown, isNot(contains(recs.first.plant.id)));
+
     await _unmount(tester, c);
   });
 
@@ -557,14 +582,16 @@ void main() {
     await _unmount(tester, c);
   });
 
-  testWidgets('a carousel card opens its plant detail', (tester) async {
+  testWidgets('a carousel card opens the Grow this sheet', (tester) async {
     final c = await _pump(tester, recs: _recs(25));
     final card = find.text('Plant 00');
     await tester.ensureVisible(card);
     await tester.pump();
     await tester.tap(card);
     await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text('PD-01 stub: plant-0'), findsOneWidget);
+    // A card goes straight to PD-02 rather than PD-01: the carousel is the
+    // first-plant picker, so the tap is "grow this one".
+    expect(find.byType(GrowThisSheet), findsOneWidget);
     await _unmount(tester, c);
   });
 

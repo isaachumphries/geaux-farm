@@ -38,8 +38,8 @@ class PlantingDetailScreen extends ConsumerWidget {
             ? _Detail(view: view)
             : async.isLoading
             ? const Center(
-          child: CircularProgressIndicator(color: AppColors.leaf500),
-        )
+                child: CircularProgressIndicator(color: AppColors.leaf500),
+              )
             : _Missing(onBack: () => _back(context)),
       ),
     );
@@ -102,43 +102,43 @@ List<CareEventType> quickActionsFor(Plant p) {
 }
 
 ({String label, IconData icon, Color tint, Color ink}) _actionStyle(
-    CareEventType t,
-    ) => switch (t) {
+  CareEventType t,
+) => switch (t) {
   CareEventType.water => (
-  label: 'Water',
-  icon: Symbols.water_drop_rounded,
-  tint: AppColors.tileSky,
-  ink: AppColors.frost,
+    label: 'Water',
+    icon: Symbols.water_drop_rounded,
+    tint: AppColors.tileSky,
+    ink: AppColors.frost,
   ),
   CareEventType.skipWater => (
-  label: 'Skip',
-  icon: Symbols.block_rounded,
-  tint: AppColors.stone200,
-  ink: AppColors.soil600,
+    label: 'Skip',
+    icon: Symbols.block_rounded,
+    tint: AppColors.stone200,
+    ink: AppColors.soil600,
   ),
   CareEventType.fertilize => (
-  label: 'Fertilize',
-  icon: Symbols.compost_rounded,
-  tint: AppColors.gold100,
-  ink: AppColors.goldLedge,
+    label: 'Fertilize',
+    icon: Symbols.compost_rounded,
+    tint: AppColors.gold100,
+    ink: AppColors.goldLedge,
   ),
   CareEventType.prune => (
-  label: 'Prune',
-  icon: Symbols.content_cut_rounded,
-  tint: AppColors.leaf100,
-  ink: AppColors.leaf700,
+    label: 'Prune',
+    icon: Symbols.content_cut_rounded,
+    tint: AppColors.leaf100,
+    ink: AppColors.leaf700,
   ),
   CareEventType.harvest => (
-  label: 'Harvest',
-  icon: Symbols.shopping_basket_rounded,
-  tint: AppColors.tilePeach,
-  ink: AppColors.heat,
+    label: 'Harvest',
+    icon: Symbols.shopping_basket_rounded,
+    tint: AppColors.tilePeach,
+    ink: AppColors.heat,
   ),
   CareEventType.note => (
-  label: 'Add note',
-  icon: Symbols.edit_note_rounded,
-  tint: AppColors.tileSoil,
-  ink: AppColors.tileSoilLedge,
+    label: 'Add note',
+    icon: Symbols.edit_note_rounded,
+    tint: AppColors.tileSoil,
+    ink: AppColors.tileSoilLedge,
   ),
 };
 
@@ -156,11 +156,11 @@ class _Detail extends ConsumerWidget {
   final PlantingView view;
 
   Future<void> _log(
-      BuildContext context,
-      WidgetRef ref,
-      CareEventType type, {
-        String? note,
-      }) async {
+    BuildContext context,
+    WidgetRef ref,
+    CareEventType type, {
+    String? note,
+  }) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref
@@ -186,10 +186,10 @@ class _Detail extends ConsumerWidget {
   }
 
   Future<void> _setStatus(
-      BuildContext context,
-      WidgetRef ref,
-      PlantingStatus status,
-      ) async {
+    BuildContext context,
+    WidgetRef ref,
+    PlantingStatus status,
+  ) async {
     await ref.read(gardenRepositoryProvider).setStatus(view.id, status);
     if (context.mounted) context.go('/garden');
   }
@@ -678,8 +678,8 @@ class _CareGuide extends StatelessWidget {
     TaskType.fertilize => (icon: Symbols.compost_rounded, title: 'Feed'),
     TaskType.prune => (icon: Symbols.content_cut_rounded, title: 'Prune'),
     TaskType.harvest => (
-    icon: Symbols.shopping_basket_rounded,
-    title: 'Harvest',
+      icon: Symbols.shopping_basket_rounded,
+      title: 'Harvest',
     ),
     TaskType.other => (icon: Symbols.checklist_rounded, title: 'Check'),
   };
@@ -697,7 +697,7 @@ class _CareGuide extends StatelessWidget {
               color: AppColors.frost,
               title: 'Water',
               detail:
-              '${everyLabel(water.everyDaysOutdoor)} outdoors, '
+                  '${everyLabel(water.everyDaysOutdoor)} outdoors, '
                   '${everyLabel(water.everyDaysIndoor).toLowerCase()} '
                   'indoors',
             ),
@@ -783,17 +783,17 @@ class _CareLog extends ConsumerWidget {
     final rows = <({IconData icon, String text, String when})>[
       for (final e in events)
         (
-        icon: _icon(e.type),
-        text: careEventLabel(e),
-        when: careLogDate(e.at, today),
+          icon: _icon(e.type),
+          text: careEventLabel(e),
+          when: careLogDate(e.at, today),
         ),
       if (planted != null)
         (
-        icon: Symbols.potted_plant_rounded,
-        text: space == null
-            ? 'Planted'
-            : 'Planted on the ${spaceNoun(space.type)}',
-        when: careLogDate(planted, today),
+          icon: Symbols.potted_plant_rounded,
+          text: space == null
+              ? 'Planted'
+              : 'Planted on the ${spaceNoun(space.type)}',
+          when: careLogDate(planted, today),
         ),
     ];
     return GeauxCard(

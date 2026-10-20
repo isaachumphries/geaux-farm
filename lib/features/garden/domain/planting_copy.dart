@@ -72,22 +72,22 @@ String stageNote(Plant p, GrowthStage stage) {
   return switch (stage) {
     GrowthStage.sprouting => switch (p.category) {
       PlantCategory.herb || PlantCategory.vegetable =>
-      'Seedlings are tender. Keep the soil evenly moist, not soggy.',
+        'Seedlings are tender. Keep the soil evenly moist, not soggy.',
       _ => 'Keep the soil lightly moist while $name gets going.',
     },
     GrowthStage.growing => switch (p.category) {
       PlantCategory.vegetable =>
-      'Steady water and sun now mean a bigger harvest later.',
+        'Steady water and sun now mean a bigger harvest later.',
       PlantCategory.herb =>
-      'Pinch the tips often. It keeps $name bushy and full.',
+        'Pinch the tips often. It keeps $name bushy and full.',
       PlantCategory.fruit =>
-      'Watch for flowers. Fruit follows, so keep watering steady.',
+        'Watch for flowers. Fruit follows, so keep watering steady.',
       PlantCategory.flower =>
-      'Buds are on the way. Feed lightly and give it full light.',
+        'Buds are on the way. Feed lightly and give it full light.',
       PlantCategory.shrub =>
-      'Roots are spreading. Deep, less frequent watering helps.',
+        'Roots are spreading. Deep, less frequent watering helps.',
       PlantCategory.houseplant =>
-      'Turn the pot now and then so it grows evenly.',
+        'Turn the pot now and then so it grows evenly.',
     },
     GrowthStage.readyToHarvest => switch (p.category) {
       PlantCategory.herb => 'Snip what you need. More grows back.',
@@ -95,9 +95,9 @@ String stageNote(Plant p, GrowthStage stage) {
       _ => '$name is ready. Harvest often to keep it producing.',
     },
     GrowthStage.blooming =>
-    'In bloom! Remove spent flowers to keep new ones coming.',
+      'In bloom! Remove spent flowers to keep new ones coming.',
     GrowthStage.established =>
-    '$name has settled in. It needs less fuss from here.',
+      '$name has settled in. It needs less fuss from here.',
   };
 }
 

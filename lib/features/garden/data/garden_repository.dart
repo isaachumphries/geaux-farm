@@ -13,7 +13,7 @@ import '../domain/planting.dart';
 /// logged from GD-02, and status changes (harvested, removed).
 class GardenRepository {
   GardenRepository(this._db, {required this.now, Random? random})
-      : _random = random ?? Random.secure();
+    : _random = random ?? Random.secure();
 
   final AppDatabase _db;
   final DateTime Function() now;
@@ -35,19 +35,19 @@ class GardenRepository {
     await _db
         .into(_db.plantingsTable)
         .insert(
-      PlantingsTableCompanion.insert(
-        id: id,
-        plantId: plant.id,
-        spaceId: spaceId,
-        nickname: name.isEmpty ? plant.commonName : name,
-        setup: setup,
-        inContainer: inContainer,
-        startMethod: startMethod.json,
-        plantedOn: Value(plantedOn),
-        status: PlantingStatus.active,
-        createdAt: now(),
-      ),
-    );
+          PlantingsTableCompanion.insert(
+            id: id,
+            plantId: plant.id,
+            spaceId: spaceId,
+            nickname: name.isEmpty ? plant.commonName : name,
+            setup: setup,
+            inContainer: inContainer,
+            startMethod: startMethod.json,
+            plantedOn: Value(plantedOn),
+            status: PlantingStatus.active,
+            createdAt: now(),
+          ),
+        );
     return id;
   }
 
@@ -57,14 +57,14 @@ class GardenRepository {
     return _db
         .into(_db.careEventsTable)
         .insert(
-      CareEventsTableCompanion.insert(
-        id: _uuidV4(),
-        plantingId: plantingId,
-        type: type,
-        at: now(),
-        note: Value(text == null || text.isEmpty ? null : text),
-      ),
-    );
+          CareEventsTableCompanion.insert(
+            id: _uuidV4(),
+            plantingId: plantingId,
+            type: type,
+            at: now(),
+            note: Value(text == null || text.isEmpty ? null : text),
+          ),
+        );
   }
 
   /// Moves a planting to [status], e.g. harvested or removed. Rows are
@@ -86,7 +86,7 @@ class GardenRepository {
 }
 
 final gardenRepositoryProvider = Provider<GardenRepository>(
-      (ref) => GardenRepository(
+  (ref) => GardenRepository(
     ref.watch(appDatabaseProvider),
     now: ref.watch(clockProvider),
   ),

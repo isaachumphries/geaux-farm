@@ -40,19 +40,19 @@ final gardenSpacesProvider = StreamProvider<List<Space>>((ref) {
       .watch()
       .map(
         (rows) => [
-      for (final r in rows)
-        Space(
-          id: r.id,
-          type: r.type,
-          areaSqFt: r.areaSqFt,
-          sun: r.sun,
-          sunUnsure: r.sunUnsure,
-          rainExposed: r.rainExposed,
-          inContainerDefault: r.inContainerDefault,
-          isPrimary: r.isPrimary,
-        ),
-    ],
-  );
+          for (final r in rows)
+            Space(
+              id: r.id,
+              type: r.type,
+              areaSqFt: r.areaSqFt,
+              sun: r.sun,
+              sunUnsure: r.sunUnsure,
+              rainExposed: r.rainExposed,
+              inContainerDefault: r.inContainerDefault,
+              isPrimary: r.isPrimary,
+            ),
+        ],
+      );
 });
 
 /// Every logged care event.
@@ -63,17 +63,17 @@ final careLogProvider = StreamProvider<List<CareEvent>>((ref) {
       .watch()
       .map(
         (rows) => [
-      for (final r in rows)
-        CareEvent(
-          id: r.id,
-          plantingId: r.plantingId,
-          type: r.type,
-          at: r.at,
-          note: r.note,
-          photoPath: r.photoPath,
-        ),
-    ],
-  );
+          for (final r in rows)
+            CareEvent(
+              id: r.id,
+              plantingId: r.plantingId,
+              type: r.type,
+              at: r.at,
+              note: r.note,
+              photoPath: r.photoPath,
+            ),
+        ],
+      );
 });
 
 /// Every planting that is not removed, oldest first, joined with its
@@ -102,9 +102,9 @@ final gardenProvider = FutureProvider<List<PlantingView>>((ref) async {
 
 /// The planting with [id], or null when it is missing or removed.
 final plantingViewProvider = FutureProvider.family<PlantingView?, String>((
-    ref,
-    id,
-    ) async {
+  ref,
+  id,
+) async {
   final garden = await ref.watch(gardenProvider.future);
   for (final v in garden) {
     if (v.id == id) return v;

@@ -305,11 +305,11 @@ class _SeasonBanner extends ConsumerWidget {
     final line = profile == null || climate == null
         ? null
         : seasonLine(
-      city: profile.city,
-      latitude: profile.lat,
-      months: climate.months,
-      today: today,
-    );
+            city: profile.city,
+            latitude: profile.lat,
+            months: climate.months,
+            today: today,
+          );
     return GeauxCard(
       color: AppColors.leaf700,
       borderColor: null,
