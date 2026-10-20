@@ -15,13 +15,8 @@ class ScoreBreakdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final row in rows)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: _ScoreRowView(row: row),
-          ),
-      ],
+      spacing: AppSpacing.md,
+      children: [for (final row in rows) _ScoreRowView(row: row)],
     );
   }
 }
@@ -41,18 +36,21 @@ class _ScoreRowView extends StatelessWidget {
             Icon(
               _iconFor(row.factor),
               size: AppIconSize.md,
-              color: AppColors.soil600,
+              color: AppColors.leaf700,
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 row.factor.label,
-                style: AppText.label.copyWith(color: AppColors.soil900),
+                style: AppText.bodySm.copyWith(color: AppColors.soil900),
               ),
             ),
             Text(
               '${row.percent}%',
-              style: AppText.label.copyWith(color: AppColors.leaf700),
+              style: AppText.label.copyWith(
+                color: AppColors.leaf700,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ],
         ),
@@ -75,7 +73,10 @@ class _ScoreRowView extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
         Text(
           row.reason,
-          style: AppText.caption.copyWith(color: AppColors.soil600),
+          style: AppText.caption.copyWith(
+            color: AppColors.soil600,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );
@@ -84,9 +85,9 @@ class _ScoreRowView extends StatelessWidget {
 
 IconData _iconFor(ScoreFactor factor) => switch (factor) {
   ScoreFactor.climate => Symbols.thermostat_rounded,
-  ScoreFactor.light => Symbols.wb_sunny_rounded,
-  ScoreFactor.space => Symbols.square_foot_rounded,
+  ScoreFactor.light => Symbols.light_mode_rounded,
+  ScoreFactor.space => Symbols.straighten_rounded,
   ScoreFactor.care => Symbols.schedule_rounded,
-  ScoreFactor.goals => Symbols.flag_rounded,
+  ScoreFactor.goals => Symbols.restaurant_rounded,
   ScoreFactor.experience => Symbols.school_rounded,
 };

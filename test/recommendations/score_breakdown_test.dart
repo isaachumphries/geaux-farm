@@ -133,10 +133,10 @@ void main() {
     await _pump(tester, _sample);
 
     expect(find.byIcon(Symbols.thermostat_rounded), findsOneWidget);
-    expect(find.byIcon(Symbols.wb_sunny_rounded), findsOneWidget);
-    expect(find.byIcon(Symbols.square_foot_rounded), findsOneWidget);
+    expect(find.byIcon(Symbols.light_mode_rounded), findsOneWidget);
+    expect(find.byIcon(Symbols.straighten_rounded), findsOneWidget);
     expect(find.byIcon(Symbols.schedule_rounded), findsOneWidget);
-    expect(find.byIcon(Symbols.flag_rounded), findsOneWidget);
+    expect(find.byIcon(Symbols.restaurant_rounded), findsOneWidget);
     expect(find.byIcon(Symbols.school_rounded), findsOneWidget);
   });
 
