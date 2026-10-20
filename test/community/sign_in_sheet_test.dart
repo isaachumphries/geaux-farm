@@ -80,6 +80,60 @@ void main() {
     signedIn = 0;
   });
 
+  testWidgets('sign-in blocks tab navigation until dismissed', (tester) async {
+    tester.view.physicalSize = const Size(720, 1600);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    var switchedTab = false;
+    late Future<bool> result;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authRepositoryProvider.overrideWithValue(repo)],
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: StatefulBuilder(
+            builder: (context, setState) => Scaffold(
+              body: switchedTab
+                  ? const Text('Other tab opened')
+                  : Navigator(
+                      onGenerateRoute: (_) => MaterialPageRoute<void>(
+                        builder: (context) => Center(
+                          child: TextButton(
+                            onPressed: () {
+                              result = showSignInSheet(context);
+                            },
+                            child: const Text('Open sign in'),
+                          ),
+                        ),
+                      ),
+                    ),
+              bottomNavigationBar: TextButton(
+                onPressed: () => setState(() => switchedTab = true),
+                child: const Text('Other tab'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open sign in'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SignInSheet), findsOneWidget);
+
+    await tester.tap(find.text('Other tab'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.text('Other tab opened'), findsNothing);
+    expect(find.byType(SignInSheet), findsOneWidget);
+
+    await tester.tap(find.text('NOT NOW'));
+    await tester.pumpAndSettle();
+    expect(await result, isFalse);
+    await tester.tap(find.text('Other tab'));
+    await tester.pumpAndSettle();
+    expect(find.text('Other tab opened'), findsOneWidget);
+  });
+
   group('happy path', () {
     testWidgets('email -> code -> username calls the repository in order', (
       tester,

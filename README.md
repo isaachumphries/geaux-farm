@@ -28,6 +28,11 @@ and profile creation must not restore that user or complete the sign-in sheet
 after logout. These races are covered in
 `test/community/supabase_auth_repository_test.dart`.
 
+CM-04 opens on the root navigator so its modal barrier also blocks bottom-tab
+navigation. Dismissing it returns to the current tab without resuming a gated
+action; the nested-navigator interaction is covered in
+`test/community/sign_in_sheet_test.dart`.
+
 Hosted email delivery and device/restart acceptance remain open on issue #20.
 The maintainer approved partial integration of the tested implementation,
 including the documented sign-in copy and visual deviations; that approval

@@ -65,6 +65,7 @@ Future<bool> showSignInSheet(
 }) async {
   final done = await showModalBottomSheet<bool>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
