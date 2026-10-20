@@ -44,6 +44,7 @@ dependencies:
   geolocator: ^14.1.1
   geocoding: ^5.0.0
   flutter_timezone: ^5.1.1
+  supabase_flutter: ^2.18.3
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
 
   assets:
     - assets/plants/
+    - assets/plants/images/
 
   fonts:
     - family: Nunito
