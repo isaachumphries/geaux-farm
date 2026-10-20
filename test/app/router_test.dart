@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
 import 'package:geaux_farm/app/router.dart';
+import 'package:geaux_farm/features/garden/presentation/planting_detail_screen.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
@@ -48,6 +49,14 @@ Future<void> _go(WidgetTester tester, GoRouter router, String path) async {
 String _title(WidgetTester tester) {
   final appBar = tester.widget<AppBar>(find.byType(AppBar).last);
   return (appBar.title! as Text).data!;
+}
+
+/// GD-02 is the real [PlantingDetailScreen], not a placeholder; check it
+/// is on screen for [id].
+void _expectPlantingDetail(WidgetTester tester, String id) {
+  final screen = find.byType(PlantingDetailScreen);
+  expect(screen, findsOneWidget);
+  expect(tester.widget<PlantingDetailScreen>(screen).plantingId, id);
 }
 
 void main() {
@@ -121,7 +130,6 @@ void main() {
       '/settings': 'ST-01 Settings',
       '/settings/edit/space': 'OB-07 Edit step',
       '/garden': 'GD-01 My Garden',
-      '/garden/planting/p1': 'GD-02 Planting detail',
       '/garden/project/g1': 'GD-03 Guide project',
       '/care': 'CR-01 Care schedule',
       '/community': 'CM-01 Feed',
@@ -134,6 +142,10 @@ void main() {
       expect(_location(router).path, path);
       expect(_title(tester), title, reason: path);
     }
+
+    await _go(tester, router, '/garden/planting/p1');
+    expect(_location(router).path, '/garden/planting/p1');
+    _expectPlantingDetail(tester, 'p1');
 
     const screens = {
       onboardingStart: WelcomeScreen,
@@ -178,7 +190,7 @@ void main() {
     await tester.tap(find.text('Garden'));
     await tester.pump();
     await _go(tester, router, '/garden/planting/p1');
-    expect(_title(tester), 'GD-02 Planting detail');
+    _expectPlantingDetail(tester, 'p1');
 
     await tester.tap(find.text('Care'));
     await tester.pump();
