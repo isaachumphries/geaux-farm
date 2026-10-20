@@ -6,7 +6,11 @@ import 'package:geaux_farm/core/db/app_database.dart';
 import 'package:geaux_farm/features/catalog/domain/plant.dart';
 import 'package:geaux_farm/features/garden/data/garden_repository.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
+import 'package:geaux_farm/features/garden/application/grow_setup_controller.dart';
 import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
+import 'package:geaux_farm/features/garden/presentation/planting_added_screen.dart';
+import 'package:geaux_farm/features/recommendations/domain/compat_level.dart';
+import 'package:geaux_farm/features/recommendations/domain/compatibility.dart';
 import 'package:geaux_farm/features/onboarding/domain/space.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/compat_badge.dart';
@@ -169,8 +173,9 @@ void main() {
         final (db, router) = await _openSheet(tester);
 
         await _tapAdd(tester);
-        expect(find.text('Kale is in your garden!'), findsOneWidget);
         await settleDrift(tester);
+        expect(find.byType(PlantingAddedScreen), findsOneWidget);
+        expect(find.text('Kale is in your garden!'), findsOneWidget);
 
         final rows = await _plantings(tester, db);
         expect(rows, hasLength(1));
@@ -183,9 +188,23 @@ void main() {
         expect(r.startMethod, 'transplant');
         expect(r.plantedOn, DateTime(2026, 10, 7));
         expect(r.status, PlantingStatus.active);
-        expect(locationOf(router).path, '/garden/planting/${r.id}');
+
+        // PD-03 → HM-02 (plan/01 § PD-03 prototype).
+        await tester.tap(find.text('NOT NOW'));
+        await settleDrift(tester);
+        expect(find.byType(PlantingAddedScreen), findsNothing);
+        expect(locationOf(router).path, '/home');
       },
     );
+
+    testWidgets('PD-03 names the planting by its nickname', (tester) async {
+      await _openSheet(tester);
+      await tester.enterText(find.byType(TextField), 'Big Kale');
+      await tester.pump();
+      await _tapAdd(tester);
+      await settleDrift(tester);
+      expect(find.text('Big Kale is in your garden!'), findsOneWidget);
+    });
 
     testWidgets('records the setup, container, start, and nickname chosen', (
       tester,
@@ -321,6 +340,98 @@ void main() {
     });
   });
 
+  group('PD-02 setup', () {
+    Compatibility compat(int score) => Compatibility(
+      score: score,
+      level: compatLevelFor(score),
+      fits: const {},
+      inSeason: true,
+      outdoorViable: false,
+      monthStrip: List.filled(12, true),
+    );
+    // Scores by setup, so the badge shows which setup was scored.
+    final scores = {
+      GrowSetup.outdoor: compat(31),
+      GrowSetup.indoor: compat(64),
+      GrowSetup.greenhouse: compat(88),
+    };
+    List<Override> fakeScorer(AppDatabase db) => [
+      growScorerProvider.overrideWithValue(
+        (plant, setup) async => scores[setup]!,
+      ),
+    ];
+    int badge(WidgetTester tester) =>
+        tester.widget<CompatBadge>(find.byType(CompatBadge)).score;
+    const warning =
+        'This plant struggles outdoors in Baton Rouge. '
+        'Indoors or a greenhouse gives it a better shot.';
+
+    testWidgets('switching setup shows the new score on the badge', (
+      tester,
+    ) async {
+      await _openSheet(
+        tester,
+        plant: scored(kaleWith({}), score: 31, outdoorViable: false),
+        extra: fakeScorer,
+      );
+      expect(badge(tester), 31);
+
+      await tester.tap(find.text('Indoors'));
+      await tester.pumpAndSettle();
+      expect(badge(tester), 64);
+      await tester.tap(find.text('Greenhouse'));
+      await tester.pumpAndSettle();
+      expect(badge(tester), 88);
+    });
+
+    testWidgets('Outdoors on a plant that struggles outdoors warns', (
+      tester,
+    ) async {
+      await _openSheet(
+        tester,
+        plant: scored(kaleWith({}), outdoorViable: false),
+        extra: fakeScorer,
+      );
+      expect(_setup(tester), GrowSetup.outdoor);
+      expect(find.text(warning), findsOneWidget);
+      // Non-blocking: the plant can still be added.
+      final add = tester.widget<GeauxButton>(find.byType(GeauxButton));
+      expect(add.onPressed, isNotNull);
+
+      await tester.tap(find.text('Indoors'));
+      await tester.pumpAndSettle();
+      expect(find.text(warning), findsNothing);
+    });
+
+    testWidgets('Indoors on a windowsill never warns', (tester) async {
+      await _openSheet(
+        tester,
+        space: SpaceType.windowsill,
+        plant: scored(kaleWith({}), outdoorViable: false),
+        extra: fakeScorer,
+      );
+      expect(_setup(tester), GrowSetup.indoor);
+      expect(find.text(warning), findsNothing);
+    });
+
+    testWidgets('an outdoor-viable plant never warns', (tester) async {
+      await _openSheet(tester);
+      expect(_setup(tester), GrowSetup.outdoor);
+      expect(find.textContaining('struggles outdoors'), findsNothing);
+    });
+
+    testWidgets('shows the plan copy for the toggle and the date helper', (
+      tester,
+    ) async {
+      await _openSheet(tester);
+      expect(find.text('In a pot or container'), findsOneWidget);
+      expect(
+        find.text('Already growing it? Set the date you planted.'),
+        findsOneWidget,
+      );
+    });
+  });
+
   group('labels', () {
     test('time to grow follows the maturity kind', () {
       const start = PlantStart(
@@ -342,6 +453,14 @@ void main() {
       expect(startMethodLabel(StartMethod.seed), 'Seed');
       expect(startMethodLabel(StartMethod.transplant), 'Transplant');
       expect(startMethodLabel(StartMethod.cutting), 'Cutting');
+    });
+
+    test('outdoor warning names the city', () {
+      expect(
+        outdoorWarningCopy('Baton Rouge'),
+        'This plant struggles outdoors in Baton Rouge. '
+        'Indoors or a greenhouse gives it a better shot.',
+      );
     });
 
     test('planted date says Today only for today', () {

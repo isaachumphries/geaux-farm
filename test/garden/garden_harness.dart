@@ -8,6 +8,7 @@ import 'package:geaux_farm/app/theme.dart';
 import 'package:geaux_farm/core/db/app_database.dart';
 import 'package:geaux_farm/features/care/domain/care_event.dart';
 import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
+import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
 import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
@@ -20,6 +21,7 @@ import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:go_router/go_router.dart';
 
 import '../helpers/file_asset_bundle.dart';
+import '../helpers/fixed_climate.dart';
 import '../helpers/persisted_app_harness.dart' show settleDrift;
 
 /// Wednesday morning, the "now" of every garden widget test.
@@ -132,16 +134,18 @@ Future<void> seedCare(
       ),
     );
 
-/// Overrides that feed the garden providers from [db] and the bundled
-/// catalog, with the clock fixed at [now].
+/// Overrides that feed the garden providers from [db], the bundled
+/// catalog, and the Baton Rouge climate, with the clock fixed at [now].
 List<Override> gardenOverrides(AppDatabase db, {DateTime? now}) => [
   appDatabaseProvider.overrideWithValue(db),
   assetBundleProvider.overrideWithValue(FileAssetBundle()),
+  climateProvider.overrideWith(FixedClimate.new),
   clockProvider.overrideWithValue(() => now ?? gardenNow),
 ];
 
 /// Pumps GD-01, GD-02, and a launcher for the PD-02 sheet in a small
-/// router, over [db]. RC-01 is a stub that only names its route.
+/// router, over [db]. HM-02 and RC-01 are stubs that only name their
+/// routes.
 ///
 /// [plantToGrow] adds a "Grow it" button at `/` that opens the sheet.
 Future<GoRouter> pumpGarden(
@@ -185,6 +189,11 @@ Future<GoRouter> pumpGarden(
                 PlantingDetailScreen(plantingId: state.pathParameters['id']!),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('HM-02 stub'))),
       ),
       GoRoute(
         path: '/home/recommendations',
