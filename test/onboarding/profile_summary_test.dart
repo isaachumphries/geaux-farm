@@ -21,6 +21,7 @@ import 'package:geaux_farm/features/weather/data/weather_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import '../helpers/file_asset_bundle.dart';
 import '../helpers/fixed_climate.dart';
 import '../helpers/in_memory_database.dart';
 import '../helpers/inert_notification_plugin.dart';
@@ -40,6 +41,7 @@ Future<ProviderContainer> _pumpSummary(WidgetTester tester) async {
     ProviderScope(
       overrides: [
         inMemoryDatabaseOverride(),
+        fileAssetBundleOverride(),
         // The app root now starts care reminders; keep them off the OS.
         notificationServiceProvider.overrideWith(
           (ref) => NotificationService(
