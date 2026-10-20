@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
+import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
+import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
@@ -27,8 +29,8 @@ final onboardedProfile = UserProfile(
 );
 
 /// Overrides for pumping the whole app: [profile] instead of the Drift
-/// row, the default space, the plan/04 climate instead of an archive
-/// build, and the recorded Baton Rouge forecast instead
+/// row, the default space, no plantings, the plan/04 climate instead of an
+/// archive build, and the recorded Baton Rouge forecast instead
 /// of Open-Meteo.
 List<Override> appOverrides({required UserProfile profile}) {
   final forecast = File('test/fixtures/open_meteo/forecast_baton_rouge.json')
@@ -36,6 +38,7 @@ List<Override> appOverrides({required UserProfile profile}) {
   return [
     userProfileProvider.overrideWith((ref) => Stream.value(profile)),
     primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
+    plantingsProvider.overrideWith((ref) => Stream.value(const <Planting>[])),
     climateProvider.overrideWith(FixedClimate.new),
     forecastClientProvider.overrideWithValue(
       OpenMeteoForecastClient(
