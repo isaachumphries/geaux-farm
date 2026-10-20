@@ -5,6 +5,7 @@ import '../../onboarding/domain/space.dart';
 import '../../weather/domain/weather.dart';
 import 'care_event.dart';
 import 'care_tasks.dart';
+import 'rain_hint.dart';
 import 'schedule_math.dart';
 import 'slot.dart';
 import 'stage.dart';
@@ -25,6 +26,7 @@ class ScheduledCareTask {
     required this.due,
     required this.slot,
     required this.overdue,
+    this.rainSkip = false,
     this.note,
   });
 
@@ -38,6 +40,9 @@ class ScheduledCareTask {
 
   /// True when [due] is before today.
   final bool overdue;
+
+  /// True on a water task the rain hint flags (see [rainHint]).
+  final bool rainSkip;
   final String? note;
 
   @override
@@ -50,16 +55,25 @@ class ScheduledCareTask {
           other.due == due &&
           other.slot == slot &&
           other.overdue == overdue &&
+          other.rainSkip == rainSkip &&
           other.note == note;
 
   @override
-  int get hashCode =>
-      Object.hash(plantingId, nickname, kind, due, slot, overdue, note);
+  int get hashCode => Object.hash(
+    plantingId,
+    nickname,
+    kind,
+    due,
+    slot,
+    overdue,
+    rainSkip,
+    note,
+  );
 
   @override
   String toString() =>
       'ScheduledCareTask($plantingId, $kind, due $due, $slot, '
-      'overdue: $overdue)';
+      'overdue: $overdue, rainSkip: $rainSkip)';
 }
 
 /// The care list for [today] (local midnight). [now] is the moment used to
@@ -95,7 +109,12 @@ List<ScheduledCareTask> buildCareSchedule({
       throw StateError('No space ${pl.spaceId} for planting ${pl.id}');
     }
 
-    void add(CareTaskKind kind, DateTime due, String? note) {
+    void add(
+      CareTaskKind kind,
+      DateTime due,
+      String? note, {
+      bool rainSkip = false,
+    }) {
       if (due.isAfter(windowEnd)) return;
       tasks.add(
         ScheduledCareTask(
@@ -105,16 +124,25 @@ List<ScheduledCareTask> buildCareSchedule({
           due: due,
           slot: findSlot(due, availability, now),
           overdue: due.isBefore(todayDay),
+          rainSkip: rainSkip,
           note: note,
         ),
       );
     }
 
     if (p.water != null) {
+      final due = waterDue(pl, p, space, events, days, todayDay);
       add(
         CareTaskKind.water,
-        waterDue(pl, p, space, events, days, todayDay),
+        due,
         null,
+        rainSkip: rainHint(
+          pl: pl,
+          s: space,
+          due: due,
+          today: todayDay,
+          days: days,
+        ),
       );
     }
     final progress = stageOf(pl, p, todayDay).progress;

@@ -5,6 +5,7 @@ import 'package:geaux_farm/features/care/domain/slot.dart';
 import 'package:geaux_farm/features/care/domain/water_due.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/onboarding/domain/availability.dart';
+import 'package:geaux_farm/features/weather/domain/weather.dart';
 
 import '../helpers/care_fixtures.dart';
 
@@ -14,6 +15,7 @@ List<ScheduledCareTask> _schedule({
   List<Planting>? plantings,
   List<Map<String, Object>> tasks = const [],
   Availability? availability,
+  Map<DateTime, WeatherDay>? days,
 }) => buildCareSchedule(
   today: today,
   now: now ?? today,
@@ -22,7 +24,7 @@ List<ScheduledCareTask> _schedule({
   spacesById: {'s1': careSpace()},
   events: const [],
   availability: availability ?? careAllFree,
-  days: careHotWeather(),
+  days: days ?? careHotWeather(),
 );
 
 void main() {
@@ -41,6 +43,43 @@ void main() {
           .toList();
       expect(water, hasLength(1));
       expect(water.single.due, expected);
+    });
+
+    test('flags a water task with the rain hint, and no other task', () {
+      final today = DateTime(2026, 5, 2);
+      final tomorrow = DateTime(2026, 5, 3);
+      final base = careHotWeather()[tomorrow]!;
+      final rainy = {
+        ...careHotWeather(),
+        tomorrow: WeatherDay(
+          date: base.date,
+          weatherCode: base.weatherCode,
+          tmaxF: base.tmaxF,
+          tminF: base.tminF,
+          precipIn: 0.5,
+          precipProb: 80,
+          uvMax: null,
+          sunshineS: 0,
+          daylightS: 0,
+          et0In: base.et0In,
+          sunrise: '',
+          sunset: '',
+        ),
+      };
+      const tasks = [
+        {'type': 'fertilize', 'everyDays': 1, 'note': 'Feed'},
+      ];
+      final wet = _schedule(today: today, tasks: tasks, days: rainy);
+      expect(
+        wet.where((t) => t.kind == CareTaskKind.water).single.rainSkip,
+        isTrue,
+      );
+      expect(
+        wet.where((t) => t.kind == CareTaskKind.fertilize).single.rainSkip,
+        isFalse,
+      );
+      final dry = _schedule(today: today, tasks: tasks);
+      expect(dry.any((t) => t.rainSkip), isFalse);
     });
 
     test('leaves out plantings that are not active or lack a date', () {

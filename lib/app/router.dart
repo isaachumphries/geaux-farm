@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/care/presentation/care_screen.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
 import '../features/onboarding/data/profile_providers.dart';
 import '../features/onboarding/domain/user_profile.dart';
@@ -124,7 +125,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
           StatefulShellBranch(
-            routes: [_placeholder('/care', 'CR-01 Care schedule')],
+            routes: [
+              GoRoute(
+                path: '/care',
+                builder: (context, state) =>
+                    CareScreen(date: careDateFrom(state.uri)),
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [
