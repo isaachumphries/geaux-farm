@@ -4,13 +4,16 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
+import '../../onboarding/data/profile_providers.dart';
 import '../data/weather_provider.dart';
 import '../domain/weather.dart';
+import '../domain/weather_format.dart';
 import 'weather_icons.dart';
 
 /// WeatherMini for one location, wired to [weatherProvider].
 ///
-/// [onTap] opens WX-01 once that screen exists; null hides the chevron.
+/// [onTap] opens WX-01; null hides the chevron. Temperatures follow the
+/// profile's units.
 class WeatherMiniCard extends ConsumerWidget {
   const WeatherMiniCard({
     super.key,
@@ -26,7 +29,11 @@ class WeatherMiniCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = weatherProvider((lat, lon));
+    final metric = ref.watch(
+      userProfileProvider.select((p) => p.value?.units == 'metric'),
+    );
     return WeatherMini(
+      metric: metric,
       state: ref.watch(provider),
       now: ref.watch(weatherClockProvider)(),
       onRetry: () => ref.read(provider.notifier).refresh(force: true),
@@ -44,9 +51,13 @@ class WeatherMini extends StatelessWidget {
     required this.now,
     required this.onRetry,
     this.onTap,
+    this.metric = false,
   });
 
   final AsyncValue<WeatherState> state;
+
+  /// Show °C instead of °F.
+  final bool metric;
 
   /// Used for the "Updated … ago" line after a failed refresh.
   final DateTime now;
@@ -60,7 +71,12 @@ class WeatherMini extends StatelessWidget {
     final data = state.value;
     final Widget child;
     if (data != null) {
-      child = _Data(state: data, now: now, showChevron: onTap != null);
+      child = _Data(
+        state: data,
+        now: now,
+        metric: metric,
+        showChevron: onTap != null,
+      );
     } else if (state.hasError) {
       child = _Error(onRetry: onRetry);
     } else {
@@ -102,11 +118,13 @@ class _Data extends StatelessWidget {
   const _Data({
     required this.state,
     required this.now,
+    required this.metric,
     required this.showChevron,
   });
 
   final WeatherState state;
   final DateTime now;
+  final bool metric;
   final bool showChevron;
 
   @override
@@ -143,7 +161,7 @@ class _Data extends StatelessWidget {
                 textBaseline: TextBaseline.alphabetic,
                 children: [
                   Text(
-                    '${current.temperatureF.round()}°',
+                    '${displayTemp(current.temperatureF, metric: metric)}°',
                     style: AppText.h1.copyWith(color: AppColors.soil900),
                   ),
                   const SizedBox(width: AppSpacing.sm),
@@ -167,7 +185,8 @@ class _Data extends StatelessWidget {
                       icon: Symbols.device_thermostat_rounded,
                       color: AppColors.heat,
                       text:
-                          'H ${today.tmaxF.round()} / L ${today.tminF.round()}',
+                          'H ${displayTemp(today.tmaxF, metric: metric)} / '
+                          'L ${displayTemp(today.tminF, metric: metric)}',
                       style: rowText,
                     ),
                     _Stat(
