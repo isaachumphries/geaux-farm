@@ -261,6 +261,85 @@ void main() {
   });
 
   group('authChanges', () {
+    test('a pending profile insert cannot restore a signed-out user', () async {
+      await signIn();
+      final reached = Completer<void>();
+      final response = Completer<http.Response>();
+      backend.handlers['POST /rest/v1/profiles'] = (_) {
+        reached.complete();
+        return response.future;
+      };
+      backend.handlers['POST /auth/v1/logout'] = (_) => http.Response('', 204);
+      final pending = repo.createProfile('isaac');
+      await reached.future;
+      await repo.signOut();
+      final rejected = expectLater(pending, throwsA(isA<AuthRequiredException>()));
+      response.complete(http.Response('', 201));
+      await rejected;
+
+      expect(repo.currentUser, isNull);
+    });
+
+    test(
+      'OTP profile resolution cannot complete sign-in after sign-out',
+      () async {
+        backend.handlers['POST /auth/v1/verify'] = (_) => _json(_session());
+        final reached = Completer<void>();
+        final response = Completer<http.Response>();
+        backend.handlers['GET /rest/v1/profiles'] = (_) {
+          reached.complete();
+          return response.future;
+        };
+        backend.handlers['POST /auth/v1/logout'] = (_) =>
+            http.Response('', 204);
+        final pending = repo.verifyEmailCode('isaac@example.com', '481926');
+        await reached.future;
+        await repo.signOut();
+        final rejected = expectLater(
+          pending,
+          throwsA(isA<AuthRequiredException>()),
+        );
+        response.complete(
+          _json([
+            {'username': 'isaac'},
+          ]),
+        );
+        await rejected;
+
+        expect(repo.currentUser, isNull);
+      },
+    );
+
+    test('sign-out wins over an in-flight profile read', () async {
+      await signIn(username: 'isaac');
+      final reached = Completer<void>();
+      final response = Completer<http.Response>();
+      backend.handlers['GET /rest/v1/profiles'] = (_) {
+        if (!reached.isCompleted) reached.complete();
+        return response.future;
+      };
+      backend.handlers['POST /auth/v1/logout'] = (_) => http.Response('', 204);
+      final seen = <AuthUser?>[];
+      final signedOut = Completer<void>();
+      final sub = repo.authChanges().listen((user) {
+        seen.add(user);
+        if (user == null && !signedOut.isCompleted) signedOut.complete();
+      });
+      addTearDown(sub.cancel);
+      await reached.future;
+      await repo.signOut();
+      await signedOut.future;
+      response.complete(
+        _json([
+          {'username': 'isaac'},
+        ]),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(repo.currentUser, isNull);
+      expect(seen, [null]);
+    });
+
     test('emits the user after verify, the new username after '
         'createProfile, and null after sign-out', () async {
       final seen = <AuthUser?>[];

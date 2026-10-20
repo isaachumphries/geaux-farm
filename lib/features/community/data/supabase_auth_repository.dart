@@ -36,7 +36,10 @@ class SupabaseAuthRepository implements AuthRepository {
       final mine = ++generation;
       try {
         final user = await _resolve(_auth.currentUser);
-        if (mine == generation && !controller.isClosed) controller.add(user);
+        if (mine == generation && !controller.isClosed) {
+          _current = user;
+          controller.add(user);
+        }
       } on Object catch (e, st) {
         if (mine == generation && !controller.isClosed) {
           controller.addError(e, st);
@@ -86,6 +89,10 @@ class SupabaseAuthRepository implements AuthRepository {
         }
         final user = await _resolve(response.user);
         if (user == null) throw const InvalidCodeException();
+        if (_auth.currentUser?.id != user.id) {
+          throw const AuthRequiredException();
+        }
+        _current = user;
         return user;
       });
 
@@ -114,6 +121,9 @@ class SupabaseAuthRepository implements AuthRepository {
       if (e.code == '23505') throw const UsernameTakenException();
       rethrow;
     }
+    if (_auth.currentUser?.id != user.id) {
+      throw const AuthRequiredException();
+    }
     _current = AuthUser(
       id: user.id,
       email: user.email ?? '',
@@ -133,10 +143,7 @@ class SupabaseAuthRepository implements AuthRepository {
   // leave the sheet spinning for seven seconds when offline.
 
   Future<AuthUser?> _resolve(User? user) async {
-    if (user == null) {
-      _current = null;
-      return null;
-    }
+    if (user == null) return null;
     final row = await _guard(
       () => _client
           .from('profiles')
@@ -145,7 +152,7 @@ class SupabaseAuthRepository implements AuthRepository {
           .maybeSingle()
           .retry(enabled: false),
     );
-    return _current = AuthUser(
+    return AuthUser(
       id: user.id,
       email: user.email ?? '',
       username: row?['username'] as String?,
