@@ -232,6 +232,7 @@ class _CategoryArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scale = height / _artHeight;
     final (:tint, :icon, :ink) = plantArtStyle(category);
     return Container(
       height: height,
