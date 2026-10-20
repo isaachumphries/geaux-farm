@@ -26,10 +26,12 @@ class FrostLine extends StatelessWidget {
     if (spring == null) return const SizedBox.shrink();
     final fall = fallFrostLine(firstFallFrostDoy, lat);
     return ClimateInfoLine(
-      icon: Symbols.severe_cold_rounded,
-      tile: AppColors.tileSoil,
-      ledge: AppColors.tileSoilLedge,
-      lines: [spring, if (fall != null) fall],
+      icon: Symbols.ac_unit_rounded,
+      tile: AppColors.tileSky,
+      ledge: AppColors.frost,
+      label: 'Frost',
+      divided: true,
+      lines: [spring, ?fall],
     );
   }
 }
