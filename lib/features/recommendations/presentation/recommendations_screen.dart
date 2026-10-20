@@ -138,13 +138,9 @@ class _List extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         if (plants.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Text(
-              'No plants match. Try another search or filter.',
-              textAlign: TextAlign.center,
-              style: AppText.bodySm.copyWith(color: AppColors.soil600),
-            ),
+          const GeauxEmptyState(
+            message: 'No plants match. Try another search or filter.',
+            icon: Symbols.search_off_rounded,
           ),
         for (final s in plants)
           Padding(

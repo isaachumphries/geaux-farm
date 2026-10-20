@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
+import 'package:geaux_farm/app/widgets/widgets.dart';
 import 'package:geaux_farm/features/catalog/domain/plant.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
@@ -232,5 +233,20 @@ void main() {
     await _pump(tester);
     await _chip(tester, 'Low maintenance');
     expect(_shown(tester), ['herb']);
+  });
+
+  testWidgets('Herbs + "lavandula" → EmptyState, no cards', (tester) async {
+    await _pump(tester);
+    await _chip(tester, 'Herbs');
+    await _search(tester, 'lavandula');
+    expect(find.byType(GeauxEmptyState), findsOneWidget);
+    expect(find.byType(PlantListCard), findsNothing);
+  });
+
+  testWidgets('search "zzz" with All → EmptyState, no cards', (tester) async {
+    await _pump(tester);
+    await _search(tester, 'zzz');
+    expect(find.byType(GeauxEmptyState), findsOneWidget);
+    expect(find.byType(PlantListCard), findsNothing);
   });
 }
