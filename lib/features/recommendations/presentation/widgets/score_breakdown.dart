@@ -4,6 +4,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../../app/theme.dart';
 import '../../domain/score_reasons.dart';
 
+/// Bar thickness; the PD-01 frame bars are ~10 dp tall.
+const _barHeight = 10.0;
+
 /// Six factor rows, each with its fit percent, a bar, and a plain-language
 /// reason (plan/04 § Score breakdown).
 class ScoreBreakdown extends StatelessWidget {
@@ -60,7 +63,7 @@ class _ScoreRowView extends StatelessWidget {
           child: ColoredBox(
             color: AppColors.stone200,
             child: SizedBox(
-              height: AppSizes.scoreBarHeight,
+              height: _barHeight,
               width: double.infinity,
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,

@@ -15,6 +15,9 @@ import 'widgets/plant_card.dart';
 import 'widgets/score_breakdown.dart';
 import 'widgets/season_chip.dart';
 
+/// Hero band height; the PD-01 frame band measures ~282 dp from the top.
+const _heroHeight = 280.0;
+
 /// PD-01 plant detail: one plant's fit breakdown, care, and planting window,
 /// with a sticky "Grow this" action (plan/01 § Screen PD-01).
 class PlantDetailScreen extends ConsumerWidget {
@@ -78,12 +81,12 @@ class _DetailBody extends StatelessWidget {
                   top: 0,
                   left: 0,
                   right: 0,
-                  height: AppSizes.heroHeight,
+                  height: _heroHeight,
                   child: _Hero(plant: plant),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(
-                    top: AppSizes.heroHeight - AppRadii.sheet,
+                    top: _heroHeight - AppRadii.sheet,
                   ),
                   child: DecoratedBox(
                     decoration: const BoxDecoration(
@@ -203,7 +206,7 @@ class _Hero extends StatelessWidget {
           alignment: Alignment.topCenter,
           child: CategoryArt(
             category: plant.category,
-            height: AppSizes.heroHeight - AppRadii.sheet,
+            height: _heroHeight - AppRadii.sheet,
           ),
         ),
       ),
