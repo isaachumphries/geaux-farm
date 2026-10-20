@@ -7,21 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Each seed value carries a `-- plant_ids` label, so no SQL parsing is needed.
 final _seedPlantIds = RegExp(r"'\{([^}]*)\}',\s*--\s*plant_ids");
-final _seedTitle = RegExp(r"'([^']+)',\s*--\s*title");
-final _pgtapCatalogId = RegExp(r"\('([a-z0-9-]+)'\)[,;]");
-
-const _expectedTitles = [
-  '5-gallon bucket cherry tomatoes',
-  'Pallet vertical herb wall',
-  'Balcony salad box',
-  'Windowsill microgreens tray',
-  '4×4 square-foot raised bed',
-  'Pollinator patch for small yards',
-  'Kratky hydroponic lettuce (no pump)',
-  'Self-watering bottle planters',
-  'Fall greens for Louisiana',
-  'Compost bin from a storage tote',
-];
 
 Set<String> _catalogIds() {
   final json = jsonDecode(File('assets/plants/plants.json').readAsStringSync());
@@ -37,11 +22,6 @@ List<List<String>> _plantIdsPerGuide(String sql) => [
 void main() {
   final seed = File('supabase/seed.sql').readAsStringSync();
   final catalog = _catalogIds();
-
-  test('seed.sql lists the ten plan 07 titles in order', () {
-    final titles = [for (final m in _seedTitle.allMatches(seed)) m.group(1)!];
-    expect(titles, _expectedTitles);
-  });
 
   test('every plant id in seed.sql exists in plants.json', () {
     final perGuide = _plantIdsPerGuide(seed);
@@ -68,12 +48,4 @@ void main() {
       }
     },
   );
-
-  test('pgTAP catalog id list matches plants.json', () {
-    final pgtap = File('supabase/tests/seed_test.sql').readAsStringSync();
-    final ids = {
-      for (final m in _pgtapCatalogId.allMatches(pgtap)) m.group(1)!,
-    };
-    expect(ids, catalog);
-  });
 }

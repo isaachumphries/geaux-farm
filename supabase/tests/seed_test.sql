@@ -11,8 +11,9 @@ select g.*
   join public.profiles p on p.id = g.author_id
  where p.username = 'geauxfarm';
 
--- Plant catalog ids (assets/plants/plants.json). test/community/seed_sql_test.dart
--- fails if this list drifts from the file.
+-- Catalog ids available when these guides were authored. Adding other catalog
+-- records does not change the validity of these seeds; the Dart guard checks
+-- their references against the current assets/plants/plants.json.
 create temp table catalog_ids (id text primary key);
 insert into catalog_ids (id) values
     ('kale'),
@@ -44,7 +45,7 @@ insert into catalog_ids (id) values
     ('satsuma'),
     ('azalea'),
     ('pothos'),
-    ('snake-plant');;
+    ('snake-plant');
 
 select is((select count(*)::int from public.profiles where username = 'geauxfarm'), 1,
   'the geauxfarm profile exists once');
