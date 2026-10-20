@@ -39,5 +39,5 @@ class InertNotificationPlugin implements NotificationPlugin {
   Future<void> cancelAll() async {}
 
   @override
-  Future<List<int>> pendingIds() async => const [];
+  Future<List<({int id, String? payload})>> pending() async => const [];
 }

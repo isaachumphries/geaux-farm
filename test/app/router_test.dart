@@ -119,7 +119,7 @@ void main() {
     final router = await _pumpApp(tester, onboardedProfile);
     const placeholders = {
       '/home/recommendations': 'RC-01 Recommendations',
-      '/settings': 'ST-01 Settings',
+      '/settings': 'Settings',
       '/settings/edit/space': 'OB-07 Edit step',
       '/garden': 'GD-01 My Garden',
       '/garden/planting/p1': 'GD-02 Planting detail',
@@ -209,7 +209,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     // Settings is pushed over Home, so Back returns there.
-    expect(find.text('ST-01 Settings'), findsOneWidget);
+    expect(find.text('Settings'), findsOneWidget);
     expect(router.canPop(), isTrue);
     await tester.pumpWidget(const SizedBox());
   });

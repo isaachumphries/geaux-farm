@@ -25,7 +25,7 @@ void main() {
     expect(find.text('Geaux Farm'), findsNothing);
     expect(find.text('Pick your first plant'), findsOneWidget);
 
-    // plants.json comes from the real asset bundle.
+    // plants.json is read from assets/ by the harness bundle.
     for (var i = 0; i < 20 && find.byType(PlantCard).evaluate().isEmpty; i++) {
       await tester.runAsync(() => Future<void>.delayed(Duration.zero));
       await tester.pump();

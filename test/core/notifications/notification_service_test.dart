@@ -45,7 +45,7 @@ class FakePlugin implements NotificationPlugin {
   int permissionRequests = 0;
   final cancelledIds = <int>[];
   int cancelAllCount = 0;
-  List<int> pending = const [];
+  List<({int id, String? payload})> pendingNotices = const [];
 
   @override
   Future<void> initialize({
@@ -107,7 +107,7 @@ class FakePlugin implements NotificationPlugin {
   }
 
   @override
-  Future<List<int>> pendingIds() async => pending;
+  Future<List<({int id, String? payload})>> pending() async => pendingNotices;
 }
 
 Future<void> _seedProfile(AppDatabase db) async {
@@ -300,11 +300,16 @@ void main() {
   });
 
   group('cancel and pending', () {
-    test('delegates cancel, cancelAll, and pendingIds to the plugin', () async {
-      plugin.pending = [5, 9];
+    test('delegates cancel, cancelAll, and pending to the plugin', () async {
+      plugin.pendingNotices = [
+        (id: 5, payload: null),
+        (id: 9, payload: 'care?date=2026-05-14'),
+      ];
       final svc = service();
 
-      expect(await svc.pendingIds(), [5, 9]);
+      final pending = await svc.pending();
+      expect(pending.map((notice) => notice.id), [5, 9]);
+      expect(pending.last.payload, 'care?date=2026-05-14');
       await svc.cancel(5);
       await svc.cancelAll();
 

@@ -15,6 +15,7 @@ import '../features/onboarding/presentation/profile_summary_screen.dart';
 import '../features/onboarding/presentation/space_step_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
 import '../features/recommendations/presentation/plant_detail_screen.dart';
+import '../features/settings/presentation/settings_screen.dart';
 import '../features/weather/presentation/weather_screen.dart';
 import 'tab_shell.dart';
 import 'titled_scaffold.dart';
@@ -150,9 +151,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/weather',
         builder: (context, state) => const WeatherScreen(),
       ),
-      _placeholder(
-        '/settings',
-        'ST-01 Settings',
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
         routes: [_placeholder('edit/:step', 'OB-07 Edit step')],
       ),
     ],
