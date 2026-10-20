@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
@@ -57,6 +58,13 @@ Future<GoRouter> _pumpApp(WidgetTester tester, _TapPlugin plugin) async {
 Uri _location(GoRouter router) =>
     router.routerDelegate.currentConfiguration.uri;
 
+/// Unmounts the app. Drift cancels its table streams on a zero-delay timer
+/// (CR-01 watches them), so one more pump lets it fire before the test ends.
+Future<void> _teardown(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox());
+  await tester.pump(Duration.zero);
+}
+
 void main() {
   group('notification taps reach the router', () {
     testWidgets('a care payload opens that day on the care schedule', (
@@ -70,6 +78,7 @@ void main() {
       await tester.pump();
 
       expect(_location(router).toString(), '/care?date=2026-05-14');
+      await _teardown(tester);
     });
 
     testWidgets('a malformed care date opens the plain care schedule', (
@@ -83,6 +92,7 @@ void main() {
       await tester.pump();
 
       expect(_location(router).toString(), '/care');
+      await _teardown(tester);
     });
 
     testWidgets('a payload that launched the app is routed once it starts', (
@@ -92,6 +102,7 @@ void main() {
       final router = await _pumpApp(tester, plugin);
 
       expect(_location(router).toString(), '/care?date=2026-05-14');
+      await _teardown(tester);
     });
   });
 }
