@@ -4,10 +4,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
 import 'package:geaux_farm/core/db/app_database.dart';
+import 'package:geaux_farm/features/care/application/care_schedule_provider.dart';
+import 'package:geaux_farm/features/care/domain/care_schedule.dart';
+import 'package:geaux_farm/features/care/domain/slot.dart';
+import 'package:geaux_farm/features/care/presentation/widgets/task_row.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
+import 'package:geaux_farm/features/community/application/community_feed_provider.dart';
+import 'package:geaux_farm/features/community/presentation/widgets/guide_card.dart';
 import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
 import 'package:geaux_farm/features/garden/application/garden_provider.dart';
 import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
@@ -27,7 +34,10 @@ import 'package:geaux_farm/features/recommendations/application/clock_provider.d
 import 'package:geaux_farm/features/recommendations/application/recommendations_provider.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_card.dart';
+import 'package:geaux_farm/features/weather/application/garden_alerts_provider.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
+import 'package:geaux_farm/features/weather/domain/garden_alerts.dart';
+import 'package:geaux_farm/features/weather/presentation/alert_banner.dart';
 import 'package:geaux_farm/features/weather/data/weather_provider.dart';
 import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
 import 'package:go_router/go_router.dart';
@@ -35,6 +45,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../helpers/community_fixtures.dart';
 import '../helpers/fixed_climate.dart';
 import '../helpers/in_memory_database.dart';
 import '../recommendations/fixtures/scored.dart';
@@ -145,6 +156,7 @@ Future<ProviderContainer> _pump(
   Stream<UserProfile>? profile,
   List<Planting>? plantings,
   List<PlantingView>? garden,
+  List<Override> extra = const [],
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -174,6 +186,7 @@ Future<ProviderContainer> _pump(
       // the two pumps below; override the resolved views instead.
       if (garden != null) gardenProvider.overrideWith((ref) async => garden),
       inMemoryDatabaseOverride(),
+      ...extra,
     ],
   );
   final router = GoRouter(
@@ -190,6 +203,12 @@ Future<ProviderContainer> _pump(
             Text('PD-01 stub: ${state.pathParameters['plantId']}'),
       ),
       GoRoute(path: '/settings', builder: (_, _) => const Text('ST-01 stub')),
+      GoRoute(path: '/care', builder: (_, _) => const Text('CR-01 stub')),
+      GoRoute(
+        path: '/community/guide/:id',
+        builder: (_, state) =>
+            Text('CM-02 stub: ${state.pathParameters['id']}'),
+      ),
     ],
   );
   addTearDown(router.dispose);
@@ -226,6 +245,31 @@ Future<void> _pickLater(WidgetTester tester) async {
   await tester.tap(button);
   await tester.pump();
 }
+
+ScheduledCareTask _careTask(String name, DateTime slot) => ScheduledCareTask(
+  plantingId: name,
+  nickname: name,
+  kind: CareTaskKind.water,
+  due: DateTime(slot.year, slot.month, slot.day),
+  slot: CareSlot(start: slot, outsideFreeTimes: false),
+  overdue: false,
+);
+
+/// HM-02 overrides: a care schedule of [tasks], [alerts], and a Trending
+/// first row of [topGuide] (null: Trending is empty).
+List<Override> _hm02({
+  List<ScheduledCareTask> tasks = const [],
+  List<GardenAlert> alerts = const [],
+  String? topGuide,
+}) => [
+  careScheduleProvider.overrideWith((ref) async => tasks),
+  gardenAlertsProvider.overrideWith((ref) async => alerts),
+  topGuideThisWeekProvider.overrideWithValue(
+    AsyncData(topGuide == null ? null : testGuide(topGuide)),
+  ),
+];
+
+double _topOf(WidgetTester tester, Finder f) => tester.getTopLeft(f.first).dy;
 
 void main() {
   testWidgets('25 recommendations → the first 10 as cards, in order', (
@@ -345,6 +389,175 @@ void main() {
       findsOneWidget,
     );
     await _unmount(tester, c);
+  });
+
+  group('HM-02', () {
+    Future<ProviderContainer> pumpActive(
+      WidgetTester tester, {
+      List<ScheduledCareTask> tasks = const [],
+      List<GardenAlert> alerts = const [],
+      String? topGuide,
+      List<ScoredPlant>? recs,
+    }) async {
+      final r = recs ?? _recs(25);
+      final c = await _pump(
+        tester,
+        recs: r,
+        garden: [_plantedView(r)],
+        size: const Size(390, 3000),
+        extra: _hm02(tasks: tasks, alerts: alerts, topGuide: topGuide),
+      );
+      await tester.pump();
+      return c;
+    }
+
+    final frost = GardenAlert(
+      type: GardenAlertType.frost,
+      day: DateTime(2026, 10, 8),
+      message: 'Frost Thu: cover or bring in Kale',
+    );
+
+    testWidgets('sections in plan/01 order', (tester) async {
+      final c = await pumpActive(
+        tester,
+        tasks: [_careTask('Kale', DateTime(2026, 10, 7, 18))],
+        alerts: [frost],
+        topGuide: 'g1',
+      );
+      final order = [
+        _topOf(tester, find.text('Frost Thu: cover or bring in Kale')),
+        _topOf(tester, find.text('Today')),
+        _topOf(tester, find.text('Your garden')),
+        _topOf(tester, find.text('In season now')),
+        _topOf(tester, find.text('Top guide this week')),
+      ];
+      expect(order, orderedEquals([...order]..sort()));
+      expect(order.toSet(), hasLength(order.length));
+      await _unmount(tester, c);
+    });
+
+    testWidgets('Today groups by block: 08:00 before 18:00', (tester) async {
+      final c = await pumpActive(
+        tester,
+        tasks: [
+          _careTask('Basil', DateTime(2026, 10, 7, 18)),
+          _careTask('Kale', DateTime(2026, 10, 7, 8)),
+          _careTask('Tomorrow', DateTime(2026, 10, 8, 8)),
+        ],
+      );
+      expect(find.text('8:00 AM'), findsOneWidget);
+      expect(find.text('6:00 PM'), findsOneWidget);
+      expect(
+        _topOf(tester, find.text('8:00 AM')),
+        lessThan(_topOf(tester, find.text('6:00 PM'))),
+      );
+      expect(
+        _topOf(tester, find.text('Water Kale')),
+        lessThan(_topOf(tester, find.text('6:00 PM'))),
+      );
+      expect(
+        _topOf(tester, find.text('Water Basil')),
+        greaterThan(_topOf(tester, find.text('6:00 PM'))),
+      );
+      expect(find.text('Water Tomorrow'), findsNothing);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('a Today row opens CR-01', (tester) async {
+      final c = await pumpActive(
+        tester,
+        tasks: [_careTask('Kale', DateTime(2026, 10, 7, 8))],
+      );
+      await tester.tap(find.text('Water Kale'));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('CR-01 stub'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('no tasks today: the empty line, other sections stay', (
+      tester,
+    ) async {
+      final c = await pumpActive(tester);
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('Nothing due this day.'), findsOneWidget);
+      expect(find.byType(TaskRow), findsNothing);
+      expect(find.text('Your garden'), findsOneWidget);
+      expect(find.text('In season now'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('no alerts → no AlertBanner; alerts → one each', (
+      tester,
+    ) async {
+      final quiet = await pumpActive(tester);
+      expect(find.byType(AlertBanner), findsNothing);
+      await _unmount(tester, quiet);
+
+      final c = await pumpActive(tester, alerts: [frost]);
+      final banner = tester.widget<AlertBanner>(find.byType(AlertBanner));
+      expect(banner.type, AlertBannerType.frost);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('In season now: the first 10 in-season plants, in order', (
+      tester,
+    ) async {
+      // _recs(25): even indexes are in season; plant-0 is already planted.
+      final c = await pumpActive(tester);
+      final shown = tester
+          .widgetList<PlantCard>(find.byType(PlantCard))
+          .map((card) => card.plant.plant.id)
+          .toList();
+      expect(shown, [for (var i = 2; i <= 20; i += 2) 'plant-$i']);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('no plant in season → no In season now section', (
+      tester,
+    ) async {
+      final recs = [
+        for (final s in _recs(5))
+          scored(s.plant, score: s.compatibility.score, inSeason: false),
+      ];
+      final c = await pumpActive(tester, recs: recs);
+      expect(find.text('In season now'), findsNothing);
+      expect(find.byType(PlantCard), findsNothing);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('Top guide: the first Trending row, hidden when empty', (
+      tester,
+    ) async {
+      final none = await pumpActive(tester);
+      expect(find.text('Top guide this week'), findsNothing);
+      expect(find.byType(GuideCard), findsNothing);
+      await _unmount(tester, none);
+
+      final c = await pumpActive(tester, topGuide: 'g1');
+      expect(find.text('Top guide this week'), findsOneWidget);
+      expect(find.byType(GuideCard), findsOneWidget);
+      await tester.tap(find.byType(GuideCard));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('CM-02 stub: g1'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('zero plantings: HM-01 and no HM-02 section', (tester) async {
+      final c = await _pump(
+        tester,
+        recs: _recs(25),
+        extra: _hm02(
+          tasks: [_careTask('Kale', DateTime(2026, 10, 7, 8))],
+          alerts: [frost],
+          topGuide: 'g1',
+        ),
+      );
+      expect(find.text('Pick your first plant'), findsOneWidget);
+      expect(find.text('Today'), findsNothing);
+      expect(find.byType(AlertBanner), findsNothing);
+      expect(find.text('Top guide this week'), findsNothing);
+      await _unmount(tester, c);
+    });
   });
 
   testWidgets('a planting present → HM-02 sections, not the HM-01b prompt', (

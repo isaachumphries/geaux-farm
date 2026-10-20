@@ -19,6 +19,7 @@ import '../../weather/data/weather_provider.dart';
 import '../../weather/presentation/weather_mini.dart';
 import '../application/first_plant_prompt_provider.dart';
 import '../domain/home_copy.dart';
+import 'widgets/hm02_sections.dart';
 
 /// How many recommendations the first-run carousel shows (plan/01 HM-01).
 const homeCarouselCount = 10;
@@ -28,8 +29,8 @@ const recommendationsRoute = '/home/recommendations';
 
 /// Home. Before the first planting: HM-01 (first-plant carousel) and,
 /// after "I'll pick later", HM-01b (one slim "Pick your first plant"
-/// card). Once the garden has a planting: HM-02's "Your garden" and "In
-/// season now" sections.
+/// card). Once the garden has a planting: HM-02's alerts, Today, "Your
+/// garden", "In season now", and "Top guide this week".
 class HomeFirstRunScreen extends ConsumerStatefulWidget {
   const HomeFirstRunScreen({super.key});
 
@@ -96,21 +97,18 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
               ] else
                 const SizedBox(height: AppSpacing.lg),
               if (garden.isNotEmpty) ...[
-                // HM-02 drops the season banner once something is planted.
+                // HM-02, in plan/01 order: alerts, Today, garden snapshot,
+                // In season now, Top guide. No season banner once planted.
+                const Padding(padding: inset, child: HomeAlerts()),
+                const Padding(padding: inset, child: TodaySection()),
+                const SizedBox(height: AppSpacing.lg),
                 Padding(
                   padding: inset,
                   child: _GardenSection(views: garden),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                const Padding(
-                  padding: inset,
-                  child: _SectionHeader(
-                    title: 'In season now',
-                    onSeeAll: _openRecommendations,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _Carousel(exclude: {for (final v in garden) v.plant.id}),
+                _InSeasonSection(exclude: {for (final v in garden) v.plant.id}),
+                const Padding(padding: inset, child: TopGuideSection()),
               ] else if (dismissed) ...[
                 const Padding(padding: inset, child: _SeasonBanner()),
                 const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
@@ -406,10 +404,13 @@ class _PromptHeader extends ConsumerWidget {
 /// shows an error with Retry: the provider never retries on its own, so
 /// without it the spinner would never end (offline, timeout).
 class _Carousel extends ConsumerWidget {
-  const _Carousel({this.exclude = const {}});
+  const _Carousel({this.exclude = const {}, this.inSeasonOnly = false});
 
   /// Catalog ids to leave out, e.g. plants already in the garden.
   final Set<String> exclude;
+
+  /// HM-02 "In season now": only in-season plants (plan/04 § Sorting).
+  final bool inSeasonOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -427,6 +428,7 @@ class _Carousel extends ConsumerWidget {
       AsyncData(:final value) => _CarouselRow(
         plants: value
             .where((s) => !exclude.contains(s.plant.id))
+            .where((s) => !inSeasonOnly || s.compatibility.inSeason)
             .take(homeCarouselCount)
             .toList(),
         setup: defaultGrowSetup(space.type),
@@ -593,6 +595,39 @@ class _SlimArt extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// HM-02 "In season now": the first [homeCarouselCount] in-season plants
+/// in list order, leaving out the ones in [exclude] (already growing).
+/// Hidden when none is left.
+class _InSeasonSection extends ConsumerWidget {
+  const _InSeasonSection({required this.exclude});
+
+  final Set<String> exclude;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final recs = ref.watch(recommendationsProvider).value;
+    final any = recs?.any(
+      (s) => s.compatibility.inSeason && !exclude.contains(s.plant.id),
+    );
+    if (any == false) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+          child: _SectionHeader(
+            title: 'In season now',
+            onSeeAll: _openRecommendations,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _Carousel(exclude: exclude, inSeasonOnly: true),
+        const SizedBox(height: AppSpacing.lg),
+      ],
     );
   }
 }
