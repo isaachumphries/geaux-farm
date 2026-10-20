@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(16);
+select plan(17);
 
 -- Fixtures. Inserted as postgres (bypasses RLS); triggers still run.
 insert into auth.users (id, email) values
@@ -135,6 +135,14 @@ insert into public.guide_reports (guide_id, reporter_id, reason)
 set local request.jwt.claims = '{"sub":"44444444-4444-4444-4444-444444444444","role":"authenticated"}';
 insert into public.guide_reports (guide_id, reporter_id, reason)
   values ('aaaaaaaa-0000-0000-0000-000000000003', '44444444-4444-4444-4444-444444444444', 'spam');
+reset role;
+-- Two reports are below apply_report's threshold, so the guide must still be
+-- published here. Without this the suite only proves three reports are enough,
+-- never that fewer are not: lowering the threshold to 2, or even 1, left every
+-- assertion green.
+select is((select status from public.guides where id = 'aaaaaaaa-0000-0000-0000-000000000003'),
+  'published', 'Case 5: two reports leave the guide published');
+set local role authenticated;
 set local request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
 insert into public.guide_reports (guide_id, reporter_id, reason)
   values ('aaaaaaaa-0000-0000-0000-000000000003', '22222222-2222-2222-2222-222222222222', 'spam');
