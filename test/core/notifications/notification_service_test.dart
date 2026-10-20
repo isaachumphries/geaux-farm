@@ -339,6 +339,8 @@ void main() {
       ('care?date=2026-13-45', '/care'),
       ('care?date=2026-02-30', '/care'),
       ('care', '/care'),
+      ('weather', '/weather'),
+      ('weather?date=2026-05-14', '/care'),
       ('unknown', '/care'),
       ('', '/care'),
       (null, '/care'),
