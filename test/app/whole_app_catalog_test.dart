@@ -15,7 +15,8 @@ import '../helpers/app_harness.dart';
 /// belonged to a dead fake-async zone, and the next whole-app test in the file
 /// waited on it forever (`pumpAndSettle timed out`).
 ///
-/// `appOverrides` therefore reads the catalog from a file-backed bundle.
+/// `appOverrides` therefore reads the catalog from a file-backed bundle, which
+/// also decodes the string on the calling isolate (see `FileAssetBundle`).
 void main() {
   testWidgets('a whole-app test that abandons a rootBundle load', (
     tester,
@@ -29,8 +30,16 @@ void main() {
         child: const GeauxFarmApp(),
       ),
     );
-    await tester.pumpAndSettle();
-    // Ends here with the load still in flight, as the real tests did.
+    // Not pumpAndSettle: plants.json is over 50 KB, so the framework decodes
+    // it on an isolate that fake-async cannot wait on, and the loading state
+    // keeps scheduling frames. Pump a bounded time instead.
+    await tester.pump(const Duration(seconds: 1));
+
+    // The test ends here with the load still in flight, as the real tests did.
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(GeauxFarmApp)),
+    );
+    expect(container.read(catalogProvider).isLoading, isTrue);
   });
 
   testWidgets('the next whole-app test still gets the catalog', (tester) async {
