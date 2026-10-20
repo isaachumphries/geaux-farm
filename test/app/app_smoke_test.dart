@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
+import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_card.dart';
 
 import '../helpers/app_harness.dart';
@@ -31,15 +35,17 @@ void main() {
     final ids = tester
         .widgetList<PlantCard>(find.byType(PlantCard))
         .map((c) => c.plant.plant.id);
-    expect(
-      ids,
-      unorderedEquals([
-        'kale',
-        'cherry-tomato',
-        'sweet-basil',
-        'english-lavender',
-      ]),
-    );
+    // The catalog grows with each batch, so check that every card is a bundled
+    // record rather than naming the four reference plants.
+    final catalogIds = {
+      for (final r in jsonDecode(
+        File('assets/plants/plants.json').readAsStringSync(),
+      ) as List)
+        (r as Map<String, dynamic>)['id'] as String,
+    };
+    expect(ids.toList(), hasLength(homeCarouselCount));
+    expect(ids.toSet(), hasLength(homeCarouselCount));
+    expect(catalogIds, containsAll(ids));
 
     await tester.pumpWidget(const SizedBox());
   });

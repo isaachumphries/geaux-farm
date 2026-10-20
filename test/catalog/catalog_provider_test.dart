@@ -33,26 +33,31 @@ List<Map<String, dynamic>> _records() =>
         .cast<Map<String, dynamic>>();
 
 void main() {
-  test('catalogProvider reads the bundle once and returns the four '
-      'reference plants', () async {
-    final bundle = _CountingBundle(File(plantsAssetKey).readAsStringSync());
-    final container = ProviderContainer(
-      overrides: [assetBundleProvider.overrideWithValue(bundle)],
-    );
-    addTearDown(container.dispose);
+  test(
+    'catalogProvider reads the bundle once and returns every record',
+    () async {
+      final bundle = _CountingBundle(File(plantsAssetKey).readAsStringSync());
+      final container = ProviderContainer(
+        overrides: [assetBundleProvider.overrideWithValue(bundle)],
+      );
+      addTearDown(container.dispose);
 
-    final first = await container.read(catalogProvider.future);
-    final second = await container.read(catalogProvider.future);
+      final first = await container.read(catalogProvider.future);
+      final second = await container.read(catalogProvider.future);
 
-    expect(first.map((p) => p.id), [
-      'kale',
-      'cherry-tomato',
-      'sweet-basil',
-      'english-lavender',
-    ]);
-    expect(identical(first, second), isTrue);
-    expect(bundle.reads, 1);
-  });
+      expect(
+        first.map((p) => p.id),
+        containsAll([
+          'kale',
+          'cherry-tomato',
+          'sweet-basil',
+          'english-lavender',
+        ]),
+      );
+      expect(identical(first, second), isTrue);
+      expect(bundle.reads, 1);
+    },
+  );
 
   test('a record with an unknown enum value fails with its id', () {
     final records = _records();

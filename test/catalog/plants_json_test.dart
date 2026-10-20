@@ -11,10 +11,6 @@ import 'package:geaux_farm/features/catalog/domain/plant.dart';
 
 const bool strictCatalog = false;
 
-const _photoSkip =
-    'Plant photos are a follow-up to #37; the image files and real '
-    'credits are not in this change.';
-
 final _kebab = RegExp(r'^[a-z0-9]+(-[a-z0-9]+)*$');
 
 const _seedIds = [
@@ -143,13 +139,12 @@ void main() {
     return copy;
   }
 
-  test('contains the four reference records in order', () {
-    expect(records.map((r) => r['id']), [
-      'kale',
-      'cherry-tomato',
-      'sweet-basil',
-      'english-lavender',
-    ]);
+  test('contains the four reference records', () {
+    final ids = records.map((r) => r['id']);
+    expect(
+      ids,
+      containsAll(['kale', 'cherry-tomato', 'sweet-basil', 'english-lavender']),
+    );
   });
 
   test('ids are unique and kebab-case', () {
@@ -164,20 +159,30 @@ void main() {
     }
   });
 
-  test('zones is non-null only for english-lavender', () {
-    expect(records.where((r) => r['zones'] != null).map((r) => r['id']), [
-      'english-lavender',
-    ]);
+  test('every record derives scorable', () {
+    for (final r in records) {
+      expect(Plant.fromJson(r).scorable, isTrue, reason: r['id'] as String);
+    }
   });
 
-  test('all four are containerOk with a minContainerGal', () {
+  test('zones is non-null exactly for perennial records', () {
+    for (final r in records) {
+      expect(
+        r['zones'] != null,
+        r['lifecycle'] == 'perennial',
+        reason: r['id'] as String,
+      );
+    }
+  });
+
+  test('every record is containerOk with a minContainerGal', () {
     for (final r in records) {
       expect(r['space']['containerOk'], isTrue);
       expect(r['space']['minContainerGal'], isNotNull);
     }
   });
 
-  test('starts is non-empty for all four', () {
+  test('starts is non-empty for every record', () {
     for (final r in records) {
       expect(r['starts'], isNotEmpty);
     }
@@ -213,7 +218,7 @@ void main() {
       final asset = r['image']['asset'] as String;
       expect(File(asset).existsSync(), isTrue, reason: asset);
     }
-  }, skip: _photoSkip);
+  });
 
   test('strict: credits are filled and every seed id is present', () {
     for (final r in records) {
@@ -223,9 +228,8 @@ void main() {
     expect(records.map((r) => r['id']), containsAll(_seedIds));
   }, skip: strictCatalog ? false : 'strictCatalog is false until #52');
 
-  test('non-strict mode tolerates TBD credits and a short seed list', () {
+  test('non-strict mode tolerates a short seed list', () {
     expect(strictCatalog, isFalse);
-    expect(records.every((r) => r['image']['credit'] == 'TBD'), isTrue);
     expect(records.length, lessThan(_seedIds.length));
     for (final r in records) {
       expect(validateRecord(r), isEmpty);

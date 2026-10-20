@@ -63,6 +63,16 @@ class ProfileWriter {
           );
     });
   }
+
+  /// Sets only `first_plant_prompt_dismissed` on the profile row (id 1), so a
+  /// dismiss does not rewrite the rest of the profile.
+  Future<void> markFirstPlantPromptDismissed() {
+    return (_db.update(
+      _db.userProfileTable,
+    )..where((t) => t.id.equals(1))).write(
+      const UserProfileTableCompanion(firstPlantPromptDismissed: Value(true)),
+    );
+  }
 }
 
 final profileWriterProvider = Provider<ProfileWriter>(
