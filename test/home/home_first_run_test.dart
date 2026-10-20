@@ -582,16 +582,17 @@ void main() {
     await _unmount(tester, c);
   });
 
-  testWidgets('a carousel card opens the Grow this sheet', (tester) async {
+  testWidgets('a carousel card opens PD-01 for that plant', (tester) async {
     final c = await _pump(tester, recs: _recs(25));
     final card = find.text('Plant 00');
     await tester.ensureVisible(card);
     await tester.pump();
     await tester.tap(card);
     await tester.pump(const Duration(milliseconds: 500));
-    // A card goes straight to PD-02 rather than PD-01: the carousel is the
-    // first-plant picker, so the tap is "grow this one".
-    expect(find.byType(GrowThisSheet), findsOneWidget);
+    // plan/01 HM-01 and HM-02: card → PD-01. PD-02 opens from PD-01's
+    // Grow this (#73 comments).
+    expect(find.text('PD-01 stub: plant-0'), findsOneWidget);
+    expect(find.byType(GrowThisSheet), findsNothing);
     await _unmount(tester, c);
   });
 

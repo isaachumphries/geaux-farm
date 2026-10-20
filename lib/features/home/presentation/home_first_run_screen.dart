@@ -8,7 +8,6 @@ import '../../../app/widgets/widgets.dart';
 import '../../climate/data/climate_provider.dart';
 import '../../garden/application/garden_provider.dart';
 import '../../garden/domain/planting.dart';
-import '../../garden/presentation/grow_this_sheet.dart';
 import '../../garden/presentation/widgets/planting_card.dart';
 import '../../onboarding/data/profile_providers.dart';
 import '../../recommendations/application/clock_provider.dart';
@@ -454,12 +453,12 @@ class _CarouselRow extends StatelessWidget {
         children: [
           for (final (i, s) in plants.indexed) ...[
             if (i > 0) const SizedBox(width: AppSpacing.md),
-            // PD-01 is not built yet, so a tap goes straight to PD-02.
+            // HM-01 and HM-02: card → PD-01; Grow this there opens PD-02.
             PlantCard(
               key: ValueKey(s.plant.id),
               plant: s,
               state: PlantCardState.of(s.compatibility, setup),
-              onTap: () => pickPlant(context, s),
+              onTap: () => context.push('/plants/${s.plant.id}'),
             ),
           ],
         ],
