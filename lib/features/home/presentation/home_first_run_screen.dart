@@ -6,8 +6,10 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../climate/data/climate_provider.dart';
-import '../../garden/data/plantings_provider.dart';
+import '../../garden/application/garden_provider.dart';
 import '../../garden/domain/planting.dart';
+import '../../garden/presentation/grow_this_sheet.dart';
+import '../../garden/presentation/widgets/planting_card.dart';
 import '../../onboarding/data/profile_providers.dart';
 import '../../recommendations/application/clock_provider.dart';
 import '../../recommendations/application/recommendations_provider.dart';
@@ -22,8 +24,13 @@ import '../domain/home_copy.dart';
 /// How many recommendations the first-run carousel shows (plan/01 HM-01).
 const homeCarouselCount = 10;
 
-/// Home before the first planting: HM-01 (first-plant carousel) and, after
-/// "I'll pick later", HM-01b (one slim "Pick your first plant" card).
+/// RC-01, pushed over Home so Back returns here.
+const recommendationsRoute = '/home/recommendations';
+
+/// Home. Before the first planting: HM-01 (first-plant carousel) and,
+/// after "I'll pick later", HM-01b (one slim "Pick your first plant"
+/// card). Once the garden has a planting: HM-02's "Your garden" and "In
+/// season now" sections.
 class HomeFirstRunScreen extends ConsumerStatefulWidget {
   const HomeFirstRunScreen({super.key});
 
@@ -52,8 +59,7 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
   @override
   Widget build(BuildContext context) {
     final dismissed = ref.watch(firstPlantPromptDismissedProvider);
-    // HM-01b only nudges until the first planting exists (plan/01).
-    final hasPlanting = ref.watch(plantingsProvider).value?.isNotEmpty ?? false;
+    final garden = ref.watch(gardenProvider).value ?? const [];
     final profile = ref.watch(userProfileProvider).value;
     final location = profile == null
         ? null
@@ -87,13 +93,28 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
                 const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
               ] else
                 const SizedBox(height: AppSpacing.lg),
-              const Padding(padding: inset, child: _SeasonBanner()),
-              if (dismissed) ...[
-                if (!hasPlanting) ...[
-                  const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
-                  const Padding(padding: inset, child: _SlimPromptCard()),
-                ],
+              if (garden.isNotEmpty) ...[
+                // HM-02 drops the season banner once something is planted.
+                Padding(
+                  padding: inset,
+                  child: _GardenSection(views: garden),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                const Padding(
+                  padding: inset,
+                  child: _SectionHeader(
+                    title: 'In season now',
+                    onSeeAll: _openRecommendations,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _Carousel(exclude: {for (final v in garden) v.plant.id}),
+              ] else if (dismissed) ...[
+                const Padding(padding: inset, child: _SeasonBanner()),
+                const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
+                const Padding(padding: inset, child: _SlimPromptCard()),
               ] else ...[
+                const Padding(padding: inset, child: _SeasonBanner()),
                 // The header row is as tall as the 48 px "See all" target,
                 // so the visible gap to the title is 18.
                 const SizedBox(height: AppSpacing.sm),
@@ -284,11 +305,11 @@ class _SeasonBanner extends ConsumerWidget {
     final line = profile == null || climate == null
         ? null
         : seasonLine(
-            city: profile.city,
-            latitude: profile.lat,
-            months: climate.months,
-            today: today,
-          );
+      city: profile.city,
+      latitude: profile.lat,
+      months: climate.months,
+      today: today,
+    );
     return GeauxCard(
       color: AppColors.leaf700,
       borderColor: null,
@@ -341,7 +362,8 @@ class _SeasonBanner extends ConsumerWidget {
   }
 }
 
-/// "Pick your first plant" with "See all" (opens RC-01) and the space subline.
+/// "Pick your first plant" with "See all" and the space subline. "See all"
+/// opens RC-01.
 class _PromptHeader extends ConsumerWidget {
   const _PromptHeader();
 
@@ -363,7 +385,7 @@ class _PromptHeader extends ConsumerWidget {
             GeauxButton(
               label: 'See all',
               variant: GeauxButtonVariant.text,
-              onPressed: () => context.push('/home/recommendations'),
+              onPressed: () => context.push(recommendationsRoute),
             ),
           ],
         ),
@@ -382,7 +404,10 @@ class _PromptHeader extends ConsumerWidget {
 /// shows an error with Retry: the provider never retries on its own, so
 /// without it the spinner would never end (offline, timeout).
 class _Carousel extends ConsumerWidget {
-  const _Carousel();
+  const _Carousel({this.exclude = const {}});
+
+  /// Catalog ids to leave out, e.g. plants already in the garden.
+  final Set<String> exclude;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -398,7 +423,10 @@ class _Carousel extends ConsumerWidget {
     if (climate is! AsyncData || space == null) return const _CarouselLoading();
     return switch (recs) {
       AsyncData(:final value) => _CarouselRow(
-        plants: value.take(homeCarouselCount).toList(),
+        plants: value
+            .where((s) => !exclude.contains(s.plant.id))
+            .take(homeCarouselCount)
+            .toList(),
         setup: defaultGrowSetup(space.type),
       ),
       AsyncError() => const _CarouselMessage("Couldn't load plants."),
@@ -423,11 +451,12 @@ class _CarouselRow extends StatelessWidget {
         children: [
           for (final (i, s) in plants.indexed) ...[
             if (i > 0) const SizedBox(width: AppSpacing.md),
+            // PD-01 is not built yet, so a tap goes straight to PD-02.
             PlantCard(
               key: ValueKey(s.plant.id),
               plant: s,
               state: PlantCardState.of(s.compatibility, setup),
-              onTap: () => context.push('/plants/${s.plant.id}'),
+              onTap: () => pickPlant(context, s),
             ),
           ],
         ],
@@ -483,7 +512,7 @@ class _CarouselMessage extends StatelessWidget {
   }
 }
 
-/// HM-01b: the carousel collapsed into one card. Tapping it opens RC-01.
+/// HM-01b: the carousel collapsed into one card. Opens RC-01.
 class _SlimPromptCard extends ConsumerWidget {
   const _SlimPromptCard();
 
@@ -495,7 +524,7 @@ class _SlimPromptCard extends ConsumerWidget {
         ? null
         : slimCardLine([for (final s in recs) s.plant.commonName], space.type);
     return GeauxCard(
-      onTap: () => context.push('/home/recommendations'),
+      onTap: () => context.push(recommendationsRoute),
       child: Row(
         children: [
           const _SlimArt(),
@@ -562,6 +591,72 @@ class _SlimArt extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// How many plantings HM-02 "Your garden" lists before "See all".
+const homeGardenCount = 3;
+
+void _openRecommendations(BuildContext context) =>
+    context.push(recommendationsRoute);
+
+void _openGarden(BuildContext context) => context.go('/garden');
+
+/// A section title with a "See all" action.
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, required this.onSeeAll});
+
+  final String title;
+  final void Function(BuildContext context) onSeeAll;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: AppText.h2.copyWith(color: AppColors.soil900),
+          ),
+        ),
+        GeauxButton(
+          label: 'See all',
+          variant: GeauxButtonVariant.text,
+          onPressed: () => onSeeAll(context),
+        ),
+      ],
+    );
+  }
+}
+
+/// HM-02 "Your garden": the first [homeGardenCount] plantings, active
+/// first. "See all" and each card open My Garden.
+class _GardenSection extends StatelessWidget {
+  const _GardenSection({required this.views});
+
+  final List<PlantingView> views;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = [
+      ...views.where((v) => v.planting.status == PlantingStatus.active),
+      ...views.where((v) => v.planting.status != PlantingStatus.active),
+    ].take(homeGardenCount);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _SectionHeader(title: 'Your garden', onSeeAll: _openGarden),
+        const SizedBox(height: AppSpacing.sm),
+        for (final v in shown) ...[
+          PlantingCard(
+            key: ValueKey(v.id),
+            view: v,
+            onTap: () => context.go('/garden/planting/${v.id}'),
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
+      ],
     );
   }
 }
