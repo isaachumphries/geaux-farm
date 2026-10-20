@@ -8,6 +8,10 @@ import 'auth_user.dart';
 abstract interface class AuthRepository {
   /// The current user, then every change: sign-in, sign-out, and a
   /// profile being created. Emits null while signed out.
+  ///
+  /// When the server can't be reached (reading the profile, or refreshing
+  /// an expired session) the stream emits a `NetworkException` error. It
+  /// stays open: the next change emits the user again.
   Stream<AuthUser?> authChanges();
 
   AuthUser? get currentUser;
