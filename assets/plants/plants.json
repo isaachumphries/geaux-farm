@@ -1869,5 +1869,374 @@
     ],
     "image": {"asset": "assets/plants/images/boxwood.webp", "credit": "Acabashi", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Garden_path_box_Buxus_sempervirens_hedges_Easton_Lodge_Gardens_walled_garden,_Little_Easton_Essex,_England.jpg"},
     "source": "curated"
+  },
+  {
+    "id": "gardenia",
+    "commonName": "Gardenia",
+    "scientificName": "Gardenia jasminoides",
+    "category": "shrub",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "perennial"],
+    "difficulty": 3,
+    "sun": ["partial", "full"],
+    "zones": {"min": "8a", "max": "11b"},
+    "plantTempF": {"min": 55, "max": 80},
+    "growTempF": {"min": 30, "max": 95},
+    "frostTolerance": "light",
+    "humidity": "high",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 120}
+    ],
+    "productiveDays": 45,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 16, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Prune just after bloom; later cuts remove next year buds"},
+        {"type": "fertilize", "everyDays": 60, "note": "Acid-forming fertilizer in spring and summer"}
+      ]
+    },
+    "tips": [
+      "Yellowing leaves usually mean soil that is not acidic enough.",
+      "Keep soil evenly moist; bud drop follows dry spells."
+    ],
+    "image": {"asset": "assets/plants/images/gardenia.webp", "credit": "Md Arif bd", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Gardenia_jasminoides_flower.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "bigleaf-hydrangea",
+    "commonName": "Bigleaf Hydrangea",
+    "scientificName": "Hydrangea macrophylla",
+    "category": "shrub",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["deciduous", "perennial"],
+    "difficulty": 2,
+    "sun": ["partial"],
+    "zones": {"min": "5a", "max": "9b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 15, "max": 95},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 120}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 16, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "high", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Prune after bloom; remove only dead stems in winter"},
+        {"type": "fertilize", "everyDays": 90, "note": "Balanced feed in spring"}
+      ]
+    },
+    "tips": [
+      "Give afternoon shade; leaves wilt in hot sun and recover at night.",
+      "Soil acidity sets flower color: acidic is blue, alkaline is pink."
+    ],
+    "image": {"asset": "assets/plants/images/bigleaf-hydrangea.webp", "credit": "Raul654", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hydrangea_macrophylla_-_Hortensia_hydrangea.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "camellia",
+    "commonName": "Camellia",
+    "scientificName": "Camellia japonica",
+    "category": "shrub",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "winter-interest"],
+    "difficulty": 2,
+    "sun": ["partial"],
+    "zones": {"min": "7a", "max": "9b"},
+    "plantTempF": {"min": 50, "max": 70},
+    "growTempF": {"min": 15, "max": 95},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 120}
+    ],
+    "productiveDays": 90,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 25, "containerOk": true, "minContainerGal": 10, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 5, "everyDaysIndoor": 5},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Prune right after bloom in spring"},
+        {"type": "fertilize", "everyDays": 90, "note": "Acid-forming fertilizer after flowering"}
+      ]
+    },
+    "tips": [
+      "Plant with the top of the root ball slightly above the soil line.",
+      "Blooms from fall into early spring when little else flowers."
+    ],
+    "image": {"asset": "assets/plants/images/camellia.webp", "credit": "PumpkinSky", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Camellia_japonica_NBG.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "knock-out-rose",
+    "commonName": "Knock Out Rose",
+    "scientificName": "Rosa Knock Out",
+    "category": "shrub",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["deciduous", "perennial"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "5a", "max": "9b"},
+    "plantTempF": {"min": 50, "max": 80},
+    "growTempF": {"min": 10, "max": 95},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 60}
+    ],
+    "productiveDays": 200,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 12, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 5, "everyDaysIndoor": 5},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Cut back by about a third in late winter"},
+        {"type": "fertilize", "everyDays": 45, "note": "Rose fertilizer during the growing season"}
+      ]
+    },
+    "tips": [
+      "Disease resistant, but give it airflow and full sun.",
+      "No deadheading needed; it blooms from spring to frost."
+    ],
+    "image": {"asset": "assets/plants/images/knock-out-rose.webp", "credit": "David J. Stang", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rosa_Knock_Out_9zz.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "dwarf-yaupon-holly",
+    "commonName": "Dwarf Yaupon Holly",
+    "scientificName": "Ilex vomitoria",
+    "category": "shrub",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "perennial"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": {"min": "7a", "max": "10b"},
+    "plantTempF": {"min": 50, "max": 80},
+    "growTempF": {"min": 10, "max": 98},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 120}
+    ],
+    "productiveDays": 365,
+    "maturityKind": "establish",
+    "space": {"sqFtPerPlant": 9, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 10, "everyDaysIndoor": 10},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "prune", "everyDays": 180, "note": "Shear lightly in late winter and midsummer"}
+      ]
+    },
+    "tips": [
+      "A Louisiana native; tolerates heat, drought, and poor soil.",
+      "Water regularly the first year, then rarely."
+    ],
+    "image": {"asset": "assets/plants/images/dwarf-yaupon-holly.webp", "credit": "Luteus", "license": "CC BY 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ilex_vomitoria.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "indian-hawthorn",
+    "commonName": "Indian Hawthorn",
+    "scientificName": "Rhaphiolepis indica",
+    "category": "shrub",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "perennial"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": {"min": "8a", "max": "10b"},
+    "plantTempF": {"min": 50, "max": 80},
+    "growTempF": {"min": 20, "max": 98},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 120}
+    ],
+    "productiveDays": 30,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 12, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Trim lightly after spring bloom"},
+        {"type": "fertilize", "everyDays": 180, "note": "Slow-release feed in spring"}
+      ]
+    },
+    "tips": [
+      "Plant where air moves; wet leaves invite leaf spot.",
+      "Spring clusters of pink flowers are followed by dark berries."
+    ],
+    "image": {"asset": "assets/plants/images/indian-hawthorn.webp", "credit": "SAplants", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rhaphiolepis_indica_5Dsr_3199.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "peace-lily",
+    "commonName": "Peace Lily",
+    "scientificName": "Spathiphyllum wallisii",
+    "category": "houseplant",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["year-round", "evergreen"],
+    "difficulty": 1,
+    "sun": ["shade", "partial"],
+    "zones": {"min": "11a", "max": "12b"},
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 55, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "high",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 60}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "foliage",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 2, "indoorOk": true},
+    "water": {"need": "medium", "everyDaysOutdoor": 5, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 60, "note": "Half-strength balanced feed in spring and summer"},
+        {"type": "other", "everyDays": 30, "note": "Wipe dust from the leaves"}
+      ]
+    },
+    "tips": [
+      "Drooping leaves mean it is thirsty; it perks up after a drink.",
+      "Bright indirect light; direct sun scorches the leaves."
+    ],
+    "image": {"asset": "assets/plants/images/peace-lily.webp", "credit": "Dinkun Chen", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Spathiphyllum_in_China.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "spider-plant",
+    "commonName": "Spider Plant",
+    "scientificName": "Chlorophytum comosum",
+    "category": "houseplant",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["year-round", "evergreen"],
+    "difficulty": 1,
+    "sun": ["shade", "partial"],
+    "zones": {"min": "9a", "max": "12b"},
+    "plantTempF": {"min": 55, "max": 85},
+    "growTempF": {"min": 40, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "cutting", "daysMin": 30, "daysMax": 60}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "foliage",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "medium", "everyDaysOutdoor": 5, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 60, "note": "Light feed in spring and summer"},
+        {"type": "prune", "everyDays": 90, "note": "Trim brown tips and root the baby plantlets"}
+      ]
+    },
+    "tips": [
+      "Brown tips usually come from fluoride in tap water; try rainwater.",
+      "Pot up the dangling plantlets to make new plants."
+    ],
+    "image": {"asset": "assets/plants/images/spider-plant.webp", "credit": "Dinkun Chen", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chlorophytum_comosum_in_China_(3).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "zz-plant",
+    "commonName": "ZZ Plant",
+    "scientificName": "Zamioculcas zamiifolia",
+    "category": "houseplant",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["year-round", "evergreen"],
+    "difficulty": 1,
+    "sun": ["shade", "partial"],
+    "zones": {"min": "9a", "max": "11b"},
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 45, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 60}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "foliage",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 2, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 14, "everyDaysIndoor": 21},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 90, "note": "Half-strength feed in spring and summer"},
+        {"type": "other", "everyDays": 30, "note": "Wipe dust from the leaves"}
+      ]
+    },
+    "tips": [
+      "Thick rhizomes store water, so overwatering is the main risk.",
+      "Tolerates low light but grows faster in bright indirect light."
+    ],
+    "image": {"asset": "assets/plants/images/zz-plant.webp", "credit": "David J. Stang", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Zamioculcas_zamiifolia_7zz.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "aloe-vera",
+    "commonName": "Aloe Vera",
+    "scientificName": "Aloe vera",
+    "category": "houseplant",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["year-round", "evergreen"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": {"min": "9a", "max": "11b"},
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 40, "max": 100},
+    "frostTolerance": "none",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 90}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "foliage",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 14, "everyDaysIndoor": 21},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 90, "note": "Light feed with cactus fertilizer in summer"},
+        {"type": "other", "everyDays": 90, "note": "Pot up the pups when they crowd the pot"}
+      ]
+    },
+    "tips": [
+      "Use a gritty cactus mix and a pot with drain holes.",
+      "Bring pots indoors before the first freeze."
+    ],
+    "image": {"asset": "assets/plants/images/aloe-vera.webp", "credit": "Rjcastillo", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aloe_vera_en_cerro_Santa_Luc%C3%ADa.jpg"},
+    "source": "curated"
   }
 ]
