@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
 import 'package:geaux_farm/app/router.dart';
+import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/planting_detail_screen.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
@@ -15,6 +16,7 @@ import 'package:geaux_farm/features/onboarding/presentation/location_screen.dart
 import 'package:geaux_farm/features/onboarding/presentation/profile_summary_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/space_step_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
+import 'package:geaux_farm/features/recommendations/presentation/recommendations_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -124,12 +126,10 @@ void main() {
   ) async {
     final router = await _pumpApp(tester, onboardedProfile);
     const placeholders = {
-      '/home/recommendations': 'RC-01 Recommendations',
       '/plants/kale': 'PD-01 Plant detail',
       '/weather': 'WX-01 Weather',
       '/settings': 'ST-01 Settings',
       '/settings/edit/space': 'OB-07 Edit step',
-      '/garden': 'GD-01 My Garden',
       '/garden/project/g1': 'GD-03 Guide project',
       '/care': 'CR-01 Care schedule',
       '/community': 'CM-01 Feed',
@@ -141,6 +141,16 @@ void main() {
       await _go(tester, router, path);
       expect(_location(router).path, path);
       expect(_title(tester), title, reason: path);
+    }
+
+    const realScreens = {
+      '/home/recommendations': RecommendationsScreen,
+      '/garden': MyGardenScreen,
+    };
+    for (final MapEntry(key: path, value: type) in realScreens.entries) {
+      await _go(tester, router, path);
+      expect(_location(router).path, path);
+      expect(find.byType(type), findsOneWidget, reason: path);
     }
 
     await _go(tester, router, '/garden/planting/p1');
