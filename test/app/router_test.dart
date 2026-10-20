@@ -14,6 +14,7 @@ import 'package:geaux_farm/features/onboarding/presentation/location_screen.dart
 import 'package:geaux_farm/features/onboarding/presentation/profile_summary_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/space_step_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
+import 'package:geaux_farm/features/recommendations/presentation/plant_detail_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -116,7 +117,6 @@ void main() {
     final router = await _pumpApp(tester, onboardedProfile);
     const placeholders = {
       '/home/recommendations': 'RC-01 Recommendations',
-      '/plants/kale': 'PD-01 Plant detail',
       '/weather': 'WX-01 Weather',
       '/settings': 'ST-01 Settings',
       '/settings/edit/space': 'OB-07 Edit step',
@@ -144,6 +144,7 @@ void main() {
       '/onboarding/time': AvailabilityStepScreen,
       '/onboarding/source': HeardAboutUsScreen,
       '/onboarding/summary': ProfileSummaryScreen,
+      '/plants/kale': PlantDetailScreen,
     };
     for (final MapEntry(key: path, value: type) in screens.entries) {
       await _go(tester, router, path);

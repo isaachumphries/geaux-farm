@@ -13,11 +13,15 @@ class GeauxButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.variant = GeauxButtonVariant.primary,
+    this.icon,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final GeauxButtonVariant variant;
+
+  /// Optional glyph before the label on primary and secondary buttons.
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +32,22 @@ class GeauxButton extends StatelessWidget {
       GeauxButtonVariant.secondary ||
       GeauxButtonVariant.text => AppColors.leaf700,
     };
-    final text = Text(
+    final caption = Text(
       label.toUpperCase(),
       textAlign: TextAlign.center,
       style: AppText.button.copyWith(color: fg),
     );
+    final glyph = icon;
+    final Widget text = glyph == null
+        ? caption
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: AppSpacing.sm,
+            children: [
+              Icon(glyph, size: AppIconSize.md, color: fg),
+              caption,
+            ],
+          );
 
     final Widget body;
     if (variant == GeauxButtonVariant.text) {
