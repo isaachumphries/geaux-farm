@@ -76,7 +76,7 @@ class MonthStrip extends StatelessWidget {
               label: 'Good time to plant',
             ),
             const _LegendItem(
-              swatch: AppColors.white,
+              swatch: AppColors.geauxGold,
               label: 'This month',
               outlined: true,
             ),
@@ -102,7 +102,7 @@ class _MonthCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ledge = inSeason ? AppColors.goldLedge : AppColors.stone200;
+    final ledge = inSeason ? AppColors.goldLedge : Colors.transparent;
     final outline = BorderSide(
       color: AppColors.soil900,
       width: AppBorders.width,
@@ -130,7 +130,7 @@ class _MonthCell extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           child: ExcludeSemantics(
             child: Text(
               letter,
