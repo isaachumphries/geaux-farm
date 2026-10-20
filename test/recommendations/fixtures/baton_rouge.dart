@@ -172,12 +172,22 @@ final defaultUser = UserContext(
 
 final workedExampleDate = DateTime(2026, 10, 7);
 
+/// Ids of the four plan/03 reference records. The plan/04 worked example and
+/// its order tests stay on these while the catalog grows past four.
+const referencePlantIds = {
+  'kale',
+  'cherry-tomato',
+  'sweet-basil',
+  'english-lavender',
+};
+
 /// The four plan/03 reference records, keyed by id, in file order.
 Map<String, Plant> loadReferencePlants() => {
   for (final r in jsonDecode(
     File('assets/plants/plants.json').readAsStringSync(),
   ) as List)
-    r['id'] as String: Plant.fromJson(r as Map<String, dynamic>),
+    if (referencePlantIds.contains(r['id']))
+      r['id'] as String: Plant.fromJson(r as Map<String, dynamic>),
 };
 
 /// [workedExampleProfile] with selected answers replaced.

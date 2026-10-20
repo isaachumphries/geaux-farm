@@ -6,13 +6,17 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
+import 'package:geaux_farm/core/db/app_database.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
+import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
+import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/home/application/first_plant_prompt_provider.dart';
 import 'package:geaux_farm/features/home/domain/home_copy.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
+import 'package:geaux_farm/features/onboarding/data/profile_writer.dart';
 import 'package:geaux_farm/features/onboarding/domain/space.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
@@ -22,10 +26,13 @@ import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_c
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
 import 'package:geaux_farm/features/weather/data/weather_provider.dart';
 import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../helpers/fixed_climate.dart';
+import '../helpers/in_memory_database.dart';
 import '../recommendations/fixtures/scored.dart';
 
 /// [n] distinct recommendations, best first.
@@ -108,6 +115,7 @@ Future<ProviderContainer> _pump(
   Size size = const Size(390, 844),
   _FakeForecast? forecast,
   Stream<UserProfile>? profile,
+  List<Planting>? plantings,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -131,15 +139,32 @@ Future<ProviderContainer> _pump(
         (ref) => profile ?? Stream.value(defaultUserProfile),
       ),
       primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
+      if (plantings != null)
+        plantingsProvider.overrideWith((ref) => Stream.value(plantings)),
+      inMemoryDatabaseOverride(),
     ],
   );
+  final router = GoRouter(
+    initialLocation: '/home',
+    routes: [
+      GoRoute(path: '/home', builder: (_, _) => const HomeFirstRunScreen()),
+      GoRoute(
+        path: '/home/recommendations',
+        builder: (_, _) => const Text('RC-01 stub'),
+      ),
+      GoRoute(
+        path: '/plants/:plantId',
+        builder: (_, state) =>
+            Text('PD-01 stub: ${state.pathParameters['plantId']}'),
+      ),
+      GoRoute(path: '/settings', builder: (_, _) => const Text('ST-01 stub')),
+    ],
+  );
+  addTearDown(router.dispose);
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: MaterialApp(
-        theme: AppTheme.light(),
-        home: const HomeFirstRunScreen(),
-      ),
+      child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
     ),
   );
   // One frame for the providers, one for the fake forecast to land.
@@ -149,10 +174,12 @@ Future<ProviderContainer> _pump(
 }
 
 /// Unmounts the screen so the midnight timer and container go away before
-/// the binding checks for pending timers.
+/// the binding checks for pending timers. The last pump runs the zero-length
+/// timer Drift schedules when a watched query (plantings) is cancelled.
 Future<void> _unmount(WidgetTester tester, ProviderContainer c) async {
   await tester.pumpWidget(const SizedBox());
   c.dispose();
+  await tester.pump(Duration.zero);
 }
 
 Future<void> _pickLater(WidgetTester tester) async {
@@ -285,6 +312,36 @@ void main() {
       find.text('Fall · Cool-season planting in Baton Rouge'),
       findsOneWidget,
     );
+    await _unmount(tester, c);
+  });
+
+  testWidgets('HM-01b with a planting present → slim card absent', (
+    tester,
+  ) async {
+    final c = await _pump(
+      tester,
+      recs: _recs(25),
+      plantings: [
+        Planting(
+          id: 'p1',
+          plantId: 'kale',
+          spaceId: defaultSpace.id,
+          nickname: 'Kale',
+          setup: GrowSetup.outdoor,
+          inContainer: true,
+          startMethod: 'transplant',
+          plantedOn: DateTime(2026, 10, 1),
+          status: PlantingStatus.active,
+          createdAt: DateTime(2026, 10, 1),
+        ),
+      ],
+    );
+
+    await _pickLater(tester);
+
+    expect(c.read(firstPlantPromptDismissedProvider), isTrue);
+    expect(find.text('Pick your first plant'), findsNothing);
+    expect(find.byType(PlantCard), findsNothing);
     await _unmount(tester, c);
   });
 
@@ -483,4 +540,82 @@ void main() {
       await _unmount(tester, c);
     });
   }
+
+  testWidgets('SEE ALL opens RC-01', (tester) async {
+    final c = await _pump(tester, recs: _recs(25));
+    final seeAll = find.text('SEE ALL');
+    await tester.scrollUntilVisible(
+      seeAll,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(seeAll);
+    await tester.pump();
+    await tester.tap(seeAll);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('RC-01 stub'), findsOneWidget);
+    await _unmount(tester, c);
+  });
+
+  testWidgets('a carousel card opens its plant detail', (tester) async {
+    final c = await _pump(tester, recs: _recs(25));
+    final card = find.text('Plant 00');
+    await tester.ensureVisible(card);
+    await tester.pump();
+    await tester.tap(card);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('PD-01 stub: plant-0'), findsOneWidget);
+    await _unmount(tester, c);
+  });
+
+  testWidgets('the slim card opens RC-01 once the carousel is collapsed', (
+    tester,
+  ) async {
+    final c = await _pump(tester, recs: _recs(25));
+    await _pickLater(tester);
+    final slim = find.text('Pick your first plant');
+    await tester.ensureVisible(slim);
+    await tester.pump();
+    await tester.tap(slim);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('RC-01 stub'), findsOneWidget);
+    await _unmount(tester, c);
+  });
+
+  testWidgets('the gear opens settings', (tester) async {
+    final c = await _pump(tester, recs: _recs(25));
+    await tester.tap(find.byIcon(Symbols.settings_rounded));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('ST-01 stub'), findsOneWidget);
+    await _unmount(tester, c);
+  });
+
+  testWidgets('"I\'ll pick later" persists the dismissal to the profile row', (
+    tester,
+  ) async {
+    final c = await _pump(tester, recs: _recs(25));
+    final db = c.read(appDatabaseProvider);
+    await tester.runAsync(
+      () =>
+          c.read(profileWriterProvider).save(defaultUserProfile, defaultSpace),
+    );
+    final before = await tester.runAsync(
+      () => db.select(db.userProfileTable).getSingle(),
+    );
+    expect(before!.firstPlantPromptDismissed, isFalse);
+
+    await _pickLater(tester);
+    expect(c.read(firstPlantPromptDismissedProvider), isTrue);
+
+    final persisted = await tester.runAsync(() async {
+      for (var i = 0; i < 100; i++) {
+        final row = await db.select(db.userProfileTable).getSingle();
+        if (row.firstPlantPromptDismissed) return true;
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      return false;
+    });
+    expect(persisted, isTrue);
+    await _unmount(tester, c);
+  });
 }

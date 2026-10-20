@@ -6,6 +6,8 @@ import 'package:geaux_farm/core/notifications/notification_plugin.dart';
 import 'package:geaux_farm/core/notifications/notification_providers.dart';
 import 'package:geaux_farm/core/notifications/notification_service.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
+import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
+import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
@@ -33,9 +35,9 @@ final onboardedProfile = UserProfile(
 );
 
 /// Overrides for pumping the whole app: [profile] instead of the Drift
-/// row, the default space, the plan/04 climate instead of an archive
-/// build, the recorded Baton Rouge forecast instead of Open-Meteo, and
-/// [notificationPlugin] (inert by default) instead of the OS plugin.
+/// row, the default space, no plantings, the plan/04 climate instead of an
+/// archive build, the recorded Baton Rouge forecast instead of Open-Meteo,
+/// and [notificationPlugin] (inert by default) instead of the OS plugin.
 List<Override> appOverrides({
   required UserProfile profile,
   NotificationPlugin? notificationPlugin,
@@ -53,6 +55,7 @@ List<Override> appOverrides({
     ),
     userProfileProvider.overrideWith((ref) => Stream.value(profile)),
     primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
+    plantingsProvider.overrideWith((ref) => Stream.value(const <Planting>[])),
     climateProvider.overrideWith(FixedClimate.new),
     forecastClientProvider.overrideWithValue(
       OpenMeteoForecastClient(

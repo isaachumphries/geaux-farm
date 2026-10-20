@@ -34,7 +34,414 @@
       "Light frost sweetens the leaves, so fall and winter crops taste best.",
       "Check leaf undersides for cabbage worms and pick them off."
     ],
-    "image": {"asset": "assets/plants/images/kale.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "image": {"asset": "assets/plants/images/kale.webp", "credit": "Evan-Amos", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:CSA-Red-Russian-Kale.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "collard-greens",
+    "commonName": "Collard Greens",
+    "scientificName": "Brassica oleracea var. viridis",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 85},
+    "growTempF": {"min": 35, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 70, "daysMax": 75}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Pick the lower leaves first; leave the center growing"},
+        {"type": "fertilize", "everyDays": 21, "note": "Side-dress with a nitrogen-rich fertilizer"}
+      ]
+    },
+    "tips": [
+      "Plant in fall or early spring; Louisiana summer heat makes collards bolt.",
+      "Collard leaves get sweeter after a light frost, so harvest after cool nights."
+    ],
+    "image": {"asset": "assets/plants/images/collard-greens.webp", "credit": "Ann Perry", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Collard_Leaves.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "swiss-chard",
+    "commonName": "Swiss Chard",
+    "scientificName": "Beta vulgaris var. cicla",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 85},
+    "growTempF": {"min": 40, "max": 90},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 45, "daysMax": 55}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Cut the outer stalks near the base; leave the center leaves"},
+        {"type": "fertilize", "everyDays": 30, "note": "Side-dress with compost or a balanced fertilizer"}
+      ]
+    },
+    "tips": [
+      "Chard handles more heat than spinach, so it can carry through a Louisiana fall.",
+      "Harvest the outer leaves first; the plant keeps producing from the center."
+    ],
+    "image": {"asset": "assets/plants/images/swiss-chard.webp", "credit": "August Geyler", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bl%C3%A4tter_vom_Roten_Mangold_(Chard).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "spinach",
+    "commonName": "Spinach",
+    "scientificName": "Spinacia oleracea",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 2,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 80},
+    "growTempF": {"min": 35, "max": 82},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 35, "daysMax": 45}
+    ],
+    "productiveDays": 20,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.25, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Pick the outer leaves once they reach 3 to 4 inches"},
+        {"type": "other", "everyDays": 14, "note": "Keep the bed evenly moist; heat and long days trigger bolting"}
+      ]
+    },
+    "tips": [
+      "Sow in fall or early spring; spinach bolts quickly in Louisiana summer heat.",
+      "Harvest while the leaves are tender; mature leaves turn bitter."
+    ],
+    "image": {"asset": "assets/plants/images/spinach.webp", "credit": "HaJunkiyada", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Fresh_spinach_leaves.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "lettuce",
+    "commonName": "Lettuce",
+    "scientificName": "Lactuca sativa",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 80},
+    "growTempF": {"min": 35, "max": 82},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 45, "daysMax": 80}
+    ],
+    "productiveDays": 20,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Pick outer leaves, or cut whole heads at maturity"},
+        {"type": "fertilize", "everyDays": 21, "note": "Side-dress with a balanced fertilizer"}
+      ]
+    },
+    "tips": [
+      "Sow seed shallow and keep the bed moist until seedlings emerge.",
+      "Harvest in the cool morning; heat makes lettuce bolt and turn bitter."
+    ],
+    "image": {"asset": "assets/plants/images/lettuce.webp", "credit": "Rainer Zenz", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Romaine_lettuce.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "radish",
+    "commonName": "Radish",
+    "scientificName": "Raphanus sativus",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 85},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 22, "daysMax": 28}
+    ],
+    "productiveDays": 0,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.1, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 3, "note": "Pull roots when they reach size; overgrown radishes turn woody"}
+      ]
+    },
+    "tips": [
+      "Thin seedlings to about 2 inches apart so the roots can swell.",
+      "Keep the soil evenly moist so roots do not crack or turn pithy."
+    ],
+    "image": {"asset": "assets/plants/images/radish.webp", "credit": "Self, en:User:Jengod", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Radish_3371103037_4ab07db0bf_o.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "bell-pepper",
+    "commonName": "Bell Pepper",
+    "scientificName": "Capsicum annuum",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 60, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 80},
+      {"method": "seed", "daysMin": 100, "daysMax": 150}
+    ],
+    "productiveDays": 90,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2.25, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 3,
+      "weeklyMinutes": 20,
+      "tasks": [
+        {"type": "harvest", "everyDays": 3, "note": "Pick when fruit is firm and full-sized to keep plants producing"},
+        {"type": "fertilize", "everyDays": 21, "note": "Balanced fertilizer, shifting to lower nitrogen once flowering starts"}
+      ]
+    },
+    "tips": [
+      "Stake plants early; heavy fruit can snap branches.",
+      "Blossoms drop when nights stay above 75 F or below 60 F, so plant to avoid those extremes."
+    ],
+    "image": {"asset": "assets/plants/images/bell-pepper.webp", "credit": "Shixart1985", "license": "CC BY 2.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Freshly_harvested_red_bell_pepper.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "bush-bean",
+    "commonName": "Bush Bean",
+    "scientificName": "Phaseolus vulgaris",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 50, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 48, "daysMax": 55}
+    ],
+    "productiveDays": 30,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 2, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 2, "note": "Pick pods when firm and before the seeds bulge"},
+        {"type": "other", "everyDays": 14, "note": "Hoe shallowly to control weeds; bean roots sit near the surface"}
+      ]
+    },
+    "tips": [
+      "Avoid working among bean plants while they are wet to limit disease spread.",
+      "Sow after the soil warms; cold, wet soil makes seed rot before it sprouts."
+    ],
+    "image": {"asset": "assets/plants/images/bush-bean.webp", "credit": "Juan Emilio Prades Bel", "license": "CC BY 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jud%C3%ADas_verdes_(Phaseolus_vulgaris).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "carrot",
+    "commonName": "Carrot",
+    "scientificName": "Daucus carota subsp. sativus",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 2,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 80},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 70, "daysMax": 75}
+    ],
+    "productiveDays": 0,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.15, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 2, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "other", "everyDays": 14, "note": "Thin seedlings to 2 to 3 inches apart once tops are about 2 inches tall"},
+        {"type": "harvest", "everyDays": 7, "note": "Check root size; pull before roots crack or turn woody"}
+      ]
+    },
+    "tips": [
+      "Sow thinly; carrot seed sprouts slowly and needs constant surface moisture.",
+      "Loosen clay soil or grow short varieties; compacted soil makes forked roots."
+    ],
+    "image": {"asset": "assets/plants/images/carrot.webp", "credit": "User:arundpt", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bunch_of_carrot.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "okra",
+    "commonName": "Okra",
+    "scientificName": "Abelmoschus esculentus",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 65, "max": 90},
+    "growTempF": {"min": 65, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 60, "daysMax": 60}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "harvest", "everyDays": 2, "note": "Pick pods at 2 to 4 inches; oversized pods turn tough"},
+        {"type": "fertilize", "everyDays": 30, "note": "Light side-dress of balanced fertilizer mid-season"}
+      ]
+    },
+    "tips": [
+      "Pick every other day; pods grow fast and toughen if left on the plant.",
+      "Okra needs warm soil; seed sown into cold ground often rots before it sprouts."
+    ],
+    "image": {"asset": "assets/plants/images/okra.webp", "credit": "ADARSHluck", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Okra_(Abelmoschus_esculentus)_Feb_2019._DSC_0060_01.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "microgreens",
+    "commonName": "Microgreens",
+    "scientificName": "Various (young seedlings)",
+    "category": "vegetable",
+    "purposes": ["food"],
+    "lifecycle": "annual",
+    "seasonTags": ["year-round"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 85},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 10, "daysMax": 25}
+    ],
+    "productiveDays": 0,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.02, "containerOk": true, "minContainerGal": 0.5, "indoorOk": true},
+    "water": {"need": "high", "everyDaysOutdoor": 1, "everyDaysIndoor": 1},
+    "care": {
+      "dailyMinutes": 3,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "harvest", "everyDays": 14, "note": "Cut at the soil line once the first true leaves open"},
+        {"type": "other", "everyDays": 1, "note": "Water or mist trays daily so the surface stays moist"}
+      ]
+    },
+    "tips": [
+      "Use a shallow tray with drainage holes and a few inches of seed-starting mix.",
+      "Harvest once the first true leaves open; waiting longer makes the greens tougher."
+    ],
+    "image": {"asset": "assets/plants/images/microgreens.webp", "credit": "Pannet", "license": "CC BY 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sunflower_microgreens_01.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "green-onion",
+    "commonName": "Green Onion",
+    "scientificName": "Allium fistulosum",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "6a", "max": "9b"},
+    "plantTempF": {"min": 40, "max": 85},
+    "growTempF": {"min": 35, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 65, "daysMax": 65}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.25, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Cut outer stalks about 2 inches above the soil; the clump regrows"},
+        {"type": "fertilize", "everyDays": 30, "note": "Side-dress with compost or balanced fertilizer during active growth"}
+      ]
+    },
+    "tips": [
+      "Divide crowded clumps every two to three years to keep stalks thick.",
+      "Let a few plants flower in late spring if you want seed; cut the rest before they go woody."
+    ],
+    "image": {"asset": "assets/plants/images/green-onion.webp", "credit": "Jonathunder", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:GreenOnions.jpg"},
     "source": "curated"
   },
   {
@@ -72,7 +479,7 @@
       "Water at the soil, not the leaves, to slow leaf disease.",
       "Pick fruit as soon as it colors so heavy rain doesn't split it."
     ],
-    "image": {"asset": "assets/plants/images/cherry-tomato.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "image": {"asset": "assets/plants/images/cherry-tomato.webp", "credit": "Evan-Amos", "license": "CC0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cherry-Tomatoes-in-Pack.jpg"},
     "source": "curated"
   },
   {
@@ -110,7 +517,7 @@
       "Pinch off flower buds to keep the leaves coming.",
       "Bring pots indoors before nights turn cold."
     ],
-    "image": {"asset": "assets/plants/images/sweet-basil.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "image": {"asset": "assets/plants/images/sweet-basil.webp", "credit": "PumpkinSky", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ocimum_basilicum_CG_NBG_LR.jpg"},
     "source": "curated"
   },
   {
@@ -146,7 +553,571 @@
       "Use a gravelly, fast-draining mix — humid Gulf summers cause root rot.",
       "Let the soil dry out between waterings."
     ],
-    "image": {"asset": "assets/plants/images/english-lavender.webp", "credit": "TBD", "license": "TBD", "sourceUrl": null},
+    "image": {"asset": "assets/plants/images/english-lavender.webp", "credit": "Norbert Nagel", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lavandula_angustifolia_-_lavender_-_Lavendel_-_01.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "thyme",
+    "commonName": "Thyme",
+    "scientificName": "Thymus vulgaris",
+    "category": "herb",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial", "evergreen"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "5a", "max": "9b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 90},
+      {"method": "seed", "daysMin": 90, "daysMax": 120}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 5, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "prune", "everyDays": 30, "note": "Snip stems to keep the plant bushy and compact"}
+      ]
+    },
+    "tips": [
+      "Let the soil dry out between waterings; thyme rots in wet ground.",
+      "Cut back by about a third after the first flush of bloom."
+    ],
+    "image": {"asset": "assets/plants/images/thyme.webp", "credit": "Christian Ferrer", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Eristalinus_aeneus_on_Thymus_vulgaris,_S%C3%A8te_03.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "oregano",
+    "commonName": "Oregano",
+    "scientificName": "Origanum vulgare",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "4a", "max": "8b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 95},
+    "frostTolerance": "hard",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 45, "daysMax": 60},
+      {"method": "seed", "daysMin": 80, "daysMax": 100}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 2, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 14, "note": "Snip stems before flowering for the strongest flavor"}
+      ]
+    },
+    "tips": [
+      "Harvest before the plant flowers; leaf flavor fades once it blooms.",
+      "Divide crowded clumps every few years to keep the plant vigorous."
+    ],
+    "image": {"asset": "assets/plants/images/oregano.webp", "credit": "Ivar Leidus", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Origanum_vulgare_inflorescence_-_Keila.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "parsley",
+    "commonName": "Parsley",
+    "scientificName": "Petroselinum crispum",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "biennial",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": null,
+    "plantTempF": {"min": 55, "max": 75},
+    "growTempF": {"min": 40, "max": 80},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 75},
+      {"method": "seed", "daysMin": 80, "daysMax": 100}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 7, "note": "Cut outer stems at the base; leave the center growing"},
+        {"type": "fertilize", "everyDays": 30, "note": "Feed with a balanced fertilizer every few weeks"}
+      ]
+    },
+    "tips": [
+      "Parsley seed is slow to sprout, often taking 14 to 30 days; keep the soil moist.",
+      "Plant in part sun; summer heat makes parsley bolt and turn bitter."
+    ],
+    "image": {"asset": "assets/plants/images/parsley.webp", "credit": "H. Zell", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Petroselinum_crispum_003.JPG"},
+    "source": "curated"
+  },
+  {
+    "id": "mint",
+    "commonName": "Spearmint",
+    "scientificName": "Mentha spicata",
+    "category": "herb",
+    "purposes": ["food"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": {"min": "5a", "max": "9b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 95},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 45},
+      {"method": "cutting", "daysMin": 14, "daysMax": 21}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "high", "everyDaysOutdoor": 2, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 14, "note": "Pinch growing tips to keep leaves tender and bushy"}
+      ]
+    },
+    "tips": [
+      "Grow mint in a container; it spreads aggressively through garden beds.",
+      "Pinch off flower buds to keep the leaves flavorful."
+    ],
+    "image": {"asset": "assets/plants/images/mint.webp", "credit": "Commonists", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mint_leaves_(Mentha_spicata).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "rosemary",
+    "commonName": "Rosemary",
+    "scientificName": "Rosmarinus officinalis",
+    "category": "herb",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial", "evergreen"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": {"min": "8a", "max": "10b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 90},
+    "frostTolerance": "light",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 90},
+      {"method": "seed", "daysMin": 120, "daysMax": 150}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 4, "containerOk": true, "minContainerGal": 3, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 10},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "prune", "everyDays": 30, "note": "Trim soft tips to keep the shrub full and encourage new growth"}
+      ]
+    },
+    "tips": [
+      "Plant in fast-draining soil; rosemary dislikes wet roots.",
+      "Harvest the soft tips in spring and summer; avoid cutting into old woody growth."
+    ],
+    "image": {"asset": "assets/plants/images/rosemary.webp", "credit": "THOR", "license": "CC BY 2.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rosmarinus_officinalis133095382.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "marigold",
+    "commonName": "Marigold",
+    "scientificName": "Tagetes patula",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 60, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 35, "daysMax": 45},
+      {"method": "seed", "daysMin": 50, "daysMax": 60}
+    ],
+    "productiveDays": 45,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 7, "note": "Pinch off spent blooms to keep flowers coming until frost"}
+      ]
+    },
+    "tips": [
+      "Set transplants out after the last frost; marigolds stall in cold soil.",
+      "Water the soil rather than the leaves to reduce fungal spots in humid weather."
+    ],
+    "image": {"asset": "assets/plants/images/marigold.webp", "credit": "Reinhold Möller Ermell", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Gro%C3%9Fe_Blaue_Holzbiene_Tagetes-20241026-RM-152720.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "zinnia",
+    "commonName": "Zinnia",
+    "scientificName": "Zinnia elegans",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 60, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 40},
+      {"method": "seed", "daysMin": 60, "daysMax": 70}
+    ],
+    "productiveDays": 45,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 2, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 7, "note": "Pick blooms regularly; cutting encourages more flowers"}
+      ]
+    },
+    "tips": [
+      "Water at the base; wet foliage in humid weather invites mildew.",
+      "Pick flowers often to keep the plant blooming until frost."
+    ],
+    "image": {"asset": "assets/plants/images/zinnia.webp", "credit": "Simon Koopmann", "license": "CC BY-SA 2.0 de", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Zinnia_elegans_with_Bombus_01.JPG"},
+    "source": "curated"
+  },
+  {
+    "id": "cosmos",
+    "commonName": "Cosmos",
+    "scientificName": "Cosmos bipinnatus",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 60, "max": 80},
+    "growTempF": {"min": 60, "max": 95},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 90, "daysMax": 110}
+    ],
+    "productiveDays": 90,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 5, "everyDaysIndoor": 5},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 14, "note": "Pinch young plants and deadhead to keep flowers coming"}
+      ]
+    },
+    "tips": [
+      "Direct-sow after the last frost; cosmos seedlings dislike transplanting.",
+      "Pinch young plants for bushier growth and more flowers."
+    ],
+    "image": {"asset": "assets/plants/images/cosmos.webp", "credit": "Wilfredor", "license": "CC0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cosmos_bipinnatus_in_Jardin_universitaire_Roger-Van_den_Hende,_Quebec_city,_Quebec,_Canada.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "purple-coneflower",
+    "commonName": "Purple Coneflower",
+    "scientificName": "Echinacea purpurea",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["full", "partial"],
+    "zones": {"min": "3a", "max": "8b"},
+    "plantTempF": {"min": 55, "max": 80},
+    "growTempF": {"min": 40, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 90},
+      {"method": "seed", "daysMin": 120, "daysMax": 150}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Cut stems back to the ground in late fall or early spring"}
+      ]
+    },
+    "tips": [
+      "Deadhead spent blooms to extend flowering into late summer.",
+      "Leave seed heads standing in fall; goldfinches feed on them through winter."
+    ],
+    "image": {"asset": "assets/plants/images/purple-coneflower.webp", "credit": "Diego Delso", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Echinacea_purpurea,_Jard%C3%ADn_Bot%C3%A1nico,_M%C3%BAnich,_Alemania,_2013-09-08,_DD_01.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "black-eyed-susan",
+    "commonName": "Black-Eyed Susan",
+    "scientificName": "Rudbeckia hirta",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "3a", "max": "8b"},
+    "plantTempF": {"min": 55, "max": 80},
+    "growTempF": {"min": 40, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 75},
+      {"method": "seed", "daysMin": 90, "daysMax": 120}
+    ],
+    "productiveDays": 120,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 14, "note": "Deadhead to keep flowers coming; leave a few to self-seed"}
+      ]
+    },
+    "tips": [
+      "Deadhead spent blooms to keep the plant flowering from June until frost.",
+      "Leave a few seed heads standing to reseed the bed for next year."
+    ],
+    "image": {"asset": "assets/plants/images/black-eyed-susan.webp", "credit": "Acabashi", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:%22Rudbeckia_hirta%22_Black-eyed_Susan_Gibberd_Garden_Essex_England_(cropped).JPG"},
+    "source": "curated"
+  },
+  {
+    "id": "strawberry",
+    "commonName": "Strawberry",
+    "scientificName": "Fragaria × ananassa",
+    "category": "fruit",
+    "purposes": ["food"],
+    "lifecycle": "perennial",
+    "seasonTags": ["cool-season", "perennial"],
+    "difficulty": 2,
+    "sun": ["full", "partial"],
+    "zones": {"min": "5a", "max": "9b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 40, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 90, "daysMax": 100},
+      {"method": "seed", "daysMin": 120, "daysMax": 150}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 2, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 5,
+      "weeklyMinutes": 30,
+      "tasks": [
+        {"type": "prune", "everyDays": 14, "note": "Year 1: remove runners and pinch early flower buds"},
+        {"type": "fertilize", "everyDays": 90, "note": "Feed in early spring"},
+        {"type": "harvest", "everyDays": 3, "note": "Pick ripe fruit every 2-3 days in season"}
+      ]
+    },
+    "tips": [
+      "Plant in full sun (6+ hours a day); each plant needs about 1 sq ft, spaced 12-18 in apart.",
+      "Water about 1 inch per week; water daily for the first 1-2 weeks after planting.",
+      "Plant in fall for winter-spring harvest: Sept 15-Nov 15 in north LA, Sept 25-Nov 25 in south LA."
+    ],
+    "image": {"asset": "assets/plants/images/strawberry.webp", "credit": "Ivar Leidus", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Garden_strawberry_(Fragaria_%C3%97_ananassa)_single2.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "satsuma",
+    "commonName": "Satsuma mandarin",
+    "scientificName": "Citrus unshiu",
+    "category": "fruit",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "winter-interest"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": {"min": "8a", "max": "10b"},
+    "plantTempF": {"min": 50, "max": 65},
+    "growTempF": {"min": 40, "max": 95},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 1095, "daysMax": 1460}
+    ],
+    "productiveDays": 3650,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 490, "containerOk": true, "minContainerGal": 15, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 5,
+      "weeklyMinutes": 30,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 90, "note": "Mid-March feeding; trees 4+ yrs also get late May-June nitrogen; no nitrogen after June"},
+        {"type": "prune", "everyDays": 365, "note": "Prune freeze-damaged trees only after damage is evident, July-Aug"},
+        {"type": "harvest", "everyDays": 7, "note": "Owari picked Nov to early Dec; all fruit off by end of Jan or early Feb"}
+      ]
+    },
+    "tips": [
+      "Plant Jan-Feb in full sun in well-drained soil; trees planted after December handle February freezes better.",
+      "Owari matures early to mid-Nov and is picked through early Dec; pick all fruit by end of Jan or early Feb.",
+      "Mid-to-low teens for 5+ hours kills trees; no nitrogen after June, since late feeding cuts cold hardiness."
+    ],
+    "image": {"asset": "assets/plants/images/satsuma.webp", "credit": "Batholith", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Citrus_unshiu_20101127_c.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "azalea",
+    "commonName": "Azalea",
+    "scientificName": "Rhododendron indicum",
+    "category": "shrub",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "perennial"],
+    "difficulty": 2,
+    "sun": ["partial"],
+    "zones": {"min": "7a", "max": "8b"},
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 30, "max": 90},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 120}
+    ],
+    "productiveDays": 30,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 9, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 2},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 15,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Remove spent flower clusters after bloom"},
+        {"type": "fertilize", "everyDays": 180, "note": "Feed sparingly; excess fertilizer harms this azalea"},
+        {"type": "other", "everyDays": 365, "note": "Keep soil acidic (pH below 6.0) and well-drained"}
+      ]
+    },
+    "tips": [
+      "Plant in partial shade (direct sun 2-6 hours a day) in acid, well-drained soil high in organic matter.",
+      "Remove spent flower clusters after bloom; avoid excess fertilizer and heavy or wet soil.",
+      "Susceptible to Phytophthora root rot; keep soil drained. Rabbit resistant, but deer browse it."
+    ],
+    "image": {"asset": "assets/plants/images/azalea.webp", "credit": "David J. Stang", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rhododendron_indicum_1zz.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "pothos",
+    "commonName": "Pothos",
+    "scientificName": "Epipremnum aureum",
+    "category": "houseplant",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["year-round", "evergreen"],
+    "difficulty": 1,
+    "sun": ["shade", "partial"],
+    "zones": {"min": "10a", "max": "12b"},
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 55, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "cutting", "daysMin": 30, "daysMax": 60}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "foliage",
+    "space": {"sqFtPerPlant": 4, "containerOk": true, "minContainerGal": 1, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 2,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 60, "note": "Every other month, skipping winter dormancy"},
+        {"type": "prune", "everyDays": 90, "note": "Prune for a bushier habit"}
+      ]
+    },
+    "tips": [
+      "Bright indirect light is best, but it survives long periods in low light.",
+      "Let the medium dry between waterings; overwatering causes root rot.",
+      "Toxic to dogs and cats: chewing releases calcium oxalate crystals that irritate the mouth and cause vomiting."
+    ],
+    "image": {"asset": "assets/plants/images/pothos.webp", "credit": "Joydeep", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Epipremnum_aureum_31082012.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "snake-plant",
+    "commonName": "Snake plant",
+    "scientificName": "Dracaena trifasciata",
+    "category": "houseplant",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["year-round", "evergreen"],
+    "difficulty": 1,
+    "sun": ["shade", "partial"],
+    "zones": {"min": "10a", "max": "12b"},
+    "plantTempF": {"min": 60, "max": 85},
+    "growTempF": {"min": 50, "max": 90},
+    "frostTolerance": "none",
+    "humidity": "low",
+    "starts": [
+      {"method": "cutting", "daysMin": 30, "daysMax": 60}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "foliage",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 2, "indoorOk": true},
+    "water": {"need": "low", "everyDaysOutdoor": 14, "everyDaysIndoor": 21},
+    "care": {
+      "dailyMinutes": 1,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 60, "note": "Light feeding in spring and summer only"},
+        {"type": "other", "everyDays": 30, "note": "Check for mealybugs and spider mites"}
+      ]
+    },
+    "tips": [
+      "Let soil dry between waterings in spring-autumn; in winter water only every 1-2 months.",
+      "Tolerates very low light, low humidity, and cool temperatures near 50 F; rarely blooms indoors.",
+      "Overwatering causes root rot; watch for mealybugs and spider mites."
+    ],
+    "image": {"asset": "assets/plants/images/snake-plant.webp", "credit": "Tangopaso", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sansevieria_trifasciata_D190512.jpg"},
     "source": "curated"
   }
 ]

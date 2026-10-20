@@ -9,6 +9,7 @@ import '../../domain/compatibility.dart';
 import '../../domain/scored_plant.dart';
 import 'compat_badge.dart';
 import 'maintenance_pill.dart';
+import 'season_chip.dart';
 
 /// Which flag a [PlantCard] shows: the "Plant now" ribbon, the "Indoor /
 /// greenhouse" chip, or neither. `default` is a reserved word, hence
@@ -40,96 +41,161 @@ String careTimeLabel(PlantCare care) {
   return '$daily · Weekly ~${care.weeklyMinutes}m';
 }
 
-/// Compact plant card for the Home carousel (HM-01), drawn as in the
-/// Figma: category art, optional "Plant now" ribbon, name, compat badge,
-/// time to grow, care time, and maintenance level.
+/// Card shape: the compact Home carousel tile (HM-01) or the full-width row
+/// on the recommendations list (RC-01).
+enum PlantCardSize { compact, list }
+
+/// Plant card for the Home carousel (HM-01) and the recommendations list
+/// (RC-01), drawn as in the Figma: category art, optional "Plant now" ribbon,
+/// name, compat badge, time to grow, care time, maintenance level, and season
+/// chips.
 class PlantCard extends StatelessWidget {
   const PlantCard({
     super.key,
     required this.plant,
     required this.state,
     this.onTap,
+    this.size = PlantCardSize.compact,
   });
 
   final ScoredPlant plant;
   final PlantCardState state;
   final VoidCallback? onTap;
+  final PlantCardSize size;
 
   @override
   Widget build(BuildContext context) {
     final p = plant.plant;
-    final timeToGrow = p.timeToGrowLabel;
+    final isList = size == PlantCardSize.list;
     return SizedBox(
-      width: plantCardCompactWidth,
+      width: isList ? double.infinity : plantCardCompactWidth,
       child: GeauxCard(
         onTap: onTap,
         padding: const EdgeInsets.all(AppBorders.width),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadii.card - AppBorders.width),
-              ),
-              child: Stack(
-                children: [
-                  _CategoryArt(category: p.category),
-                  if (state == PlantCardState.inSeason)
-                    const Positioned(
-                      left: _ribbonInset,
-                      top: _ribbonInset,
-                      child: PlantNowRibbon(),
-                    ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                _bodyInset,
-                AppSpacing.sm,
-                _bodyInset,
-                AppSpacing.md,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    p.commonName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppText.cardTitle.copyWith(color: AppColors.soil900),
-                  ),
-                  const SizedBox(height: AppSpacing.xs + 2),
-                  CompatBadge(score: plant.compatibility.score),
-                  const SizedBox(height: AppSpacing.xs + 2),
-                  if (timeToGrow != null)
-                    _IconLine(
-                      icon: Symbols.schedule_rounded,
-                      filled: false,
-                      color: AppColors.leaf700,
-                      text: timeToGrow,
-                    ),
-                  const SizedBox(height: AppSpacing.xs),
-                  _IconLine(
-                    icon: Symbols.water_drop_rounded,
-                    color: AppColors.frost,
-                    text: careTimeLabel(p.care),
-                  ),
-                  const SizedBox(height: AppSpacing.xs + 2),
-                  MaintenancePill(level: p.maintenanceLevel),
-                  if (state == PlantCardState.indoorOnly) ...[
-                    const SizedBox(height: AppSpacing.xs),
-                    const _IndoorChip(),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
+        child: isList ? _listBody(p) : _compactBody(p),
       ),
     );
+  }
+
+  Widget _compactBody(Plant p) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ClipRRect(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadii.card - AppBorders.width),
+          ),
+          child: Stack(
+            children: [
+              _CategoryArt(category: p.category),
+              if (state == PlantCardState.inSeason)
+                const Positioned(
+                  left: _ribbonInset,
+                  top: _ribbonInset,
+                  child: PlantNowRibbon(),
+                ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            _bodyInset,
+            AppSpacing.sm,
+            _bodyInset,
+            AppSpacing.md,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _details(p),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Art tile on the left, 80 square; text on the right, with the "Plant now"
+  /// ribbon above the name when in season.
+  Widget _listBody(Plant p) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: const BorderRadius.horizontal(
+            left: Radius.circular(AppRadii.card - AppBorders.width),
+          ),
+          child: SizedBox(
+            width: _listArtSize,
+            child: _CategoryArt(category: p.category, height: _listArtSize),
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.md,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (state == PlantCardState.inSeason) ...[
+                  const PlantNowRibbon(),
+                  const SizedBox(height: AppSpacing.xs),
+                ],
+                ..._details(p),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Name through indoor chip, shared by the compact and list layouts.
+  List<Widget> _details(Plant p) {
+    final timeToGrow = p.timeToGrowLabel;
+    return [
+      Text(
+        p.commonName,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: AppText.cardTitle.copyWith(color: AppColors.soil900),
+      ),
+      const SizedBox(height: AppSpacing.xs + 2),
+      CompatBadge(score: plant.compatibility.score),
+      const SizedBox(height: AppSpacing.xs + 2),
+      if (timeToGrow != null)
+        _IconLine(
+          icon: Symbols.schedule_rounded,
+          filled: false,
+          color: AppColors.leaf700,
+          text: timeToGrow,
+        ),
+      const SizedBox(height: AppSpacing.xs),
+      _IconLine(
+        icon: Symbols.water_drop_rounded,
+        color: AppColors.frost,
+        text: careTimeLabel(p.care),
+      ),
+      const SizedBox(height: AppSpacing.xs + 2),
+      Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.xs,
+        children: [
+          MaintenancePill(level: p.maintenanceLevel),
+          for (final tag in p.seasonTags.take(_seasonChipLimit))
+            SeasonChip(tag: tag),
+        ],
+      ),
+      if (state == PlantCardState.indoorOnly) ...[
+        const SizedBox(height: AppSpacing.xs),
+        const _IndoorChip(),
+      ],
+    ];
   }
 }
 
@@ -138,6 +204,9 @@ const double _ribbonInset = AppSpacing.sm - AppBorders.width;
 /// Side padding of the card body; with the border, text sits 12 from the
 /// card edge.
 const double _bodyInset = AppSpacing.md - AppBorders.width;
+
+/// Season chips per card: two, as on RC-01.
+const int _seasonChipLimit = 2;
 
 // Category art, measured on the HM-01 export (2x, halved): the tinted band
 // is 88 tall, the halo disc 80 across, and the icon glyph about 31 wide,
@@ -151,10 +220,14 @@ const double _artIconSize = 46;
 const double _highlightSize = _haloSize * 0.36;
 const double _highlightInset = _haloSize * 0.1;
 
+// RC-01 list art: an 80-square tile on the left of each list card.
+const double _listArtSize = 80;
+
 class _CategoryArt extends StatelessWidget {
-  const _CategoryArt({required this.category});
+  const _CategoryArt({required this.category, this.height = _artHeight});
 
   final PlantCategory category;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -190,12 +263,13 @@ class _CategoryArt extends StatelessWidget {
         AppColors.leaf700,
       ),
     };
+    final scale = height / _artHeight;
     return Container(
-      height: _artHeight,
+      height: height,
       color: tint,
       alignment: Alignment.center,
       child: SizedBox.square(
-        dimension: _haloSize,
+        dimension: _haloSize * scale,
         child: Stack(
           children: [
             const Positioned.fill(
@@ -207,11 +281,11 @@ class _CategoryArt extends StatelessWidget {
               ),
             ),
             // Small highlight on the halo's upper left, as drawn.
-            const Positioned(
-              left: _highlightInset,
-              top: _highlightInset,
+            Positioned(
+              left: _highlightInset * scale,
+              top: _highlightInset * scale,
               child: SizedBox.square(
-                dimension: _highlightSize,
+                dimension: _highlightSize * scale,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: AppColors.artHalo,
@@ -221,7 +295,12 @@ class _CategoryArt extends StatelessWidget {
               ),
             ),
             Center(
-              child: Icon(icon, size: _artIconSize, color: ink, fill: 1),
+              child: Icon(
+                icon,
+                size: _artIconSize * scale,
+                color: ink,
+                fill: 1,
+              ),
             ),
           ],
         ),
