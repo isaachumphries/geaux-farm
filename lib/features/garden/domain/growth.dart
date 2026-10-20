@@ -119,11 +119,11 @@ const careWindowDays = 7;
 /// This is a simple stand-in for the weather-aware care schedule; when that
 /// lands, the garden screens should read it instead.
 List<CareDue> careDueFor(
-    Planting pl,
-    Plant p,
-    List<CareEvent> events,
-    DateTime today,
-    ) {
+  Planting pl,
+  Plant p,
+  List<CareEvent> events,
+  DateTime today,
+) {
   final planted = pl.plantedOn;
   if (pl.status != PlantingStatus.active || planted == null) return const [];
   final plantedDay = calendarDay(planted);
@@ -143,7 +143,7 @@ List<CareDue> careDueFor(
   final water = p.water;
   if (water != null) {
     final lastWater = last(
-          (e) => e.type == CareEventType.water || e.type == CareEventType.skipWater,
+      (e) => e.type == CareEventType.water || e.type == CareEventType.skipWater,
     );
     final every = pl.setup == GrowSetup.outdoor
         ? water.everyDaysOutdoor
@@ -166,8 +166,8 @@ List<CareDue> careDueFor(
       TaskType.other => CareEventType.note,
     };
     final done = last(
-          (e) =>
-      e.type == type &&
+      (e) =>
+          e.type == type &&
           (task.type != TaskType.other || e.note == task.note),
     );
     jobs.add(

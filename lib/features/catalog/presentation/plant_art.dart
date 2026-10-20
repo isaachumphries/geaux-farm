@@ -10,34 +10,34 @@ typedef PlantArtStyle = ({Color tint, IconData icon, Color ink});
 
 PlantArtStyle plantArtStyle(PlantCategory category) => switch (category) {
   PlantCategory.vegetable => (
-  tint: AppColors.leaf100,
-  icon: Symbols.eco_rounded,
-  ink: AppColors.leaf500,
+    tint: AppColors.leaf100,
+    icon: Symbols.eco_rounded,
+    ink: AppColors.leaf500,
   ),
   PlantCategory.herb => (
-  tint: AppColors.leaf100,
-  icon: Symbols.spa_rounded,
-  ink: AppColors.leaf700,
+    tint: AppColors.leaf100,
+    icon: Symbols.spa_rounded,
+    ink: AppColors.leaf700,
   ),
   PlantCategory.flower => (
-  tint: AppColors.tileSky,
-  icon: Symbols.local_florist_rounded,
-  ink: AppColors.tileSkyLedge,
+    tint: AppColors.tileSky,
+    icon: Symbols.local_florist_rounded,
+    ink: AppColors.tileSkyLedge,
   ),
   PlantCategory.fruit => (
-  tint: AppColors.tilePeach,
-  icon: Symbols.nutrition_rounded,
-  ink: AppColors.heat,
+    tint: AppColors.tilePeach,
+    icon: Symbols.nutrition_rounded,
+    ink: AppColors.heat,
   ),
   PlantCategory.shrub => (
-  tint: AppColors.tileSoil,
-  icon: Symbols.park_rounded,
-  ink: AppColors.tileSoilLedge,
+    tint: AppColors.tileSoil,
+    icon: Symbols.park_rounded,
+    ink: AppColors.tileSoilLedge,
   ),
   PlantCategory.houseplant => (
-  tint: AppColors.leaf100,
-  icon: Symbols.potted_plant_rounded,
-  ink: AppColors.leaf700,
+    tint: AppColors.leaf100,
+    icon: Symbols.potted_plant_rounded,
+    ink: AppColors.leaf700,
   ),
 };
 

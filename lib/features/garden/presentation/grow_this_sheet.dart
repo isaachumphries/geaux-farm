@@ -110,14 +110,14 @@ class _GrowThisSheetState extends ConsumerState<GrowThisSheet> {
       final id = await ref
           .read(gardenRepositoryProvider)
           .addPlanting(
-        plant: _plant,
-        spaceId: spaceId,
-        nickname: _nickname.text,
-        setup: setup,
-        inContainer: inContainer,
-        startMethod: start,
-        plantedOn: plantedOn,
-      );
+            plant: _plant,
+            spaceId: spaceId,
+            nickname: _nickname.text,
+            setup: setup,
+            inContainer: inContainer,
+            startMethod: start,
+            plantedOn: plantedOn,
+          );
       if (mounted) Navigator.of(context).pop(id);
     } catch (_) {
       if (!mounted) return;
@@ -145,12 +145,12 @@ class _GrowThisSheetState extends ConsumerState<GrowThisSheet> {
     final VoidCallback? onAdd = _saving || space == null || start == null
         ? null
         : () => _add(
-      spaceId: space.id,
-      setup: setup,
-      inContainer: inContainer,
-      start: start,
-      plantedOn: plantedOn,
-    );
+            spaceId: space.id,
+            setup: setup,
+            inContainer: inContainer,
+            start: start,
+            plantedOn: plantedOn,
+          );
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),

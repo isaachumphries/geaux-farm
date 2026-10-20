@@ -59,7 +59,7 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
                   icon: Symbols.arrow_back_rounded,
                   tooltip: 'Back',
                   onPressed: () =>
-                  context.canPop() ? context.pop() : context.go('/home'),
+                      context.canPop() ? context.pop() : context.go('/home'),
                 ),
               ),
             ),
@@ -81,7 +81,7 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
                 padding: inset,
                 itemCount: RecommendationChip.values.length,
                 separatorBuilder: (_, _) =>
-                const SizedBox(width: AppSpacing.sm),
+                    const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, i) {
                   final chip = RecommendationChip.values[i];
                   return _FilterChip(
