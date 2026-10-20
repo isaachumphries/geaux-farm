@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +13,7 @@ import 'package:geaux_farm/features/recommendations/application/clock_provider.d
 import 'package:geaux_farm/features/recommendations/application/plant_detail_provider.dart';
 import 'package:geaux_farm/features/recommendations/presentation/plant_detail_screen.dart';
 
+import '../helpers/file_asset_bundle.dart';
 import '../helpers/fixed_climate.dart';
 import 'fixtures/baton_rouge.dart' as fx;
 
@@ -33,15 +31,6 @@ const _monthNames = [
   'November',
   'December',
 ];
-
-/// Reads the real catalog so expectations come from the shipped data.
-class _PlantsBundle extends AssetBundle {
-  @override
-  Future<ByteData> load(String key) async {
-    if (key != plantsAssetKey) throw StateError('no asset $key');
-    return ByteData.sublistView(File(plantsAssetKey).readAsBytesSync());
-  }
-}
 
 /// Cold enough that no month suits basil outdoors.
 final _coldClimate = ClimateProfile(
@@ -66,7 +55,7 @@ final _coldClimate = ClimateProfile(
 );
 
 List<Override> _overrides({ClimateProfile? climate, DateTime? now}) => [
-  assetBundleProvider.overrideWithValue(_PlantsBundle()),
+  assetBundleProvider.overrideWithValue(FileAssetBundle()),
   clockProvider.overrideWithValue(() => now ?? DateTime(2026, 10, 7, 9)),
   userProfileProvider.overrideWith(
     (ref) => Stream.value(fx.workedExampleProfile),
@@ -115,7 +104,7 @@ Future<PlantDetailView> _view(
 }
 
 Future<Plant> _plant(WidgetTester tester, String id) async {
-  final plants = (await tester.runAsync(() => loadPlants(_PlantsBundle())))!;
+  final plants = (await tester.runAsync(() => loadPlants(FileAssetBundle())))!;
   return plants.firstWhere((p) => p.id == id);
 }
 

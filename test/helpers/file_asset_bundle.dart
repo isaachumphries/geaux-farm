@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -13,12 +14,22 @@ import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
 /// whole test process. A test that starts a load inside its fake-async zone
 /// and ends first leaves a future whose continuations belong to a dead zone.
 /// The next test in the same file awaits that future forever.
+///
+/// [loadString] decodes on the calling isolate. The framework's own
+/// [AssetBundle.loadString] hands payloads of 50 KB or more to an isolate
+/// (`compute`), which fake-async cannot wait on, so `plants.json` (over 50 KB
+/// since catalog batch 1) never finished loading under `pumpAndSettle`.
+/// Production keeps the off-thread decode.
 class FileAssetBundle extends AssetBundle {
   @override
   Future<ByteData> load(String key) {
     final bytes = File(key).readAsBytesSync();
     return Future.value(ByteData.sublistView(Uint8List.fromList(bytes)));
   }
+
+  @override
+  Future<String> loadString(String key, {bool cache = true}) =>
+      Future.value(utf8.decode(File(key).readAsBytesSync()));
 
   @override
   Future<T> loadStructuredData<T>(
