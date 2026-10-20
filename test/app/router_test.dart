@@ -5,6 +5,7 @@ import 'package:geaux_farm/app/app.dart';
 import 'package:geaux_farm/app/router.dart';
 import 'package:geaux_farm/app/widgets/widgets.dart';
 import 'package:geaux_farm/features/care/presentation/care_screen.dart';
+import 'package:geaux_farm/features/community/presentation/community_feed_screen.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
@@ -140,7 +141,6 @@ void main() {
       '/garden': 'GD-01 My Garden',
       '/garden/planting/p1': 'GD-02 Planting detail',
       '/garden/project/g1': 'GD-03 Guide project',
-      '/community': 'CM-01 Feed',
       '/community/guide/g1': 'CM-02 Guide detail',
       '/community/editor/new': 'CM-03 Editor',
       '/community/me': 'CM-05 My profile',
@@ -163,6 +163,7 @@ void main() {
       '/plants/kale': PlantDetailScreen,
       '/weather': WeatherScreen,
       '/care': CareScreen,
+      '/community': CommunityFeedScreen,
     };
     for (final MapEntry(key: path, value: type) in screens.entries) {
       await _go(tester, router, path);

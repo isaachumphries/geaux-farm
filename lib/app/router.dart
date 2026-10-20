@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/care/presentation/care_screen.dart';
+import '../features/community/presentation/community_feed_screen.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
 import '../features/onboarding/data/profile_providers.dart';
 import '../features/onboarding/domain/user_profile.dart';
@@ -135,9 +136,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              _placeholder(
-                '/community',
-                'CM-01 Feed',
+              GoRoute(
+                path: '/community',
+                builder: (context, state) => const CommunityFeedScreen(),
                 routes: [
                   _placeholder('guide/:id', 'CM-02 Guide detail'),
                   _placeholder('editor/:id', 'CM-03 Editor'),
