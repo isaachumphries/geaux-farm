@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
+import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
 import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
@@ -18,7 +19,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import 'app_harness.dart';
+import 'file_asset_bundle.dart';
 import 'fixed_climate.dart';
+import 'in_memory_database.dart';
 
 final forecastFixture = File(
   'test/fixtures/open_meteo/forecast_baton_rouge.json',
@@ -69,6 +72,9 @@ class WeatherRig {
   }
 
   List<Override> overrides({UserProfile? profile, Override? climate}) => [
+    // Garden alerts read plantings; with none, WX-01 shows no alert.
+    inMemoryDatabaseOverride(),
+    assetBundleProvider.overrideWithValue(FileAssetBundle()),
     userProfileProvider.overrideWith(
       (ref) => Stream.value(profile ?? onboardedProfile),
     ),
@@ -100,6 +106,7 @@ Future<WeatherRig> pumpWeatherScreen(
   WeatherRig? rig,
   UserProfile? profile,
   Override? climate,
+  List<Override> extra = const [],
   double height = 800,
 }) async {
   rig ??= WeatherRig();
@@ -108,7 +115,10 @@ Future<WeatherRig> pumpWeatherScreen(
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: rig.overrides(profile: profile, climate: climate),
+      overrides: [
+        ...rig.overrides(profile: profile, climate: climate),
+        ...extra,
+      ],
       child: MaterialApp(theme: AppTheme.light(), home: const WeatherScreen()),
     ),
   );
