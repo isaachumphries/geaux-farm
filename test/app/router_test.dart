@@ -196,6 +196,19 @@ void main() {
     await _teardown(tester);
   });
 
+  testWidgets('PD-01 "Grow this" is wired to the PD-02 sheet (#23)', (
+    tester,
+  ) async {
+    final router = await _pumpApp(tester, onboardedProfile);
+    await _go(tester, router, '/plants/kale');
+
+    final screen = tester.widget<PlantDetailScreen>(
+      find.byType(PlantDetailScreen),
+    );
+    expect(screen.onGrow, isNotNull);
+    await _teardown(tester);
+  });
+
   testWidgets('/care?date=2026-10-07 exposes the date', (tester) async {
     final router = await _pumpApp(tester, onboardedProfile);
     await _go(tester, router, '/care?date=2026-10-07');
