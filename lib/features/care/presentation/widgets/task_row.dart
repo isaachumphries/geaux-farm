@@ -23,6 +23,7 @@ class TaskRow extends StatelessWidget {
     required this.state,
     required this.plantName,
     this.note,
+    this.title,
     this.overdueDays = 0,
     this.doneAt,
     this.onDone,
@@ -35,6 +36,10 @@ class TaskRow extends StatelessWidget {
   /// Catalog task note. Titles an `other` task; sits under the others.
   final String? note;
 
+  /// Replaces the title built from [type] and [plantName], for a row whose
+  /// copy is fixed elsewhere (PD-03 "Water it in today").
+  final String? title;
+
   /// Whole days past due, shown on an `overdue` row.
   final int overdueDays;
 
@@ -44,13 +49,15 @@ class TaskRow extends StatelessWidget {
 
   bool get _done => state == TaskRowState.done;
 
-  String get _title => switch (type) {
-    TaskRowType.water => 'Water $plantName',
-    TaskRowType.fertilize => 'Fertilize $plantName',
-    TaskRowType.prune => 'Prune $plantName',
-    TaskRowType.harvest => 'Harvest $plantName',
-    TaskRowType.other => note ?? plantName,
-  };
+  String get _title =>
+      title ??
+      switch (type) {
+        TaskRowType.water => 'Water $plantName',
+        TaskRowType.fertilize => 'Fertilize $plantName',
+        TaskRowType.prune => 'Prune $plantName',
+        TaskRowType.harvest => 'Harvest $plantName',
+        TaskRowType.other => note ?? plantName,
+      };
 
   @override
   Widget build(BuildContext context) {
