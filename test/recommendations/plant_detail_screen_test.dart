@@ -65,9 +65,9 @@ final _coldClimate = ClimateProfile(
   computedAt: DateTime.utc(2026, 10, 7),
 );
 
-List<Override> _overrides({ClimateProfile? climate}) => [
+List<Override> _overrides({ClimateProfile? climate, DateTime? now}) => [
   assetBundleProvider.overrideWithValue(_PlantsBundle()),
-  clockProvider.overrideWithValue(() => DateTime(2026, 10, 7, 9)),
+  clockProvider.overrideWithValue(() => now ?? DateTime(2026, 10, 7, 9)),
   userProfileProvider.overrideWith(
     (ref) => Stream.value(fx.workedExampleProfile),
   ),
@@ -133,11 +133,76 @@ void main() {
     expect(find.text('30%'), findsOneWidget);
     expect(find.text('50%'), findsNWidgets(2));
     expect(find.text('100%'), findsNWidgets(2));
-    expect(find.text('Daily — · Weekly ~5m'), findsOneWidget);
+    expect(find.text('Daily care'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+    expect(find.text('Weekly care'), findsOneWidget);
+    expect(find.text('~5m'), findsOneWidget);
     expect(find.text('Low care'), findsOneWidget);
     expect(find.text('Perennial'), findsOneWidget);
     expect(find.text('Evergreen'), findsOneWidget);
     expect(find.text('Indoor / greenhouse'), findsNothing);
+  });
+
+  testWidgets('header shows scientific name and category under the name', (
+    tester,
+  ) async {
+    await _pump(tester, plantId: 'kale', overrides: _overrides());
+    expect(
+      find.text('Brassica oleracea var. sabellica · Vegetable'),
+      findsOneWidget,
+    );
+    final name = tester.getTopLeft(find.text('Kale')).dy;
+    final line = tester.getTopLeft(
+      find.text('Brassica oleracea var. sabellica · Vegetable'),
+    );
+    final badge = tester.getTopLeft(find.textContaining('Great fit')).dy;
+    expect(line.dy, greaterThan(name));
+    expect(badge, greaterThan(line.dy));
+
+    await _pump(tester, plantId: 'english-lavender', overrides: _overrides());
+    expect(find.text('Lavandula angustifolia · Flower'), findsOneWidget);
+  });
+
+  testWidgets('time to grow, daily, and weekly care show as stat cards', (
+    tester,
+  ) async {
+    await _pump(tester, plantId: 'kale', overrides: _overrides());
+    expect(find.text('Time to grow'), findsOneWidget);
+    expect(find.text('Harvest in 50–65 days'), findsOneWidget);
+    expect(find.text('Daily care'), findsOneWidget);
+    expect(find.text('~2m'), findsOneWidget);
+    expect(find.text('Weekly care'), findsOneWidget);
+    expect(find.text('~10m'), findsOneWidget);
+    expect(find.text('Low care'), findsOneWidget);
+  });
+
+  testWidgets('Plant now ribbon shows only for an in-season plant', (
+    tester,
+  ) async {
+    final inSeason = _overrides();
+    final kale = await _view(tester, 'kale', inSeason);
+    expect(kale.compat.inSeason, isTrue);
+    await _pump(tester, plantId: 'kale', overrides: inSeason);
+    expect(find.text('PLANT NOW'), findsOneWidget);
+    expect(find.text('Indoor / greenhouse'), findsNothing);
+
+    final january = _overrides(now: DateTime(2026, 1, 7, 9));
+    final basil = await _view(tester, 'sweet-basil', january);
+    expect(basil.compat.inSeason, isFalse);
+    expect(basil.compat.outdoorViable, isTrue);
+    await _pump(tester, plantId: 'sweet-basil', overrides: january);
+    expect(find.text('PLANT NOW'), findsNothing);
+    expect(find.text('Indoor / greenhouse'), findsNothing);
+  });
+
+  testWidgets('indoor-only plant shows no Plant now ribbon', (tester) async {
+    await _pump(
+      tester,
+      plantId: 'sweet-basil',
+      overrides: _overrides(climate: _coldClimate),
+    );
+    expect(find.text('Indoor / greenhouse'), findsOneWidget);
+    expect(find.text('PLANT NOW'), findsNothing);
   });
 
   testWidgets('sweet-basil shows harvest window, credit, and tips in order', (
@@ -150,8 +215,11 @@ void main() {
     expect(find.text('100%'), findsNWidgets(6));
     expect(plant.timeToGrowLabel, isNotNull);
     expect(find.text(plant.timeToGrowLabel!), findsOneWidget);
-    expect(find.text('Warm season'), findsOneWidget);
-    expect(find.text('Image credit: TBD · TBD'), findsOneWidget);
+    expect(find.text('Warm-season'), findsOneWidget);
+    expect(
+      find.text('Image credit: ${plant.image.credit} · ${plant.image.license}'),
+      findsOneWidget,
+    );
     expect(find.text('Indoor / greenhouse'), findsNothing);
 
     final tops = [
