@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
+import 'package:geaux_farm/core/http.dart';
 import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
@@ -72,7 +73,8 @@ class WeatherRig {
   }
 
   List<Override> overrides({UserProfile? profile, Override? climate}) => [
-    // Garden alerts read plantings; with none, WX-01 shows no alert.
+    // The forecast cache and the garden alerts' plantings both read Drift,
+    // and the alerts read the catalog; with no plantings, WX-01 shows no alert.
     inMemoryDatabaseOverride(),
     assetBundleProvider.overrideWithValue(FileAssetBundle()),
     userProfileProvider.overrideWith(

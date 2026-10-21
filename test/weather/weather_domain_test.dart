@@ -39,32 +39,4 @@ void main() {
       });
     }
   });
-
-  group('isStale', () {
-    final fetched = DateTime(2026, 10, 13, 12);
-    test('59 min → fresh', () {
-      expect(
-        isStale(fetched, fetched.add(const Duration(minutes: 59))),
-        isFalse,
-      );
-    });
-    test('exactly 60 min → fresh', () {
-      expect(
-        isStale(fetched, fetched.add(const Duration(minutes: 60))),
-        isFalse,
-      );
-    });
-    test('60 min 1 s → stale', () {
-      expect(
-        isStale(fetched, fetched.add(const Duration(minutes: 60, seconds: 1))),
-        isTrue,
-      );
-    });
-    test('61 min → stale', () {
-      expect(
-        isStale(fetched, fetched.add(const Duration(minutes: 61))),
-        isTrue,
-      );
-    });
-  });
 }

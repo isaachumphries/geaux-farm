@@ -5,27 +5,24 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
+import '../../climate/data/climate_provider.dart';
 import '../../garden/domain/planting.dart';
 import '../../onboarding/data/profile_providers.dart';
+import '../application/recommendation_list_provider.dart';
 import '../application/recommendations_provider.dart';
-import '../domain/recommendation_filter.dart';
 import '../domain/scored_plant.dart';
 import 'widgets/plant_card.dart';
-import 'widgets/plant_list_card.dart';
+import 'widgets/recommendation_chips.dart';
 
-/// Chip labels on RC-01 (plan/04 § Filters).
-String recommendationChipLabel(RecommendationChip chip) => switch (chip) {
-  RecommendationChip.all => 'All',
-  RecommendationChip.food => 'Food',
-  RecommendationChip.herbs => 'Herbs',
-  RecommendationChip.flowers => 'Flowers',
-  RecommendationChip.shrubs => 'Shrubs',
-  RecommendationChip.indoor => 'Indoor',
-  RecommendationChip.lowMaintenance => 'Low maintenance',
-};
+/// Shown when the chip and search text match nothing.
+const recommendationsEmptyCopy = 'No plants match.';
 
-/// RC-01 "Plants for you": every recommendation, best fit first, with
-/// search and filter chips. Tapping a plant opens PD-01 (plan/01 RC-01).
+/// Shown when the catalog or the climate profile could not be read.
+const recommendationsErrorCopy = "Couldn't load plants.";
+
+/// RC-01: the full sorted plant list behind Home's "See all". Filter chips
+/// and search narrow it; the order always comes from
+/// [recommendationsProvider] (plan/04 § Filters).
 class RecommendationsScreen extends ConsumerStatefulWidget {
   const RecommendationsScreen({super.key});
 
@@ -35,80 +32,48 @@ class RecommendationsScreen extends ConsumerStatefulWidget {
 }
 
 class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
-  RecommendationChip _chip = RecommendationChip.all;
-  String _query = '';
+  late final TextEditingController _search = TextEditingController(
+    text: ref.read(recommendationListFilterProvider).query,
+  );
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final recs = ref.watch(recommendationsProvider);
-    final space = ref.watch(primarySpaceProvider).value;
-    const inset = EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding);
+    final filter = ref.watch(recommendationListFilterProvider);
+    final notifier = ref.read(recommendationListFilterProvider.notifier);
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: AppSpacing.sm),
+            const _Header(),
             Padding(
-              padding: inset,
-              child: GeauxTopBar(
-                title: 'Plants for you',
-                leading: GeauxCircleButton(
-                  icon: Symbols.arrow_back_rounded,
-                  tooltip: 'Back',
-                  onPressed: () =>
-                      context.canPop() ? context.pop() : context.go('/home'),
-                ),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                0,
+                AppSpacing.screenPadding,
+                AppSpacing.md,
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Padding(
-              padding: inset,
               child: GeauxTextField(
+                controller: _search,
                 hintText: 'Search plants',
                 prefixIcon: Symbols.search_rounded,
                 textInputAction: TextInputAction.search,
-                onChanged: (v) => setState(() => _query = v),
+                onChanged: notifier.search,
               ),
+            ),
+            RecommendationChipRow(
+              selected: filter.chip,
+              onSelected: notifier.selectChip,
             ),
             const SizedBox(height: AppSpacing.md),
-            SizedBox(
-              height: AppSpacing.minTouchTarget,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: inset,
-                itemCount: RecommendationChip.values.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(width: AppSpacing.sm),
-                itemBuilder: (context, i) {
-                  final chip = RecommendationChip.values[i];
-                  return _FilterChip(
-                    label: recommendationChipLabel(chip),
-                    selected: chip == _chip,
-                    onTap: () => setState(() => _chip = chip),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Expanded(
-              child: switch (recs) {
-                AsyncData(:final value) when space != null => _List(
-                  plants: applyRecommendationFilter(value, _chip, _query),
-                  setup: defaultGrowSetup(space.type),
-                ),
-                AsyncError() => Center(
-                  child: Text(
-                    "Couldn't load plants.",
-                    style: AppText.bodySm.copyWith(color: AppColors.soil600),
-                  ),
-                ),
-                _ => const Center(
-                  child: CircularProgressIndicator(color: AppColors.leaf500),
-                ),
-              },
-            ),
+            const Expanded(child: _Results()),
           ],
         ),
       ),
@@ -116,87 +81,124 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
   }
 }
 
-class _List extends StatelessWidget {
-  const _List({required this.plants, required this.setup});
+class _Header extends StatelessWidget {
+  const _Header();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screenPadding,
+        AppSpacing.sm,
+        AppSpacing.screenPadding,
+        AppSpacing.lg,
+      ),
+      child: GeauxTopBar(
+        title: 'Plants for you',
+        leading: GeauxCircleButton(
+          icon: Symbols.arrow_back_rounded,
+          tooltip: 'Back',
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/home'),
+        ),
+      ),
+    );
+  }
+}
+
+/// The list area: cards, the empty state, or a spinner while the catalog
+/// and climate profile load.
+class _Results extends ConsumerWidget {
+  const _Results();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final space = ref.watch(primarySpaceProvider).value;
+    final climate = ref.watch(climateProvider);
+    if (climate is AsyncError && !climate.isLoading) {
+      return GeauxEmptyState(
+        message: recommendationsErrorCopy,
+        icon: Symbols.error_rounded,
+        action: GeauxButton(
+          label: 'Retry',
+          variant: GeauxButtonVariant.text,
+          onPressed: () => ref.read(climateProvider.notifier).rebuild(),
+        ),
+      );
+    }
+    final matches = ref.watch(filteredRecommendationsProvider);
+    if (space == null || climate is! AsyncData) return const _Loading();
+    return switch (matches) {
+      AsyncData(:final value) when value.isEmpty => const GeauxEmptyState(
+        message: recommendationsEmptyCopy,
+        icon: Symbols.eco_rounded,
+      ),
+      AsyncData(:final value) => _PlantList(
+        plants: value,
+        setup: defaultGrowSetup(space.type),
+      ),
+      AsyncError() => const GeauxEmptyState(
+        message: recommendationsErrorCopy,
+        icon: Symbols.error_rounded,
+      ),
+      _ => const _Loading(),
+    };
+  }
+}
+
+class _Loading extends StatelessWidget {
+  const _Loading();
+
+  @override
+  Widget build(BuildContext context) =>
+      const Center(child: CircularProgressIndicator(color: AppColors.leaf500));
+}
+
+class _PlantList extends StatelessWidget {
+  const _PlantList({required this.plants, required this.setup});
 
   final List<ScoredPlant> plants;
   final GrowSetup setup;
 
   @override
   Widget build(BuildContext context) {
-    const inset = EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding);
-    final count = plants.length;
-    return ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-      children: [
-        Padding(
-          padding: inset,
-          child: Text(
-            '$count ${count == 1 ? 'plant' : 'plants'} · sorted by best fit',
-            style: AppText.bodySm.copyWith(color: AppColors.soil600),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        if (plants.isEmpty)
-          const GeauxEmptyState(
-            message: 'No plants match. Try another search or filter.',
-            icon: Symbols.search_off_rounded,
-          ),
-        for (final s in plants)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenPadding,
-              0,
-              AppSpacing.screenPadding,
-              AppSpacing.md,
-            ),
-            child: PlantListCard(
-              key: ValueKey(s.plant.id),
-              plant: s,
-              state: PlantCardState.of(s.compatibility, setup),
-              onTap: () => context.push('/plants/${s.plant.id}'),
-            ),
-          ),
-      ],
+    // The count line is the first row; the cards follow it.
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screenPadding,
+        0,
+        AppSpacing.screenPadding,
+        AppSpacing.xl,
+      ),
+      itemCount: plants.length + 1,
+      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+      itemBuilder: (context, i) {
+        if (i == 0) return _CountLine(plants.length);
+        final s = plants[i - 1];
+        return PlantCard(
+          key: ValueKey(s.plant.id),
+          plant: s,
+          size: PlantCardSize.list,
+          state: PlantCardState.of(s.compatibility, setup),
+          onTap: () => context.push('/plants/${s.plant.id}'),
+        );
+      },
     );
   }
 }
 
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
+/// The RC-01 frame's "10 plants · sorted by best fit": how many plants
+/// match, in the order of plan/04 § Sorting.
+class _CountLine extends StatelessWidget {
+  const _CountLine(this.count);
 
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
+  final int count;
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      selected: selected,
-      child: GeauxCard(
-        onTap: onTap,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.sm - 2,
-        ),
-        color: selected ? AppColors.leaf700 : AppColors.white,
-        borderColor: selected ? null : AppColors.stone200,
-        ledgeColor: selected ? AppColors.leafLedge : AppColors.stone200,
-        child: Center(
-          widthFactor: 1,
-          child: Text(
-            label,
-            style: AppText.bodySm.copyWith(
-              color: selected ? AppColors.white : AppColors.soil900,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ),
+    return Text(
+      '$count ${count == 1 ? 'plant' : 'plants'} · sorted by best fit',
+      style: AppText.bodySm.copyWith(color: AppColors.soil600),
     );
   }
 }

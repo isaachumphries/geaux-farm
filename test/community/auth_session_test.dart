@@ -135,6 +135,14 @@ Future<void> _coldStart(_Backend backend, Map<String, dynamic>? stored) async {
   }
 }
 
+/// What GoTrue does when a token refresh gets no answer: the failure goes
+/// onto onAuthStateChange as an error. The session stays.
+void _failRefresh(_Backend backend) =>
+    // ignore: invalid_use_of_internal_member
+    backend.client.auth.notifyException(
+      AuthRetryableFetchException(message: 'SocketException: offline'),
+    );
+
 void main() {
   test('signed out -> code sent -> verified without a profile -> username '
       'saved -> signed out (07 § Auth)', () async {
@@ -272,31 +280,102 @@ void main() {
       );
     });
 
-    test(
-      'an offline token refresh reaches authStateProvider as an error, not '
-      'an uncaught zone error (09 § Errors)',
-      () async {
-        final backend = _Backend(autoRefreshToken: true)
-          ..offline('GET /rest/v1/profiles')
-          ..offline('POST /auth/v1/token');
-        addTearDown(backend.client.dispose);
-        final s = _watch(backend);
+    test('an offline token refresh reaches authStateProvider as an error, not '
+        'an uncaught zone error (09 § Errors)', () async {
+      final backend = _Backend(autoRefreshToken: true)
+        ..offline('GET /rest/v1/profiles')
+        ..offline('POST /auth/v1/token');
+      addTearDown(backend.client.dispose);
+      final s = _watch(backend);
 
-        // supabase_flutter restores the stored session, then refreshes it.
-        await _coldStart(backend, _expired);
-        await expectLater(
-          backend.client.auth.recoverSession(jsonEncode(_expired)),
-          throwsA(isA<AuthRetryableFetchException>()),
-        );
-        await _settle();
+      // supabase_flutter restores the stored session, then refreshes it.
+      await _coldStart(backend, _expired);
+      await expectLater(
+        backend.client.auth.recoverSession(jsonEncode(_expired)),
+        throwsA(isA<AuthRetryableFetchException>()),
+      );
+      await _settle();
 
-        final state = s.container.read(authStateProvider);
-        expect(state.hasError, isTrue, reason: '$state');
-        expect(state.error, isA<NetworkException>());
-      },
-      skip: 'Bug #145',
-      timeout: const Timeout(Duration(minutes: 1)),
-    );
+      final state = s.container.read(authStateProvider);
+      expect(state.hasError, isTrue, reason: '$state');
+      expect(state.error, isA<NetworkException>());
+    }, timeout: const Timeout(Duration(minutes: 1)));
+  });
+
+  group('a token refresh that gets no answer (09 § Errors)', () {
+    test('is a NetworkException on authStateProvider', () async {
+      final backend = _Backend()..profile('isaac');
+      final s = _watch(backend);
+      await _coldStart(backend, _valid);
+      await _settle();
+      expect(s.container.read(authStateProvider).value, _isaac);
+
+      _failRefresh(backend);
+      await _settle();
+
+      final state = s.container.read(authStateProvider);
+      expect(state.hasError, isTrue, reason: '$state');
+      expect(state.error, isA<NetworkException>());
+    });
+
+    test('is followed by the signed-in user once a refresh works', () async {
+      final backend = _Backend()..profile('isaac');
+      final s = _watch(backend);
+      await _coldStart(backend, _valid);
+      await _settle();
+      _failRefresh(backend);
+      await _settle();
+      expect(s.container.read(authStateProvider).hasError, isTrue);
+
+      backend.routes['POST /auth/v1/token'] = (_) => _json(_valid);
+      await backend.client.auth.refreshSession();
+      await _settle();
+
+      expect(
+        s.container.read(authStateProvider),
+        const AsyncData<AuthUser?>(_isaac),
+      );
+    });
+
+    test('is replayed to a listener that arrives later, as an error', () async {
+      final backend = _Backend()..profile('isaac');
+      await _coldStart(backend, _valid);
+      _failRefresh(backend);
+
+      final later = _watch(backend);
+      await _settle();
+
+      final state = later.container.read(authStateProvider);
+      expect(state.hasError, isTrue, reason: '$state');
+      expect(state.error, isA<NetworkException>());
+    });
+
+    test('after sign-out is stale: signed out for every listener, not an '
+        'error', () async {
+      final backend = _Backend()..profile('isaac');
+      backend.routes['POST /auth/v1/logout'] = (_) => http.Response('', 204);
+      final first = _watch(backend);
+      await _coldStart(backend, _valid);
+      await _settle();
+      await first.container.read(authRepositoryProvider).signOut();
+      await _settle();
+
+      _failRefresh(backend);
+      await _settle();
+      expect(
+        first.container.read(authStateProvider),
+        const AsyncData<AuthUser?>(null),
+      );
+      expect(first.states.where((v) => v.hasError), isEmpty);
+
+      final later = _watch(backend);
+      await _settle();
+      expect(
+        later.container.read(authStateProvider),
+        const AsyncData<AuthUser?>(null),
+        reason: 'the replayed failure must not leave a listener loading',
+      );
+    });
   });
 
   group('sign-out while a request is in flight', () {

@@ -6,6 +6,7 @@ import '../../../core/http.dart';
 import '../domain/guide.dart';
 import '../domain/guide_feed_query.dart';
 import '../domain/guide_repository.dart';
+import '../domain/report_reason.dart';
 import 'supabase_guide_repository.dart';
 
 /// The Supabase-backed repository, or [UnconfiguredGuideRepository] when
@@ -29,6 +30,22 @@ class UnconfiguredGuideRepository implements GuideRepository {
 
   @override
   Future<Set<String>> starredGuideIds() async => const {};
+
+  @override
+  Future<Guide> fetchGuide(String id) => Future.error(_unavailable);
+
+  @override
+  Future<void> starGuide(String id) => Future.error(_unavailable);
+
+  @override
+  Future<void> unstarGuide(String id) => Future.error(_unavailable);
+
+  @override
+  Future<void> reportGuide(
+    String id, {
+    required ReportReason reason,
+    String? note,
+  }) => Future.error(_unavailable);
 
   @override
   String coverUrl(String coverPath) => '';

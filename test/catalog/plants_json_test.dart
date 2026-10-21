@@ -1,15 +1,14 @@
 // Validation for assets/plants/plants.json (plan/03 § Validation rules).
 //
-// `strictCatalog` stays false until the catalog is complete: #52 sets it to
-// true, which turns on the "credit/license not TBD" and "every seed id
-// present" checks.
+// `strictCatalog` is on now that the catalog is complete: it turns on the
+// "credit/license not TBD" and "every seed id present" checks.
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/features/catalog/domain/plant.dart';
 
-const bool strictCatalog = false;
+const bool strictCatalog = true;
 
 final _kebab = RegExp(r'^[a-z0-9]+(-[a-z0-9]+)*$');
 
@@ -75,6 +74,26 @@ const _seedIds = [
   'zz-plant',
   'aloe-vera',
 ];
+
+/// Pixel size from a WebP header (lossy `VP8 `, lossless `VP8L`, or `VP8X`).
+(int, int) _webpSize(List<int> b) {
+  String tag(int at) => String.fromCharCodes(b.sublist(at, at + 4));
+  int le(int at, int n) {
+    var v = 0;
+    for (var i = n - 1; i >= 0; i--) {
+      v = (v << 8) | b[at + i];
+    }
+    return v;
+  }
+
+  if (tag(0) != 'RIFF' || tag(8) != 'WEBP') return (0, 0);
+  return switch (tag(12)) {
+    'VP8 ' => (le(26, 2) & 0x3fff, le(28, 2) & 0x3fff),
+    'VP8X' => (le(24, 3) + 1, le(27, 3) + 1),
+    'VP8L' => ((le(21, 4) & 0x3fff) + 1, ((le(21, 4) >> 14) & 0x3fff) + 1),
+    _ => (0, 0),
+  };
+}
 
 /// Every per-record rule from plan/03 that does not need the bundle.
 /// Returns the list of violations (empty when valid).
@@ -220,19 +239,21 @@ void main() {
     }
   });
 
+  test('every image is an 800×600 webp of at most 80 KB', () {
+    for (final r in records) {
+      final asset = r['image']['asset'] as String;
+      final bytes = File(asset).readAsBytesSync();
+      expect(bytes.length, lessThanOrEqualTo(80 * 1024), reason: asset);
+      expect(_webpSize(bytes), (800, 600), reason: asset);
+    }
+  });
+
   test('strict: credits are filled and every seed id is present', () {
     for (final r in records) {
       expect(r['image']['credit'], isNot('TBD'), reason: r['id'] as String);
       expect(r['image']['license'], isNot('TBD'), reason: r['id'] as String);
     }
     expect(records.map((r) => r['id']), containsAll(_seedIds));
-  }, skip: strictCatalog ? false : 'strictCatalog is false until #52');
-
-  test('non-strict mode tolerates a short seed list', () {
-    expect(strictCatalog, isFalse);
-    expect(records.length, lessThan(_seedIds.length));
-    for (final r in records) {
-      expect(validateRecord(r), isEmpty);
-    }
-  });
+    expect(records, hasLength(_seedIds.length));
+  }, skip: strictCatalog ? false : 'strictCatalog is false');
 }

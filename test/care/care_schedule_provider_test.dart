@@ -19,6 +19,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import '../helpers/care_fixtures.dart';
+import '../helpers/in_memory_database.dart';
 
 /// Planting feed the re-emit test can push to after the first read. Each new
 /// listener gets the current list first, then every [emit].
@@ -56,13 +57,14 @@ UserProfile _profile() => UserProfile(
   availability: careAllFree,
 );
 
-/// Every source the schedule reads is faked, so no database or network runs.
-/// The clock is fixed at [now], and weather fails so water takes the no-rain
-/// fallback.
+/// Every source the schedule reads is faked, so no file database or network
+/// runs. The clock is fixed at [now]. Weather gets an empty in-memory cache
+/// and a failing fetch, so the schedule falls back to the no-rain estimate.
 List<Override> _overrides({
   required Stream<List<Planting>> plantings,
   required DateTime now,
 }) => [
+  inMemoryDatabaseOverride(),
   plantingsProvider.overrideWith((ref) => plantings),
   spacesProvider.overrideWith((ref) => Stream.value([careSpace()])),
   userProfileProvider.overrideWith((ref) => Stream.value(_profile())),

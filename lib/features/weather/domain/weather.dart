@@ -68,11 +68,17 @@ class WeatherDay {
 class WeatherSnapshot {
   const WeatherSnapshot({
     required this.current,
+    required this.currentJson,
     required this.days,
     required this.fetchedAt,
   });
 
   final WeatherCurrent current;
+
+  /// The `current` block exactly as the API returned it. `weather_current`
+  /// stores this verbatim, so a cached snapshot reads back unchanged.
+  final Map<String, Object?> currentJson;
+
   final List<WeatherDay> days;
   final DateTime fetchedAt;
 }
@@ -111,13 +117,6 @@ class WeatherCondition {
     return _overcast;
   }
 }
-
-/// Maximum age of a snapshot before app start/resume triggers a refetch.
-const staleAfter = Duration(minutes: 60);
-
-/// True when the snapshot is more than 60 minutes old (exactly 60 is fresh).
-bool isStale(DateTime fetchedAt, DateTime now) =>
-    now.difference(fetchedAt) > staleAfter;
 
 /// The row whose date equals [todayLocal]'s calendar date, if present.
 WeatherDay? todayRow(List<WeatherDay> days, DateTime todayLocal) {

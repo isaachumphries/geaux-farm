@@ -221,6 +221,15 @@ void main() {
       );
       expect(backend.requests, hasLength(1), reason: 'no automatic retries');
     });
+
+    test('a timeout is NetworkException', () async {
+      backend.handlers['GET /rest/v1/profiles'] = (_) =>
+          throw TimeoutException('slow');
+      await expectLater(
+        repo.usernameAvailable('isaac'),
+        throwsA(isA<NetworkException>()),
+      );
+    });
   });
 
   group('createProfile', () {

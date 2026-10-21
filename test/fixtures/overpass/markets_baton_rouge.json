@@ -1,0 +1,51 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62",
+  "osm3s": {
+    "timestamp_osm_base": "2026-10-20T18:00:00Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 3001,
+      "lat": 29.95,
+      "lon": -90.07,
+      "tags": {
+        "amenity": "marketplace",
+        "name": "Crescent City Farmers Market",
+        "opening_hours": "Sa 08:00-12:00",
+        "website": "https://example.test/crescent"
+      }
+    },
+    {
+      "type": "way",
+      "id": 4002,
+      "center": { "lat": 30.22, "lon": -92.02 },
+      "tags": {
+        "amenity": "marketplace",
+        "name": "Lafayette Hub City Market",
+        "opening_hours": "Sa 07:30-12:00"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3003,
+      "lat": 30.45,
+      "lon": -91.19,
+      "tags": { "amenity": "marketplace", "name": "Red Stick Farmers Market" }
+    },
+    {
+      "type": "node",
+      "id": 3004,
+      "lat": 30.46,
+      "lon": -91.2,
+      "tags": { "amenity": "marketplace" }
+    },
+    {
+      "type": "relation",
+      "id": 5005,
+      "tags": { "amenity": "marketplace", "name": "Market with no location" }
+    }
+  ]
+}

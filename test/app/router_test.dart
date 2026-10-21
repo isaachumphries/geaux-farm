@@ -6,6 +6,7 @@ import 'package:geaux_farm/app/router.dart';
 import 'package:geaux_farm/app/widgets/widgets.dart';
 import 'package:geaux_farm/features/care/presentation/care_screen.dart';
 import 'package:geaux_farm/features/community/presentation/community_feed_screen.dart';
+import 'package:geaux_farm/features/community/presentation/guide_detail_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/planting_detail_screen.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
@@ -20,9 +21,9 @@ import 'package:geaux_farm/features/onboarding/presentation/profile_summary_scre
 import 'package:geaux_farm/features/onboarding/presentation/space_step_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:geaux_farm/features/recommendations/presentation/plant_detail_screen.dart';
+import 'package:geaux_farm/features/recommendations/presentation/recommendations_screen.dart';
 import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
 import 'package:geaux_farm/features/weather/presentation/weather_screen.dart';
-import 'package:geaux_farm/features/recommendations/presentation/recommendations_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -149,7 +150,6 @@ void main() {
       '/settings': 'Settings',
       '/settings/edit/space': 'OB-07 Edit step',
       '/garden/project/g1': 'GD-03 Guide project',
-      '/community/guide/g1': 'CM-02 Guide detail',
       '/community/editor/new': 'CM-03 Editor',
       '/community/me': 'CM-05 My profile',
     };
@@ -186,6 +186,7 @@ void main() {
       '/weather': WeatherScreen,
       '/care': CareScreen,
       '/community': CommunityFeedScreen,
+      '/community/guide/g1': GuideDetailScreen,
     };
     for (final MapEntry(key: path, value: type) in screens.entries) {
       await _go(tester, router, path);

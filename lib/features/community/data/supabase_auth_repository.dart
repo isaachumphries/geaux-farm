@@ -49,7 +49,25 @@ class SupabaseAuthRepository implements AuthRepository {
 
     controller = StreamController<AuthUser?>(
       onListen: () {
-        authSub = _auth.onAuthStateChange.listen((_) => emit());
+        authSub = _auth.onAuthStateChange.listen(
+          (_) => emit(),
+          // GoTrue reports a failed token refresh as an error on this stream
+          // and replays its latest event, errors included, to every new
+          // listener, so each listener needs its own handler: without one the
+          // error is uncaught.
+          onError: (Object error, StackTrace stack) {
+            if (_auth.currentUser == null) {
+              // No session left to refresh (signed out meanwhile), so the
+              // failure is stale. Settle on signed out, not on an error and
+              // not on nothing: a late listener would wait forever.
+              unawaited(emit());
+            } else if (!controller.isClosed) {
+              // A refresh that got no answer is a NetworkException (plan/09
+              // § Errors); any other error passes through as it is.
+              controller.addError(_networkFailure(error) ?? error, stack);
+            }
+          },
+        );
         profileSub = _profileCreated.stream.listen((_) => emit());
       },
       onCancel: () async {
@@ -164,18 +182,24 @@ class SupabaseAuthRepository implements AuthRepository {
       e.code == 'over_email_send_rate_limit' ||
       e.code == 'over_request_rate_limit';
 
+  /// [error] as a [NetworkException] when it means "the request never got an
+  /// answer", else null.
+  static NetworkException? _networkFailure(Object error) => switch (error) {
+    AuthRetryableFetchException(:final message) ||
+    SocketException(:final message) ||
+    http.ClientException(:final message) => NetworkException(message),
+    TimeoutException() => const NetworkException('Timed out'),
+    _ => null,
+  };
+
   /// Turns "the request never got an answer" into [NetworkException].
   static Future<T> _guard<T>(Future<T> Function() body) async {
     try {
       return await body();
-    } on AuthRetryableFetchException catch (e) {
-      throw NetworkException(e.message);
-    } on SocketException catch (e) {
-      throw NetworkException(e.message);
-    } on http.ClientException catch (e) {
-      throw NetworkException(e.message);
-    } on TimeoutException {
-      throw const NetworkException('Timed out');
+    } on Object catch (e) {
+      final network = _networkFailure(e);
+      if (network == null) rethrow;
+      throw network;
     }
   }
 }

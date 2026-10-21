@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geaux_farm/core/http.dart';
+import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
+import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
 import 'package:geaux_farm/features/weather/data/weather_provider.dart';
 import 'package:geaux_farm/features/weather/domain/weather.dart';
@@ -11,6 +14,8 @@ import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:material_symbols_icons/symbols.dart';
+
+import '../helpers/in_memory_database.dart';
 
 final fixture = File('test/fixtures/open_meteo/forecast_baton_rouge.json')
     .readAsStringSync();
@@ -177,6 +182,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          inMemoryDatabaseOverride(),
+          // The card reads the unit setting; a fixed profile keeps the
+          // test off the drift stream.
+          userProfileProvider.overrideWith(
+            (ref) => Stream.value(defaultUserProfile),
+          ),
           weatherClockProvider.overrideWithValue(() => fetchedAt),
           forecastClientProvider.overrideWithValue(
             OpenMeteoForecastClient(

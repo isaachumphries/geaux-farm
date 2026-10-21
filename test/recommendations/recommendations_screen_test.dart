@@ -1,99 +1,112 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
-import 'package:geaux_farm/app/widgets/widgets.dart';
-import 'package:geaux_farm/features/catalog/domain/plant.dart';
+import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
 import 'package:geaux_farm/features/recommendations/application/recommendations_provider.dart';
-import 'package:geaux_farm/features/recommendations/domain/recommendation_filter.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/recommendations_screen.dart';
-import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_list_card.dart';
+import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_card.dart';
 import 'package:go_router/go_router.dart';
 
+import '../helpers/fixed_climate.dart';
+import '../helpers/in_memory_database.dart';
+import 'fixtures/baton_rouge.dart';
 import 'fixtures/scored.dart';
 
-/// The #71 test table: three synthetic plants, in provider order.
-Plant _synthetic({
-  required String id,
-  required String common,
-  required String scientific,
+// RC-01 (plan/04 § Filters): one chip at a time, ANDed with a
+// case-insensitive substring search on the common or scientific name, in
+// recommendationsProvider order.
+
+/// The three synthetic plants from the issue table, in provider order.
+ScoredPlant _plant({
+  required String commonName,
+  required String scientificName,
   required String category,
   required List<String> purposes,
   required bool indoorOk,
   required int weeklyMinutes,
 }) {
-  final kale = kaleWith({});
-  return kaleWith({
-    'id': id,
-    'commonName': common,
-    'scientificName': scientific,
-    'category': category,
-    'purposes': purposes,
-    'space': {'sqFtPerPlant': 2, 'containerOk': true, 'indoorOk': indoorOk},
-    'care': {
-      'dailyMinutes': 2,
-      'weeklyMinutes': weeklyMinutes,
-      'tasks': const <Map<String, dynamic>>[],
-    },
-    'maturityKind': kale.maturityKind.json,
-  });
+  final raw = rawKale();
+  return scored(
+    kaleWith({
+      'id': commonName.toLowerCase().replaceAll(' ', '-'),
+      'commonName': commonName,
+      'scientificName': scientificName,
+      'category': category,
+      'purposes': purposes,
+      'space': {
+        ...(raw['space'] as Map<String, dynamic>),
+        'indoorOk': indoorOk,
+      },
+      'care': {
+        ...(raw['care'] as Map<String, dynamic>),
+        'weeklyMinutes': weeklyMinutes,
+      },
+    }),
+  );
 }
 
-final _herb = scored(
-  _synthetic(
-    id: 'herb',
-    common: 'Sweet Basil',
-    scientific: 'Ocimum basilicum',
-    category: 'herb',
-    purposes: ['food'],
-    indoorOk: false,
-    weeklyMinutes: 15,
-  ),
-  score: 90,
+final _herb = _plant(
+  commonName: 'Sweet Basil',
+  scientificName: 'Ocimum basilicum',
+  category: 'herb',
+  purposes: ['food'],
+  indoorOk: false,
+  weeklyMinutes: 15,
 );
-final _flower = scored(
-  _synthetic(
-    id: 'flower',
-    common: 'English Lavender',
-    scientific: 'Lavandula angustifolia',
-    category: 'flower',
-    purposes: [],
-    indoorOk: true,
-    weeklyMinutes: 40,
-  ),
-  score: 80,
+final _flower = _plant(
+  commonName: 'English Lavender',
+  scientificName: 'Lavandula angustifolia',
+  category: 'flower',
+  purposes: [],
+  indoorOk: true,
+  weeklyMinutes: 40,
 );
-final _shrub = scored(
-  _synthetic(
-    id: 'shrub',
-    common: 'Blueberry',
-    scientific: 'Vaccinium corymbosum',
-    category: 'shrub',
-    purposes: [],
-    indoorOk: false,
-    weeklyMinutes: 16,
-  ),
-  score: 70,
+final _shrub = _plant(
+  commonName: 'Blueberry',
+  scientificName: 'Vaccinium corymbosum',
+  category: 'shrub',
+  purposes: [],
+  indoorOk: false,
+  weeklyMinutes: 16,
 );
 
-Future<GoRouter> _pump(
+final _all = [_herb, _flower, _shrub];
+
+/// The common names of the cards on screen, top to bottom.
+List<String> _cardNames(WidgetTester tester) => [
+  for (final card in tester.widgetList<PlantCard>(find.byType(PlantCard)))
+    card.plant.plant.commonName,
+];
+
+Future<void> _pump(
   WidgetTester tester, {
-  AsyncValue<List<ScoredPlant>>? recs,
+  AsyncValue<List<ScoredPlant>> recs = const AsyncData([]),
+  String initialLocation = '/home/recommendations',
 }) async {
-  tester.view.physicalSize = const Size(360, 1600);
+  tester.view.physicalSize = const Size(360, 800);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final router = GoRouter(
-    initialLocation: '/home/recommendations',
+    initialLocation: initialLocation,
     routes: [
       GoRoute(
         path: '/home/recommendations',
         builder: (_, _) => const RecommendationsScreen(),
+      ),
+      GoRoute(path: '/home', builder: (_, _) => const Text('Home stub')),
+      // GD-01's empty state pushes RC-01 from here.
+      GoRoute(
+        path: '/garden',
+        builder: (context, _) => Center(
+          child: TextButton(
+            onPressed: () => context.push('/home/recommendations'),
+            child: const Text('Garden stub'),
+          ),
+        ),
       ),
       GoRoute(
         path: '/plants/:plantId',
@@ -106,102 +119,48 @@ Future<GoRouter> _pump(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        recommendationsProvider.overrideWithValue(
-          recs ?? AsyncData([_herb, _flower, _shrub]),
+        inMemoryDatabaseOverride(),
+        recommendationsProvider.overrideWithValue(recs),
+        climateProvider.overrideWith(FixedClimate.new),
+        userProfileProvider.overrideWith(
+          (ref) => Stream.value(defaultUserProfile),
         ),
         primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
       ],
       child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
     ),
   );
+  // One frame for the profile streams, one for the climate future.
   await tester.pump();
   await tester.pump();
-  return router;
 }
 
-List<String> _shown(WidgetTester tester) => [
-  for (final c in tester.widgetList<PlantListCard>(find.byType(PlantListCard)))
-    c.plant.plant.id,
-];
+Future<void> _pumpAll(WidgetTester tester) =>
+    _pump(tester, recs: AsyncData(_all));
 
-/// Taps a chip, dragging the horizontal chip row until it is on screen.
-Future<void> _chip(WidgetTester tester, String label) async {
-  final row = find.byWidgetPredicate(
-    (w) => w is ListView && w.scrollDirection == Axis.horizontal,
-  );
-  // Back to the start first: chips scrolled off the left aren't built.
-  await tester.drag(row, const Offset(2000, 0));
-  await tester.pump();
-  await tester.dragUntilVisible(find.text(label), row, const Offset(-80, 0));
-  await tester.pump();
+Future<void> _tapChip(WidgetTester tester, String label) async {
+  await tester.ensureVisible(find.text(label));
   await tester.tap(find.text(label));
   await tester.pump();
 }
 
-Future<void> _search(WidgetTester tester, String text) async {
+Future<void> _type(WidgetTester tester, String text) async {
   await tester.enterText(find.byType(TextField), text);
   await tester.pump();
 }
 
 void main() {
-  testWidgets('opens on All: every plant in provider order', (tester) async {
-    await _pump(tester);
-    expect(_shown(tester), ['herb', 'flower', 'shrub']);
-  });
-
-  final chipCases = {
-    'Food': ['herb'],
-    'Herbs': ['herb'],
-    'Flowers': ['flower'],
-    'Shrubs': ['shrub'],
-    'Indoor': ['flower'],
-  };
-  for (final MapEntry(key: label, value: ids) in chipCases.entries) {
-    testWidgets('$label → $ids', (tester) async {
-      await _pump(tester);
-      await _chip(tester, label);
-      expect(_shown(tester), ids);
-    });
-  }
-
-  testWidgets('one chip at a time: Flowers then Herbs → herb only', (
+  testWidgets('All is selected on open and the list keeps provider order', (
     tester,
   ) async {
-    await _pump(tester);
-    await _chip(tester, 'Flowers');
-    await _chip(tester, 'Herbs');
-    expect(_shown(tester), ['herb']);
-  });
+    await _pumpAll(tester);
 
-  final searchCases = {
-    'basil': ['herb'],
-    'LAVANDULA': ['flower'],
-    'BLUE': ['shrub'],
-  };
-  for (final MapEntry(key: q, value: ids) in searchCases.entries) {
-    testWidgets('search "$q" with All → $ids', (tester) async {
-      await _pump(tester);
-      await _search(tester, q);
-      expect(_shown(tester), ids);
-    });
-  }
-
-  testWidgets('loading: a spinner and no cards', (tester) async {
-    await _pump(tester, recs: const AsyncLoading());
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.byType(PlantListCard), findsNothing);
-  });
-
-  testWidgets('tapping a card opens PD-01 for that plant', (tester) async {
-    await _pump(tester);
-    await tester.tap(find.text('Sweet Basil'));
-    await tester.pumpAndSettle();
-    expect(find.text('PD-01 stub: herb'), findsOneWidget);
-  });
-
-  testWidgets('chips in plan/04 order, All selected on open', (tester) async {
-    await _pump(tester);
-    final labels = [
+    expect(_cardNames(tester), [
+      'Sweet Basil',
+      'English Lavender',
+      'Blueberry',
+    ]);
+    for (final label in const [
       'All',
       'Food',
       'Herbs',
@@ -209,44 +168,197 @@ void main() {
       'Shrubs',
       'Indoor',
       'Low maintenance',
-    ];
-    expect([
-      for (final chip in RecommendationChip.values)
-        recommendationChipLabel(chip),
-    ], labels);
-    final selected = find.byWidgetPredicate(
-      (w) => w is Semantics && w.properties.selected == true,
-    );
-    expect(
-      find.descendant(of: selected, matching: find.text('All')),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: selected, matching: find.text('Food')),
-      findsNothing,
-    );
+    ]) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
   });
 
-  testWidgets('Low maintenance → herb only (15 is Low; 16 and 40 are not)', (
+  testWidgets('the chips appear in the plan order', (tester) async {
+    await _pumpAll(tester);
+
+    final labels = [
+      for (final text in tester.widgetList<Text>(
+        find.descendant(
+          of: find.byType(SingleChildScrollView).first,
+          matching: find.byType(Text),
+        ),
+      ))
+        text.data,
+    ];
+    expect(labels, [
+      'All',
+      'Food',
+      'Herbs',
+      'Flowers',
+      'Shrubs',
+      'Indoor',
+      'Low maintenance',
+    ]);
+  });
+
+  group('each chip keeps only the plants its rule allows', () {
+    const cases = <(String, List<String>)>[
+      ('Food', ['Sweet Basil']),
+      ('Herbs', ['Sweet Basil']),
+      ('Flowers', ['English Lavender']),
+      ('Shrubs', ['Blueberry']),
+      ('Indoor', ['English Lavender']),
+      // 15 min is Low; 16 and 40 are not.
+      ('Low maintenance', ['Sweet Basil']),
+    ];
+    for (final (chip, expected) in cases) {
+      testWidgets('$chip → ${expected.join(', ')}', (tester) async {
+        await _pumpAll(tester);
+        await _tapChip(tester, chip);
+
+        expect(_cardNames(tester), expected);
+      });
+    }
+  });
+
+  testWidgets('selecting a second chip replaces the first', (tester) async {
+    await _pumpAll(tester);
+    await _tapChip(tester, 'Flowers');
+    expect(_cardNames(tester), ['English Lavender']);
+
+    await _tapChip(tester, 'Herbs');
+
+    expect(_cardNames(tester), ['Sweet Basil']);
+  });
+
+  group('search matches either name, case-insensitively', () {
+    const cases = <(String, List<String>)>[
+      ('basil', ['Sweet Basil']),
+      ('LAVANDULA', ['English Lavender']),
+      ('BLUE', ['Blueberry']),
+    ];
+    for (final (query, expected) in cases) {
+      testWidgets('"$query" → ${expected.join(', ')}', (tester) async {
+        await _pumpAll(tester);
+        await _type(tester, query);
+
+        expect(_cardNames(tester), expected);
+      });
+    }
+  });
+
+  testWidgets('the chip is ANDed with the search text', (tester) async {
+    await _pumpAll(tester);
+    await _tapChip(tester, 'Herbs');
+    await _type(tester, 'lavandula');
+
+    expect(find.byType(PlantCard), findsNothing);
+    expect(find.text(recommendationsEmptyCopy), findsOneWidget);
+  });
+
+  testWidgets('a search with no matches shows the empty state', (tester) async {
+    await _pumpAll(tester);
+    await _type(tester, 'zzz');
+
+    expect(find.byType(PlantCard), findsNothing);
+    expect(find.text(recommendationsEmptyCopy), findsOneWidget);
+  });
+
+  testWidgets('loading recommendations show a spinner and no cards', (
     tester,
   ) async {
-    await _pump(tester);
-    await _chip(tester, 'Low maintenance');
-    expect(_shown(tester), ['herb']);
+    await _pump(tester, recs: const AsyncLoading());
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(PlantCard), findsNothing);
   });
 
-  testWidgets('Herbs + "lavandula" → EmptyState, no cards', (tester) async {
-    await _pump(tester);
-    await _chip(tester, 'Herbs');
-    await _search(tester, 'lavandula');
-    expect(find.byType(GeauxEmptyState), findsOneWidget);
-    expect(find.byType(PlantListCard), findsNothing);
+  testWidgets('a list card fills the width', (tester) async {
+    await _pumpAll(tester);
+
+    // The cards are the list variant from #68. Its height is content
+    // driven, not the 112 plan/01 § Components specifies; see the note on
+    // #71.
+    final card = tester.widgetList<PlantCard>(find.byType(PlantCard)).first;
+    expect(card.size, PlantCardSize.list);
+    expect(
+      tester.getSize(find.byType(PlantCard).first).width,
+      360 - 2 * AppSpacing.screenPadding,
+    );
   });
 
-  testWidgets('search "zzz" with All → EmptyState, no cards', (tester) async {
-    await _pump(tester);
-    await _search(tester, 'zzz');
-    expect(find.byType(GeauxEmptyState), findsOneWidget);
-    expect(find.byType(PlantListCard), findsNothing);
+  testWidgets('exactly one chip reads as selected', (tester) async {
+    await _pumpAll(tester);
+    bool chipSelected(String label) =>
+        tester
+            .widget<Semantics>(
+              find
+                  .ancestor(
+                    of: find.text(label),
+                    matching: find.byType(Semantics),
+                  )
+                  .first,
+            )
+            .properties
+            .selected ??
+        false;
+    List<String> selectedChips() => [
+      for (final chip in const [
+        'All',
+        'Food',
+        'Herbs',
+        'Flowers',
+        'Shrubs',
+        'Indoor',
+        'Low maintenance',
+      ])
+        if (chipSelected(chip)) chip,
+    ];
+    expect(selectedChips(), ['All']);
+
+    await _tapChip(tester, 'Flowers');
+
+    expect(selectedChips(), ['Flowers']);
+  });
+
+  testWidgets('tapping a card opens PD-01 for that plant', (tester) async {
+    await _pumpAll(tester);
+
+    await tester.tap(find.text('Sweet Basil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PD-01 stub: sweet-basil'), findsOneWidget);
+  });
+
+  testWidgets('the header reads "Plants for you"', (tester) async {
+    await _pumpAll(tester);
+
+    expect(find.text('Plants for you'), findsOneWidget);
+  });
+
+  testWidgets('the count line counts the plants shown', (tester) async {
+    await _pumpAll(tester);
+    expect(find.text('3 plants · sorted by best fit'), findsOneWidget);
+
+    await _tapChip(tester, 'Herbs');
+
+    expect(find.text('1 plant · sorted by best fit'), findsOneWidget);
+  });
+
+  testWidgets('Back goes to Home when there is nothing to pop', (tester) async {
+    await _pumpAll(tester);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Home stub'), findsOneWidget);
+  });
+
+  testWidgets('Back returns to the screen that opened RC-01', (tester) async {
+    await _pump(tester, recs: AsyncData(_all), initialLocation: '/garden');
+    await tester.tap(find.text('Garden stub'));
+    await tester.pumpAndSettle();
+    expect(find.text('Plants for you'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Garden stub'), findsOneWidget);
+    expect(find.text('Home stub'), findsNothing);
   });
 }

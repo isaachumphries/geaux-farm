@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../features/care/presentation/care_screen.dart';
 import '../features/community/presentation/community_feed_screen.dart';
+import '../features/community/presentation/guide_detail_screen.dart';
+import '../features/community/presentation/report_sheet.dart';
 import '../features/garden/presentation/grow_this_sheet.dart';
 import '../features/garden/presentation/my_garden_screen.dart';
 import '../features/garden/presentation/planting_detail_screen.dart';
@@ -20,9 +22,9 @@ import '../features/onboarding/presentation/profile_summary_screen.dart';
 import '../features/onboarding/presentation/space_step_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
 import '../features/recommendations/presentation/plant_detail_screen.dart';
+import '../features/recommendations/presentation/recommendations_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/weather/presentation/weather_screen.dart';
-import '../features/recommendations/presentation/recommendations_screen.dart';
 import 'tab_shell.dart';
 import 'titled_scaffold.dart';
 
@@ -152,7 +154,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 path: '/community',
                 builder: (context, state) => const CommunityFeedScreen(),
                 routes: [
-                  _placeholder('guide/:id', 'CM-02 Guide detail'),
+                  GoRoute(
+                    path: 'guide/:id',
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return Consumer(
+                        builder: (context, ref, _) => GuideDetailScreen(
+                          guideId: id,
+                          onReport: () =>
+                              reportGuide(context, ref, guideId: id),
+                        ),
+                      );
+                    },
+                  ),
                   _placeholder('editor/:id', 'CM-03 Editor'),
                   _placeholder('me', 'CM-05 My profile'),
                 ],

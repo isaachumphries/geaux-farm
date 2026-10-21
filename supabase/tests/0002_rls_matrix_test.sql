@@ -1,12 +1,13 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(58);
+select plan(61);
 
--- RLS matrix for every policy in 0001_init.sql (plan/07 § Supabase schema):
--- anon / owner / other user against select, insert, update, delete on each
--- table, plus storage.objects in the guide-images bucket. Every deny check has
--- a matching allow check for the same role and table, so a deny-all policy
--- (or RLS switched off) fails the suite instead of passing it.
+-- RLS matrix for every policy in 0001_init.sql (plan/07 § Supabase schema) and
+-- 0003_guide_images_select.sql: anon / owner / other user against select,
+-- insert, update, delete on each table, plus storage.objects in the
+-- guide-images bucket. Every deny check has a matching allow check for the
+-- same role and table, so a deny-all policy (or RLS switched off) fails the
+-- suite instead of passing it.
 
 -- Runs a statement under the current role and returns how many rows it
 -- touched. RLS filters UPDATE/DELETE silently (0 rows, no error), so row
@@ -285,8 +286,8 @@ select is((select count(*)::int from public.attribution_responses
   2, 'attribution_responses: both responses are stored (control for the 0-row reads)');
 
 -- ---------------------------------------------------------------------------
--- storage.objects: authenticated users write only under "{uid}/" in the
--- guide-images bucket (plan/07 § Editor: "{uid}/{guideId}/{uuid}.jpg").
+-- storage.objects: authenticated users see and write only under "{uid}/" in
+-- the guide-images bucket (plan/07 § Editor: "{uid}/{guideId}/{uuid}.jpg").
 -- ---------------------------------------------------------------------------
 -- storage.protect_delete blocks raw SQL deletes unless this is set; the
 -- Storage API sets it for its own deletes.
@@ -317,9 +318,24 @@ select throws_ok(
     values ('rls-other', 'c1370000-0000-4000-8000-00000000000a/a1/step1.jpg')$$,
   '42501', null, 'guide_images_insert: A''s folder rule does not extend to other buckets');
 
+-- guide_images_select: you see only your own "{uid}/" folder in guide-images.
+-- The bucket is public, so images load by URL without a policy; this one is
+-- for the Storage API's own queries (list, and the filtered delete below).
+select set_eq(
+  $$select bucket_id || ':' || name from storage.objects where name like 'c137%'$$,
+  $$values ('guide-images:c1370000-0000-4000-8000-00000000000a/a1/cover.jpg'),
+           ('guide-images:c1370000-0000-4000-8000-00000000000a/a1/step1.jpg')$$,
+  'guide_images_select: A sees only their own guide images (not B''s, not other buckets)');
+
+set local role anon;
+set local request.jwt.claims = '{"role":"anon"}';
+select is((select count(*)::int from storage.objects where name like 'c137%'),
+  0, 'guide_images_select: anon cannot list objects');
+
 -- Unfiltered deletes: with no WHERE clause Postgres applies only the DELETE
--- policy, so these isolate guide_images_delete from the missing SELECT policy
--- (bug #143, the TODO test at the end).
+-- policy, so these pin guide_images_delete on its own, apart from
+-- guide_images_select.
+set local role authenticated;
 set local request.jwt.claims = '{"sub":"c1370000-0000-4000-8000-00000000000b","role":"authenticated"}';
 select is(rls_test.affected($$delete from storage.objects$$),
   1, 'guide_images_delete: B deletes only B''s own guide image');
@@ -339,14 +355,20 @@ select set_eq(
   $$values ('rls-other:c1370000-0000-4000-8000-00000000000a/a1/cover.jpg')$$,
   'guide_images_delete: A''s object in another bucket survives');
 
--- A delete filtered by name, which is what the Storage API's remove() runs.
--- Postgres also applies SELECT policies here, and storage.objects has none
--- for guide-images, so it matches 0 rows. TODO until bug #143 is fixed.
+-- Deletes filtered by name, which is what the Storage API's remove() runs.
+-- Postgres also applies SELECT policies here, so the owner's delete needs
+-- guide_images_select (bug #143). A's delete after B's attempt also shows the
+-- object was still there, so B's 0 rows is a denial, not a missing row.
 insert into storage.objects (bucket_id, name)
   values ('guide-images', 'c1370000-0000-4000-8000-00000000000a/a1/by-name.jpg');
 set local role authenticated;
+set local request.jwt.claims = '{"sub":"c1370000-0000-4000-8000-00000000000b","role":"authenticated"}';
+select is(rls_test.affected(
+  $$delete from storage.objects
+     where bucket_id = 'guide-images'
+       and name = 'c1370000-0000-4000-8000-00000000000a/a1/by-name.jpg'$$),
+  0, 'guide_images_delete: B cannot delete A''s image by name');
 set local request.jwt.claims = '{"sub":"c1370000-0000-4000-8000-00000000000a","role":"authenticated"}';
-select todo('Bug #143: no SELECT policy on storage.objects for guide-images', 1);
 select is(rls_test.affected(
   $$delete from storage.objects
      where bucket_id = 'guide-images'

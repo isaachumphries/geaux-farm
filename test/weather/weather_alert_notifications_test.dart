@@ -45,6 +45,19 @@ WeatherDay _day(int offset, {double tmin = 60}) {
   );
 }
 
+/// The fake forecast's `current` block. The cache stores it verbatim and
+/// reads it back through `parseCurrent`, so it has to be a complete block.
+const _currentJson = <String, Object?>{
+  'time': '2026-10-07T09:00',
+  'temperature_2m': 60,
+  'relative_humidity_2m': 50,
+  'cloud_cover': 0,
+  'precipitation': 0,
+  'weather_code': 0,
+  'uv_index': 3,
+  'is_day': 1,
+};
+
 /// Serves [days] as the forecast; counts fetches.
 class _FakeForecast extends OpenMeteoForecastClient {
   _FakeForecast(this.days)
@@ -61,16 +74,8 @@ class _FakeForecast extends OpenMeteoForecastClient {
   }) async {
     fetches++;
     return WeatherSnapshot(
-      current: WeatherCurrent(
-        temperatureF: 60,
-        relativeHumidity: 50,
-        cloudCover: 0,
-        precipitationIn: 0,
-        weatherCode: 0,
-        uvIndex: 3,
-        isDay: true,
-        time: _now,
-      ),
+      current: OpenMeteoForecastClient.parseCurrent(_currentJson),
+      currentJson: _currentJson,
       days: days,
       fetchedAt: fetchedAt,
     );
@@ -186,10 +191,15 @@ void main() {
       expect(pending.single.scheduledDate.hour, 18);
     });
 
-    test('no frost, or an indoor planting, schedules nothing', () async {
+    // One setUpSync per test: each builds its own AppDatabase and
+    // ProviderContainer, and two of them alive at once make drift warn
+    // about a second database on the same executor (#126).
+    test('a warm night schedules nothing', () async {
       final (_, warm, _) = await setUpSync(days: [_day(2, tmin: 21)]);
       expect(warm.pendingById.keys.where(isWeatherAlertId), isEmpty);
+    });
 
+    test('an indoor planting schedules nothing', () async {
       final (_, indoor, _) = await setUpSync(
         days: [_day(2, tmin: 10)],
         setup: GrowSetup.indoor,
