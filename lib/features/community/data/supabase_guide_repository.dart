@@ -88,14 +88,16 @@ class SupabaseGuideRepository implements GuideRepository {
     String? note,
   }) async {
     final userId = _requireUserId();
-    if (!isValidReportNote(note)) {
+    // The trimmed string is what is sent, so it is what the client check
+    // has to agree with the column's char_length(note) <= 200 about.
+    final trimmed = note?.trim();
+    if (!isValidReportNote(trimmed)) {
       throw ArgumentError.value(
         note,
         'note',
         'longer than $maxReportNoteLength characters',
       );
     }
-    final trimmed = note?.trim();
     try {
       await _send(
         _client.from('guide_reports').insert({
