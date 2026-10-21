@@ -1,11 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
 import 'package:geaux_farm/features/weather/data/weather_provider.dart';
+import 'package:geaux_farm/features/weather/data/weather_repository.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+
+import '../helpers/in_memory_database.dart';
 
 final fixture = File('test/fixtures/open_meteo/forecast_baton_rouge.json')
     .readAsStringSync();
@@ -24,6 +28,7 @@ void main() {
     fail = false;
     container = ProviderContainer(
       overrides: [
+        inMemoryDatabaseOverride(),
         weatherClockProvider.overrideWithValue(() => now),
         forecastClientProvider.overrideWithValue(
           OpenMeteoForecastClient(
@@ -120,9 +125,117 @@ void main() {
     );
   });
 
-  test('each location is cached separately', () async {
+  test('a second location reuses the one on-device cache', () async {
+    // plan/09 § Drift schema keeps one forecast: neither weather table
+    // carries lat/lon, and the app only fetches the profile's location.
     await load();
-    await container.read(weatherProvider((29.95, -90.07)).future);
-    expect(calls, 2);
+    final other = await container.read(weatherProvider((29.95, -90.07)).future);
+    expect(calls, 1);
+    expect(other.days, hasLength(14));
+  });
+
+  group('the Drift cache', () {
+    Future<void> seedCache(DateTime fetchedAt) async {
+      final repo = container.read(weatherRepositoryProvider);
+      final snapshot = OpenMeteoForecastClient.parseForecast(
+        jsonDecode(fixture) as Map<String, dynamic>,
+        fetchedAt: fetchedAt,
+      );
+      await repo.saveForecast(snapshot, fetchedAt);
+    }
+
+    test('an empty cache fetches and saves 14 rows', () async {
+      await load();
+      final cached = await container
+          .read(weatherRepositoryProvider)
+          .loadCached();
+      expect(calls, 1);
+      expect(cached!.days, hasLength(14));
+      expect(cached.fetchedAt, now);
+    });
+
+    test('a 59-minute-old cache is served without a fetch', () async {
+      await seedCache(now.subtract(const Duration(minutes: 59)));
+      final state = await load();
+      expect(calls, 0);
+      expect(state.days, hasLength(14));
+      expect(state.fetchedAt, now.subtract(const Duration(minutes: 59)));
+      expect(state.isOfflineStale, isFalse);
+    });
+
+    test('a 61-minute-old cache triggers exactly one fetch', () async {
+      await seedCache(now.subtract(const Duration(minutes: 61)));
+      final state = await load();
+      expect(calls, 1);
+      expect(state.fetchedAt, now);
+    });
+
+    test('a failed fetch over a 2-hour cache is not offline stale', () async {
+      await seedCache(now.subtract(const Duration(hours: 2)));
+      fail = true;
+      final state = await load();
+      expect(calls, 1);
+      expect(state.fetchedAt, now.subtract(const Duration(hours: 2)));
+      expect(state.isOfflineStale, isFalse);
+      expect(state.refreshError, isA<NetworkException>());
+    });
+
+    test('a failed fetch over a 4-hour cache is offline stale', () async {
+      await seedCache(now.subtract(const Duration(hours: 4)));
+      fail = true;
+      final state = await load();
+      expect(state.days, hasLength(14));
+      expect(state.isOfflineStale, isTrue);
+    });
+
+    test('a failed refresh over a 4-hour cache is offline stale', () async {
+      await seedCache(now.subtract(const Duration(hours: 4)));
+      fail = true;
+      await load();
+      // Retry, which the error banner offers, fails again on the same cache.
+      await notifier().refresh(force: true);
+      expect(calls, 2);
+      expect(
+        container.read(weatherProvider(loc)).value!.isOfflineStale,
+        isTrue,
+      );
+    });
+  });
+
+  group('weatherRefreshedProvider', () {
+    test('a successful refresh emits exactly one event', () async {
+      final events = <DateTime>[];
+      final sub = container.listen(
+        weatherRefreshedProvider,
+        (_, next) => next.whenData(events.add),
+      );
+      addTearDown(sub.close);
+
+      await load();
+      await pumpEventQueue();
+      expect(events, [now]);
+
+      now = now.add(const Duration(minutes: 61));
+      await notifier().refresh();
+      await pumpEventQueue();
+      expect(events, [DateTime(2026, 10, 13, 17, 20), now]);
+    });
+
+    test('a failed refresh emits nothing', () async {
+      final events = <DateTime>[];
+      final sub = container.listen(
+        weatherRefreshedProvider,
+        (_, next) => next.whenData(events.add),
+      );
+      addTearDown(sub.close);
+
+      await load();
+      await pumpEventQueue();
+      fail = true;
+      now = now.add(const Duration(minutes: 61));
+      await notifier().refresh();
+      await pumpEventQueue();
+      expect(events, hasLength(1));
+    });
   });
 }

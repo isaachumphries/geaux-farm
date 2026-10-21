@@ -8,6 +8,8 @@ import 'package:geaux_farm/features/weather/data/weather_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import '../helpers/in_memory_database.dart';
+
 final _fixture = File('test/fixtures/open_meteo/forecast_baton_rouge.json')
     .readAsStringSync();
 
@@ -29,6 +31,7 @@ void main() {
     respond = () async => http.Response(_fixture, 200);
     container = ProviderContainer(
       overrides: [
+        inMemoryDatabaseOverride(),
         weatherClockProvider.overrideWithValue(() => now),
         forecastClientProvider.overrideWithValue(
           OpenMeteoForecastClient(

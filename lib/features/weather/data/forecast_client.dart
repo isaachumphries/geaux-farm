@@ -82,16 +82,7 @@ class OpenMeteoForecastClient {
     required DateTime fetchedAt,
   }) {
     final c = json['current'] as Map<String, dynamic>;
-    final current = WeatherCurrent(
-      temperatureF: _d(c['temperature_2m']),
-      relativeHumidity: _i(c['relative_humidity_2m']),
-      cloudCover: _i(c['cloud_cover']),
-      precipitationIn: _d(c['precipitation']),
-      weatherCode: _i(c['weather_code']),
-      uvIndex: _d(c['uv_index']),
-      isDay: _i(c['is_day']) == 1,
-      time: DateTime.parse(c['time'] as String),
-    );
+    final current = parseCurrent(c);
 
     final d = json['daily'] as Map<String, dynamic>;
     List<dynamic> col(String key) => d[key] as List<dynamic>;
@@ -125,8 +116,26 @@ class OpenMeteoForecastClient {
           sunset: sunset[i] as String,
         ),
     ];
-    return WeatherSnapshot(current: current, days: days, fetchedAt: fetchedAt);
+    return WeatherSnapshot(
+      current: current,
+      currentJson: c,
+      days: days,
+      fetchedAt: fetchedAt,
+    );
   }
+
+  /// Parses one `current` block. The weather repository reuses this to read
+  /// the raw JSON back out of `weather_current`.
+  static WeatherCurrent parseCurrent(Map<String, dynamic> c) => WeatherCurrent(
+    temperatureF: _d(c['temperature_2m']),
+    relativeHumidity: _i(c['relative_humidity_2m']),
+    cloudCover: _i(c['cloud_cover']),
+    precipitationIn: _d(c['precipitation']),
+    weatherCode: _i(c['weather_code']),
+    uvIndex: _d(c['uv_index']),
+    isDay: _i(c['is_day']) == 1,
+    time: DateTime.parse(c['time'] as String),
+  );
 
   static double _d(Object? v) => (v as num).toDouble();
   static int _i(Object? v) => (v as num).toInt();
