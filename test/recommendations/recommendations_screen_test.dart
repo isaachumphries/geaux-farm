@@ -85,18 +85,29 @@ List<String> _cardNames(WidgetTester tester) => [
 Future<void> _pump(
   WidgetTester tester, {
   AsyncValue<List<ScoredPlant>> recs = const AsyncData([]),
+  String initialLocation = '/home/recommendations',
 }) async {
   tester.view.physicalSize = const Size(360, 800);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final router = GoRouter(
-    initialLocation: '/home/recommendations',
+    initialLocation: initialLocation,
     routes: [
       GoRoute(
         path: '/home/recommendations',
         builder: (_, _) => const RecommendationsScreen(),
       ),
       GoRoute(path: '/home', builder: (_, _) => const Text('Home stub')),
+      // GD-01's empty state pushes RC-01 from here.
+      GoRoute(
+        path: '/garden',
+        builder: (context, _) => Center(
+          child: TextButton(
+            onPressed: () => context.push('/home/recommendations'),
+            child: const Text('Garden stub'),
+          ),
+        ),
+      ),
       GoRoute(
         path: '/plants/:plantId',
         builder: (_, state) =>
@@ -336,5 +347,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Home stub'), findsOneWidget);
+  });
+
+  testWidgets('Back returns to the screen that opened RC-01', (tester) async {
+    await _pump(tester, recs: AsyncData(_all), initialLocation: '/garden');
+    await tester.tap(find.text('Garden stub'));
+    await tester.pumpAndSettle();
+    expect(find.text('Plants for you'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Garden stub'), findsOneWidget);
+    expect(find.text('Home stub'), findsNothing);
   });
 }
