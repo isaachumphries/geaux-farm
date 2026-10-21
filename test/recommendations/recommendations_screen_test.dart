@@ -96,6 +96,7 @@ Future<void> _pump(
         path: '/home/recommendations',
         builder: (_, _) => const RecommendationsScreen(),
       ),
+      GoRoute(path: '/home', builder: (_, _) => const Text('Home stub')),
       GoRoute(
         path: '/plants/:plantId',
         builder: (_, state) =>
@@ -311,5 +312,29 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('PD-01 stub: sweet-basil'), findsOneWidget);
+  });
+
+  testWidgets('the header reads "Plants for you"', (tester) async {
+    await _pumpAll(tester);
+
+    expect(find.text('Plants for you'), findsOneWidget);
+  });
+
+  testWidgets('the count line counts the plants shown', (tester) async {
+    await _pumpAll(tester);
+    expect(find.text('3 plants · sorted by best fit'), findsOneWidget);
+
+    await _tapChip(tester, 'Herbs');
+
+    expect(find.text('1 plant · sorted by best fit'), findsOneWidget);
+  });
+
+  testWidgets('Back goes to Home when there is nothing to pop', (tester) async {
+    await _pumpAll(tester);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Home stub'), findsOneWidget);
   });
 }

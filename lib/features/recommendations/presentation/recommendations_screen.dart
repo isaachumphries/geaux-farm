@@ -88,27 +88,19 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
+        AppSpacing.screenPadding,
         AppSpacing.sm,
         AppSpacing.screenPadding,
-        AppSpacing.md,
+        AppSpacing.lg,
       ),
-      child: Row(
-        children: [
-          IconButton(
-            tooltip: 'Back',
-            onPressed: () =>
-                context.canPop() ? context.pop() : context.go('/home'),
-            icon: const Icon(Symbols.arrow_back_ios_new_rounded),
-            color: AppColors.soil900,
-          ),
-          Expanded(
-            child: Text(
-              'Recommendations',
-              style: AppText.h1.copyWith(color: AppColors.soil900),
-            ),
-          ),
-        ],
+      child: GeauxTopBar(
+        title: 'Plants for you',
+        leading: GeauxCircleButton(
+          icon: Symbols.arrow_back_rounded,
+          tooltip: 'Back',
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/home'),
+        ),
       ),
     );
   }
@@ -170,6 +162,7 @@ class _PlantList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The count line is the first row; the cards follow it.
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.screenPadding,
@@ -177,10 +170,11 @@ class _PlantList extends StatelessWidget {
         AppSpacing.screenPadding,
         AppSpacing.xl,
       ),
-      itemCount: plants.length,
+      itemCount: plants.length + 1,
       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
       itemBuilder: (context, i) {
-        final s = plants[i];
+        if (i == 0) return _CountLine(plants.length);
+        final s = plants[i - 1];
         return PlantCard(
           key: ValueKey(s.plant.id),
           plant: s,
@@ -189,6 +183,22 @@ class _PlantList extends StatelessWidget {
           onTap: () => context.push('/plants/${s.plant.id}'),
         );
       },
+    );
+  }
+}
+
+/// The RC-01 frame's "10 plants · sorted by best fit": how many plants
+/// match, in the order of plan/04 § Sorting.
+class _CountLine extends StatelessWidget {
+  const _CountLine(this.count);
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '$count ${count == 1 ? 'plant' : 'plants'} · sorted by best fit',
+      style: AppText.bodySm.copyWith(color: AppColors.soil600),
     );
   }
 }
