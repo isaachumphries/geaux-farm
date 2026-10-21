@@ -6,6 +6,8 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../climate/data/climate_provider.dart';
+import '../../care/application/care_schedule_provider.dart';
+import '../../community/application/community_feed_provider.dart';
 import '../../garden/application/garden_provider.dart';
 import '../../garden/domain/planting.dart';
 import '../../garden/presentation/widgets/planting_card.dart';
@@ -16,6 +18,8 @@ import '../../recommendations/domain/scored_plant.dart';
 import '../../recommendations/domain/season_line.dart';
 import '../../recommendations/presentation/widgets/plant_card.dart';
 import '../../weather/data/weather_provider.dart';
+import '../../weather/application/garden_alerts_provider.dart';
+import '../../weather/presentation/alert_banner.dart';
 import '../../weather/presentation/weather_mini.dart';
 import '../application/first_plant_prompt_provider.dart';
 import '../domain/home_copy.dart';
@@ -47,19 +51,38 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
     super.dispose();
   }
 
-  /// Pull-to-refresh always refetches the forecast (plan/06). With no
-  /// profile yet there is no weather card, so there is nothing to refresh.
+  /// Refresh weather once, then recompute every dashboard section. Do not
+  /// invalidate weather: that would issue a second forecast request.
   Future<void> _onRefresh() async {
     final profile = ref.read(userProfileProvider).value;
-    if (profile == null) return;
-    final location = forecastLocation(profile.lat, profile.lon);
-    await ref.read(weatherProvider(location).notifier).refresh(force: true);
+    if (profile != null) {
+      final location = forecastLocation(profile.lat, profile.lon);
+      await ref.read(weatherProvider(location).notifier).refresh(force: true);
+    }
+    if (!mounted) return;
+    ref.invalidate(gardenProvider);
+    ref.invalidate(careScheduleProvider);
+    ref.invalidate(recommendationsProvider);
+    ref.invalidate(gardenAlertsProvider);
+    ref.invalidate(communityFeedProvider(topGuideThisWeekQuery));
+    // Each section presents its own error state; one unavailable remote
+    // section must not prevent the local garden and tasks from reloading.
+    await Future.wait(
+      [
+        ref.read(gardenProvider.future),
+        ref.read(careScheduleProvider.future),
+        ref.read(recommendationsProvider.future),
+        ref.read(gardenAlertsProvider.future),
+        ref.read(communityFeedProvider(topGuideThisWeekQuery).future),
+      ].map((future) => AsyncValue.guard(() => future)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final dismissed = ref.watch(firstPlantPromptDismissedProvider);
-    final garden = ref.watch(gardenProvider).value ?? const [];
+    final gardenState = ref.watch(gardenProvider);
+    final garden = gardenState.value;
     final profile = ref.watch(userProfileProvider).value;
     final location = profile == null
         ? null
@@ -82,24 +105,28 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
             ),
             children: [
               const Padding(padding: inset, child: _Header()),
+              if (garden?.isNotEmpty ?? false)
+                const Padding(padding: inset, child: HomeAlerts()),
               // Nothing while the profile loads.
               if (location != null) ...[
                 const SizedBox(height: AppSpacing.md),
                 Padding(
                   padding: inset,
-                  child: WeatherMiniCard(
-                    lat: location.$1,
-                    lon: location.$2,
-                    onTap: () => context.push('/weather'),
-                  ),
+                  child: _HomeWeather(location: location),
                 ),
                 const SizedBox(height: AppSpacing.lg + AppSpacing.xs),
               ] else
                 const SizedBox(height: AppSpacing.lg),
-              if (garden.isNotEmpty) ...[
+              if (garden == null)
+                const Padding(
+                  padding: inset,
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.leaf500),
+                  ),
+                )
+              else if (garden.isNotEmpty) ...[
                 // HM-02, in plan/01 order: alerts, Today, garden snapshot,
                 // In season now, Top guide. No season banner once planted.
-                const Padding(padding: inset, child: HomeAlerts()),
                 const Padding(padding: inset, child: TodaySection()),
                 const SizedBox(height: AppSpacing.lg),
                 Padding(
@@ -107,7 +134,7 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
                   child: _GardenSection(views: garden),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                _InSeasonSection(exclude: {for (final v in garden) v.plant.id}),
+                const _InSeasonSection(),
                 const Padding(padding: inset, child: TopGuideSection()),
               ] else if (dismissed) ...[
                 const Padding(padding: inset, child: _SeasonBanner()),
@@ -136,6 +163,32 @@ class _HomeFirstRunState extends ConsumerState<HomeFirstRunScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Cache warnings belong to weather, not the garden's evaluated alert list.
+class _HomeWeather extends ConsumerWidget {
+  const _HomeWeather({required this.location});
+
+  final (double, double) location;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weather = ref.watch(weatherProvider(location));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (weather.value?.isOfflineStale ?? false) ...[
+          const AlertBanner.offline(),
+          const SizedBox(height: AppSpacing.md),
+        ],
+        WeatherMiniCard(
+          lat: location.$1,
+          lon: location.$2,
+          onTap: () => context.push('/weather'),
+        ),
+      ],
     );
   }
 }
@@ -404,10 +457,7 @@ class _PromptHeader extends ConsumerWidget {
 /// shows an error with Retry: the provider never retries on its own, so
 /// without it the spinner would never end (offline, timeout).
 class _Carousel extends ConsumerWidget {
-  const _Carousel({this.exclude = const {}, this.inSeasonOnly = false});
-
-  /// Catalog ids to leave out, e.g. plants already in the garden.
-  final Set<String> exclude;
+  const _Carousel({this.inSeasonOnly = false});
 
   /// HM-02 "In season now": only in-season plants (plan/04 § Sorting).
   final bool inSeasonOnly;
@@ -427,7 +477,6 @@ class _Carousel extends ConsumerWidget {
     return switch (recs) {
       AsyncData(:final value) => _CarouselRow(
         plants: value
-            .where((s) => !exclude.contains(s.plant.id))
             .where((s) => !inSeasonOnly || s.compatibility.inSeason)
             .take(homeCarouselCount)
             .toList(),
@@ -599,21 +648,17 @@ class _SlimArt extends StatelessWidget {
   }
 }
 
-/// HM-02 "In season now": the first [homeCarouselCount] in-season plants
-/// in list order, leaving out the ones in [exclude] (already growing).
-/// Hidden when none is left.
+/// HM-02 uses the first ten in-season recommendations in plan/04 order,
+/// including plants already growing; owning one does not change its rank.
 class _InSeasonSection extends ConsumerWidget {
-  const _InSeasonSection({required this.exclude});
-
-  final Set<String> exclude;
+  const _InSeasonSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recs = ref.watch(recommendationsProvider).value;
-    final any = recs?.any(
-      (s) => s.compatibility.inSeason && !exclude.contains(s.plant.id),
-    );
-    if (any == false) return const SizedBox.shrink();
+    if (recs != null && !recs.any((s) => s.compatibility.inSeason)) {
+      return const SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -625,7 +670,7 @@ class _InSeasonSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        _Carousel(exclude: exclude, inSeasonOnly: true),
+        const _Carousel(inSeasonOnly: true),
         const SizedBox(height: AppSpacing.lg),
       ],
     );
@@ -668,7 +713,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 /// HM-02 "Your garden": the first [homeGardenCount] plantings, active
-/// first. "See all" and each card open My Garden.
+/// first. The snapshot and "See all" open My Garden (#73).
 class _GardenSection extends StatelessWidget {
   const _GardenSection({required this.views});
 
@@ -689,7 +734,7 @@ class _GardenSection extends StatelessWidget {
           PlantingCard(
             key: ValueKey(v.id),
             view: v,
-            onTap: () => context.go('/garden/planting/${v.id}'),
+            onTap: () => _openGarden(context),
           ),
           const SizedBox(height: AppSpacing.md),
         ],
