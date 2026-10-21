@@ -170,6 +170,33 @@ void main() {
       expect(repo.guideFetches, ['g1', 'g1']);
       await unmount(tester);
     });
+
+    testWidgets(
+      'leaving the guide and coming back in one session reads the count '
+      'the server has now',
+      (tester) async {
+        final guides = {'g1': guide};
+        final repo = FakeGuideRepository(guides: guides);
+        // One ProviderScope for the whole test, as the app has: the guide
+        // provider must not outlive the screen, or this second visit would
+        // show the count of the first.
+        final router = await pumpGuideDetail(tester, repo, auth: auth);
+        expect(_starCount('5'), findsOneWidget);
+
+        router.go('/');
+        await settle(tester);
+        expect(find.text('home'), findsOneWidget);
+
+        // Another account starred it while the user was away.
+        guides['g1'] = guideWithStars(guide, 6);
+        router.push('/community/guide/g1');
+        await settle(tester);
+
+        expect(_starCount('6'), findsOneWidget);
+        expect(repo.guideFetches, ['g1', 'g1']);
+        await unmount(tester);
+      },
+    );
   });
 
   group('providers', () {
