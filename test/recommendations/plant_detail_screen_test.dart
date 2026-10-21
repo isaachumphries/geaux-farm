@@ -14,6 +14,7 @@ import 'package:geaux_farm/features/recommendations/application/plant_detail_pro
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/plant_detail_screen.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/compat_badge.dart';
+import 'package:geaux_farm/features/weather/presentation/attribution_footer.dart';
 
 import '../helpers/file_asset_bundle.dart';
 import '../helpers/fixed_climate.dart';
@@ -307,6 +308,64 @@ void main() {
   ) async {
     await _pump(tester, plantId: 'no-such-plant', overrides: _overrides());
     expect(find.text('This plant is not in the catalog.'), findsOneWidget);
+  });
+
+  testWidgets('the image credit line opens the record sourceUrl', (
+    tester,
+  ) async {
+    final plant = await _plant(tester, 'kale');
+    final opened = <Uri>[];
+    await _pump(
+      tester,
+      plantId: 'kale',
+      overrides: [
+        ..._overrides(),
+        linkOpenerProvider.overrideWithValue((uri) async {
+          opened.add(uri);
+          return true;
+        }),
+      ],
+    );
+    final credit = find.text(
+      'Image credit: ${plant.image.credit} · ${plant.image.license}',
+    );
+    await tester.ensureVisible(credit);
+    await tester.tap(credit);
+    await tester.pump();
+    expect(opened, [Uri.parse(plant.image.sourceUrl!)]);
+  });
+
+  testWidgets('the image credit line is plain text without a sourceUrl', (
+    tester,
+  ) async {
+    final base = kaleWith({});
+    final noLink = kaleWith({
+      'image': {
+        'asset': base.image.asset,
+        'credit': base.image.credit,
+        'license': base.image.license,
+      },
+    });
+    final opened = <Uri>[];
+    await _pump(
+      tester,
+      plantId: noLink.id,
+      overrides: [
+        ..._overrides(),
+        catalogProvider.overrideWith((ref) async => [noLink]),
+        linkOpenerProvider.overrideWithValue((uri) async {
+          opened.add(uri);
+          return true;
+        }),
+      ],
+    );
+    final credit = find.text(
+      'Image credit: ${noLink.image.credit} · ${noLink.image.license}',
+    );
+    await tester.ensureVisible(credit);
+    await tester.tap(credit);
+    await tester.pump();
+    expect(opened, isEmpty);
   });
 
   for (final count in [2, 3, 4]) {
