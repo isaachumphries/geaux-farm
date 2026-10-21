@@ -35,7 +35,7 @@ void main() {
       AlertBannerType.rain,
       'Heavy rain Wed: check drainage — your watering schedule already '
           'accounts for it',
-      Symbols.rainy_rounded,
+      Symbols.umbrella_rounded,
     ),
     (
       GardenAlertType.uv,
@@ -68,6 +68,42 @@ void main() {
       AlertBannerType.offline,
     );
     expect(find.byIcon(Symbols.cloud_off_rounded), findsOneWidget);
+  });
+
+  testWidgets('the Figma shape: white icon chip, bold lead-in, ledge', (
+    tester,
+  ) async {
+    const copy = 'Frost Thu: cover or bring in Basil, Kale';
+    await _pump(tester, AlertBanner.alert(_alert(GardenAlertType.frost, copy)));
+
+    // One text run, so the copy reads exactly as the plan has it.
+    final text = tester.widget<Text>(find.text(copy));
+    final lead = (text.textSpan! as TextSpan).children!.first as TextSpan;
+    expect(lead.text, 'Frost Thu:');
+    expect(lead.style!.fontWeight, FontWeight.w800);
+
+    // The icon sits on a white chip; the card is filled with a ledge.
+    final chip = tester.widget<DecoratedBox>(
+      find
+          .ancestor(
+            of: find.byIcon(Symbols.ac_unit_rounded),
+            matching: find.byType(DecoratedBox),
+          )
+          .first,
+    );
+    expect((chip.decoration as BoxDecoration).color, AppColors.white);
+    final card = tester.widget<GeauxCard>(find.byType(GeauxCard));
+    expect(card.borderColor, isNull);
+    expect(card.ledgeColor, AppColors.frost);
+  });
+
+  testWidgets('a banner with no lead-in still shows its copy whole', (
+    tester,
+  ) async {
+    await _pump(tester, const AlertBanner.offline());
+    final text = tester.widget<Text>(find.text('Showing saved weather'));
+    expect(text.data, 'Showing saved weather');
+    expect(text.style!.fontWeight, isNot(FontWeight.w800));
   });
 
   testWidgets('each alert type has its own accent', (tester) async {
