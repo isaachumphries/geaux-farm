@@ -197,6 +197,34 @@ void main() {
         await unmount(tester);
       },
     );
+
+    testWidgets(
+      'a star still lands when the user leaves before the write ends',
+      (tester) async {
+        final repo = FakeGuideRepository(guides: {'g1': guide})
+          ..writeGate = Completer<void>();
+        final router = await pumpGuideDetail(tester, repo, auth: auth);
+        await tester.tap(find.text('Star'));
+        await tester.pump();
+        expect(repo.writes, ['star:g1']);
+
+        // Back out while the insert is still in flight, then let it finish.
+        router.go('/');
+        await settle(tester);
+        repo.writeGate!.complete();
+        await settle(tester);
+        expect(tester.takeException(), isNull);
+
+        // Coming back shows the star the write made: the cached "Starred by
+        // me" set was refreshed, and nothing was reported as failed.
+        router.push('/community/guide/g1');
+        await settle(tester);
+        expect(find.text('Starred'), findsOneWidget);
+        expect(_starCount('6'), findsOneWidget);
+        expect(find.text("Couldn't update your star."), findsNothing);
+        await unmount(tester);
+      },
+    );
   });
 
   group('providers', () {
