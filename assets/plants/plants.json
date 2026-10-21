@@ -1493,5 +1493,381 @@
     ],
     "image": {"asset": "assets/plants/images/chives.webp", "credit": "JarroNevsbaru", "license": "CC BY 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chives_1.jpg"},
     "source": "curated"
+  },
+  {
+    "id": "sage",
+    "commonName": "Sage",
+    "scientificName": "Salvia officinalis",
+    "category": "herb",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["perennial", "evergreen"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": {"min": "4a", "max": "8b"},
+    "plantTempF": {"min": 50, "max": 80},
+    "growTempF": {"min": 20, "max": 95},
+    "frostTolerance": "hard",
+    "humidity": "low",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 90},
+      {"method": "seed", "daysMin": 90, "daysMax": 120}
+    ],
+    "productiveDays": 120,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 4, "containerOk": true, "minContainerGal": 3, "indoorOk": false},
+    "water": {"need": "low", "everyDaysOutdoor": 7, "everyDaysIndoor": 10},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 5,
+      "tasks": [
+        {"type": "harvest", "everyDays": 14, "note": "Snip stem tips; never strip a plant bare"},
+        {"type": "prune", "everyDays": 365, "note": "Cut back by a third in early spring"}
+      ]
+    },
+    "tips": [
+      "Needs sharp drainage; wet feet and humid summers rot the roots.",
+      "Harvest lightly the first year so the plant can establish."
+    ],
+    "image": {"asset": "assets/plants/images/sage.webp", "credit": "Agnieszka Kwiecień", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Salvia_officinalis_Sza%C5%82wia_lekarska_2023-07-21_01.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "rabbiteye-blueberry",
+    "commonName": "Rabbiteye Blueberry",
+    "scientificName": "Vaccinium virgatum",
+    "category": "fruit",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["deciduous", "perennial"],
+    "difficulty": 3,
+    "sun": ["full", "partial"],
+    "zones": {"min": "7a", "max": "9b"},
+    "plantTempF": {"min": 45, "max": 70},
+    "growTempF": {"min": 20, "max": 95},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 730, "daysMax": 1095}
+    ],
+    "productiveDays": 3650,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 25, "containerOk": true, "minContainerGal": 15, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 4, "everyDaysIndoor": 4},
+    "care": {
+      "dailyMinutes": 3,
+      "weeklyMinutes": 20,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 60, "note": "Use an acid-forming fertilizer made for azaleas"},
+        {"type": "prune", "everyDays": 365, "note": "Remove old canes in winter"},
+        {"type": "harvest", "everyDays": 3, "note": "Pick only fully blue berries"}
+      ]
+    },
+    "tips": [
+      "Needs acidic soil (pH 4.5–5.5); use a pine-bark mix in pots.",
+      "Plant two different varieties so the flowers cross-pollinate."
+    ],
+    "image": {"asset": "assets/plants/images/rabbiteye-blueberry.webp", "credit": "Jerry A. Payne, USDA Agricultural Research Service, Bugwood.org", "license": "CC BY 3.0 US", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vacciniumvirgatum.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "meyer-lemon",
+    "commonName": "Meyer Lemon",
+    "scientificName": "Citrus × meyeri",
+    "category": "fruit",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "winter-interest"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": {"min": "9a", "max": "11b"},
+    "plantTempF": {"min": 55, "max": 75},
+    "growTempF": {"min": 30, "max": 95},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 730, "daysMax": 1095}
+    ],
+    "productiveDays": 3650,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 49, "containerOk": true, "minContainerGal": 15, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 5, "everyDaysIndoor": 5},
+    "care": {
+      "dailyMinutes": 5,
+      "weeklyMinutes": 30,
+      "tasks": [
+        {"type": "fertilize", "everyDays": 60, "note": "Feed with a citrus fertilizer in the growing season"},
+        {"type": "prune", "everyDays": 365, "note": "Trim dead wood and crossing branches in late winter"},
+        {"type": "harvest", "everyDays": 14, "note": "Pick when fruit is fully yellow-orange"}
+      ]
+    },
+    "tips": [
+      "Move pots to shelter when a hard freeze is forecast.",
+      "Good drainage matters; never let the pot sit in standing water."
+    ],
+    "image": {"asset": "assets/plants/images/meyer-lemon.webp", "credit": "Debra Roby", "license": "CC BY 2.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Meyer_Lemon.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "fig",
+    "commonName": "Fig",
+    "scientificName": "Ficus carica",
+    "category": "fruit",
+    "purposes": ["food", "design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["deciduous", "perennial"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": {"min": "7a", "max": "10b"},
+    "plantTempF": {"min": 45, "max": 70},
+    "growTempF": {"min": 15, "max": 100},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 730, "daysMax": 1095}
+    ],
+    "productiveDays": 3650,
+    "maturityKind": "harvest",
+    "space": {"sqFtPerPlant": 100, "containerOk": true, "minContainerGal": 15, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 7, "everyDaysIndoor": 7},
+    "care": {
+      "dailyMinutes": 3,
+      "weeklyMinutes": 20,
+      "tasks": [
+        {"type": "prune", "everyDays": 365, "note": "Prune in late winter while dormant"},
+        {"type": "fertilize", "everyDays": 90, "note": "Light balanced feed in spring and early summer"},
+        {"type": "harvest", "everyDays": 7, "note": "Pick figs that are soft and drooping on the stem"}
+      ]
+    },
+    "tips": [
+      "Mulch the base well; cold can kill top growth, but roots usually resprout.",
+      "Figs do not ripen after picking, so wait until they are soft."
+    ],
+    "image": {"asset": "assets/plants/images/fig.webp", "credit": "Stefan Thiesen", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ripe_fig_fruit_on_tree_(Ficus_Carica)_in_Southern_France.JPG"},
+    "source": "curated"
+  },
+  {
+    "id": "nasturtium",
+    "commonName": "Nasturtium",
+    "scientificName": "Tropaeolum majus",
+    "category": "flower",
+    "purposes": ["design", "food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["full", "partial"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 35, "max": 85},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 35, "daysMax": 52}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 2, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 4, "everyDaysIndoor": 4},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 14, "note": "Pinch off spent flowers to keep new blooms coming"}
+      ]
+    },
+    "tips": [
+      "Poor soil gives more flowers; skip the fertilizer.",
+      "Flowers and leaves are edible with a peppery bite."
+    ],
+    "image": {"asset": "assets/plants/images/nasturtium.webp", "credit": "Tournasol7", "license": "CC BY 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tropaeolum_majus_flower_(1).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "petunia",
+    "commonName": "Petunia",
+    "scientificName": "Petunia × atkinsiana",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 55, "max": 80},
+    "growTempF": {"min": 35, "max": 95},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 45},
+      {"method": "seed", "daysMin": 70, "daysMax": 85}
+    ],
+    "productiveDays": 90,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 14, "note": "Pinch off spent blooms and leggy stems"},
+        {"type": "fertilize", "everyDays": 14, "note": "Liquid bloom fertilizer"}
+      ]
+    },
+    "tips": [
+      "Plant in fall or early spring; summer heat burns them out.",
+      "Cut back leggy plants by half to push fresh growth."
+    ],
+    "image": {"asset": "assets/plants/images/petunia.webp", "credit": "Anik Sarker", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Petunia_flowers_in_BD.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "pansy",
+    "commonName": "Pansy",
+    "scientificName": "Viola × wittrockiana",
+    "category": "flower",
+    "purposes": ["design", "food"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 1,
+    "sun": ["full", "partial"],
+    "zones": null,
+    "plantTempF": {"min": 45, "max": 75},
+    "growTempF": {"min": 20, "max": 85},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 30, "daysMax": 45},
+      {"method": "seed", "daysMin": 75, "daysMax": 100}
+    ],
+    "productiveDays": 120,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 0.5, "containerOk": true, "minContainerGal": 1, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 7, "note": "Deadhead faded flowers to keep blooming"},
+        {"type": "fertilize", "everyDays": 21, "note": "Light liquid feed"}
+      ]
+    },
+    "tips": [
+      "Set out in fall for color all winter; they fade when summer heat arrives.",
+      "Pick off spent blooms before they set seed."
+    ],
+    "image": {"asset": "assets/plants/images/pansy.webp", "credit": "George E. Koronaios", "license": "CC BY-SA 2.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pansy_(Viola_Tricolor_Var._Hortensis)_in_Athens_(30_April_2023).jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "snapdragon",
+    "commonName": "Snapdragon",
+    "scientificName": "Antirrhinum majus",
+    "category": "flower",
+    "purposes": ["design"],
+    "lifecycle": "annual",
+    "seasonTags": ["cool-season"],
+    "difficulty": 2,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 50, "max": 75},
+    "growTempF": {"min": 25, "max": 85},
+    "frostTolerance": "light",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 45, "daysMax": 60},
+      {"method": "seed", "daysMin": 90, "daysMax": 110}
+    ],
+    "productiveDays": 60,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 1, "containerOk": true, "minContainerGal": 2, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 3, "everyDaysIndoor": 3},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 7, "note": "Cut spent flower spikes to trigger side shoots"},
+        {"type": "fertilize", "everyDays": 28, "note": "Light balanced feed"}
+      ]
+    },
+    "tips": [
+      "Plant in fall in Louisiana for spring color before the heat.",
+      "Water at the base to avoid rust and leaf spots."
+    ],
+    "image": {"asset": "assets/plants/images/snapdragon.webp", "credit": "H. Zell", "license": "CC BY-SA 3.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Antirrhinum_majus_F1_%27Rocket_Orchid%27.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "sunflower",
+    "commonName": "Sunflower",
+    "scientificName": "Helianthus annuus",
+    "category": "flower",
+    "purposes": ["design", "food"],
+    "lifecycle": "annual",
+    "seasonTags": ["warm-season"],
+    "difficulty": 1,
+    "sun": ["full"],
+    "zones": null,
+    "plantTempF": {"min": 55, "max": 85},
+    "growTempF": {"min": 50, "max": 98},
+    "frostTolerance": "none",
+    "humidity": "any",
+    "starts": [
+      {"method": "seed", "daysMin": 70, "daysMax": 100}
+    ],
+    "productiveDays": 21,
+    "maturityKind": "bloom",
+    "space": {"sqFtPerPlant": 2, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 5, "everyDaysIndoor": 5},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "other", "everyDays": 7, "note": "Stake tall varieties after strong storms"},
+        {"type": "fertilize", "everyDays": 28, "note": "Balanced feed until buds form"}
+      ]
+    },
+    "tips": [
+      "Sow seeds where they will grow; they dislike root disturbance.",
+      "Tall varieties need full sun and a sturdy stake in wind."
+    ],
+    "image": {"asset": "assets/plants/images/sunflower.webp", "credit": "Bruce Fritz, U.S. Department of Agriculture", "license": "Public domain", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sunflowers_helianthus_annuus.jpg"},
+    "source": "curated"
+  },
+  {
+    "id": "boxwood",
+    "commonName": "Boxwood",
+    "scientificName": "Buxus sempervirens",
+    "category": "shrub",
+    "purposes": ["design"],
+    "lifecycle": "perennial",
+    "seasonTags": ["evergreen", "perennial"],
+    "difficulty": 1,
+    "sun": ["partial", "full"],
+    "zones": {"min": "5a", "max": "8b"},
+    "plantTempF": {"min": 45, "max": 75},
+    "growTempF": {"min": 10, "max": 95},
+    "frostTolerance": "hard",
+    "humidity": "any",
+    "starts": [
+      {"method": "transplant", "daysMin": 60, "daysMax": 120}
+    ],
+    "productiveDays": 365,
+    "maturityKind": "establish",
+    "space": {"sqFtPerPlant": 16, "containerOk": true, "minContainerGal": 5, "indoorOk": false},
+    "water": {"need": "medium", "everyDaysOutdoor": 5, "everyDaysIndoor": 5},
+    "care": {
+      "dailyMinutes": 0,
+      "weeklyMinutes": 10,
+      "tasks": [
+        {"type": "prune", "everyDays": 90, "note": "Shear lightly to shape; do not cut into bare wood"},
+        {"type": "fertilize", "everyDays": 180, "note": "Slow-release feed in spring"}
+      ]
+    },
+    "tips": [
+      "Mulch to keep roots cool; heat and drought stress it.",
+      "Water at the base to cut down on leaf blight."
+    ],
+    "image": {"asset": "assets/plants/images/boxwood.webp", "credit": "Acabashi", "license": "CC BY-SA 4.0", "sourceUrl": "https://commons.wikimedia.org/wiki/File:Garden_path_box_Buxus_sempervirens_hedges_Easton_Lodge_Gardens_walled_garden,_Little_Easton_Essex,_England.jpg"},
+    "source": "curated"
   }
 ]
