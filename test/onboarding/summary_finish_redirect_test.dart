@@ -16,7 +16,10 @@ import 'package:geaux_farm/features/onboarding/data/profile_writer.dart';
 import 'package:geaux_farm/features/onboarding/domain/space.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/onboarding/presentation/onboarding_draft_provider.dart';
+import 'package:geaux_farm/app/widgets/widgets.dart';
 import 'package:geaux_farm/features/onboarding/presentation/onboarding_routes.dart';
+import 'package:geaux_farm/features/onboarding/presentation/profile_summary_screen.dart';
+import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
 import 'package:geaux_farm/features/weather/data/weather_provider.dart';
@@ -36,18 +39,27 @@ import 'finished_draft.dart';
 // file models it: the write still goes through the real ProfileWriter, but
 // the profile the router reads arrives only after [_publishDelay].
 const _publishDelay = Duration(milliseconds: 200);
+
+/// How long Finish waits for the profile before it gives up; mirrors
+/// `_routingStateTimeout` in profile_summary_screen.dart.
+const _routingStateTimeout = Duration(seconds: 5);
 final _finishedAt = DateTime(2026, 10, 7, 9, 41);
 
 /// A real writer that publishes the saved profile late, as the device's
 /// Drift stream query does.
 class _LateStreamWriter extends ProfileWriter {
-  _LateStreamWriter(super.db, this._publish);
+  _LateStreamWriter(super.db, this._publish, {this.publishes = true});
 
   final void Function(UserProfile) _publish;
+
+  /// False stands in for a stream that has gone quiet: the write lands,
+  /// but the router never sees the finished profile.
+  final bool publishes;
 
   @override
   Future<void> save(UserProfile profile, Space space) async {
     await super.save(profile, space);
+    if (!publishes) return;
     Future<void>.delayed(_publishDelay, () => _publish(profile));
   }
 }
@@ -55,7 +67,10 @@ class _LateStreamWriter extends ProfileWriter {
 /// The whole app with [finishedDraft] at OB-07 and a profile stream that
 /// starts un-onboarded and only reports completion [_publishDelay] after
 /// the write.
-Future<ProviderContainer> _pumpSummary(WidgetTester tester) async {
+Future<ProviderContainer> _pumpSummary(
+  WidgetTester tester, {
+  bool publishes = true,
+}) async {
   final profiles = StreamController<UserProfile>();
   addTearDown(profiles.close);
   profiles.add(defaultUserProfile);
@@ -84,8 +99,11 @@ Future<ProviderContainer> _pumpSummary(WidgetTester tester) async {
           ),
         ),
         profileWriterProvider.overrideWith(
-          (ref) =>
-              _LateStreamWriter(ref.watch(appDatabaseProvider), profiles.add),
+          (ref) => _LateStreamWriter(
+            ref.watch(appDatabaseProvider),
+            profiles.add,
+            publishes: publishes,
+          ),
         ),
         userProfileProvider.overrideWith((ref) => profiles.stream),
       ],
@@ -127,24 +145,105 @@ Future<Uri> _finish(
   return duringWrite;
 }
 
-void main() {
-  for (final button in ['FIND MY FIRST PLANT', "I'LL SET UP LATER"]) {
-    testWidgets('$button lands on Home when the profile publishes late', (
-      tester,
-    ) async {
-      final c = await _pumpSummary(tester);
-      final duringWrite = await _finish(tester, c, button);
+/// `user_profile.first_plant_prompt_dismissed` as actually stored.
+Future<bool> _dismissedInDb(WidgetTester tester, ProviderContainer c) async {
+  final db = c.read(appDatabaseProvider);
+  final row = await tester.runAsync(
+    () => (db.select(
+      db.userProfileTable,
+    )..where((t) => t.id.equals(1))).getSingleOrNull(),
+  );
+  return row?.firstPlantPromptDismissed ?? false;
+}
 
-      // No Welcome flash: Finish holds OB-07 until the router can see the
-      // finished profile.
-      expect(duringWrite.path, OnboardingRoutes.summary);
-      expect(routerLocation(c).path, '/home');
-      expect(find.byType(HomeFirstRunScreen), findsOneWidget);
-      expect(
-        c.read(userProfileProvider).requireValue.onboardingCompletedAt,
-        _finishedAt,
-      );
-      await unmountApp(tester);
-    });
-  }
+void main() {
+  testWidgets('Find my first plant lands on Home when the profile '
+      'publishes late', (tester) async {
+    final c = await _pumpSummary(tester);
+    final duringWrite = await _finish(tester, c, 'FIND MY FIRST PLANT');
+
+    // No Welcome flash: Finish holds OB-07 until the router can see the
+    // finished profile.
+    expect(duringWrite.path, OnboardingRoutes.summary);
+    expect(routerLocation(c).path, '/home');
+    expect(find.byType(HomeFirstRunScreen), findsOneWidget);
+    expect(
+      c.read(userProfileProvider).requireValue.onboardingCompletedAt,
+      _finishedAt,
+    );
+    // HM-01, the carousel: this branch does not dismiss the prompt.
+    expect(await _dismissedInDb(tester, c), isFalse);
+    await unmountApp(tester);
+  });
+
+  testWidgets("I'll set up later lands on HM-01b with the prompt dismissed", (
+    tester,
+  ) async {
+    final c = await _pumpSummary(tester);
+    final duringWrite = await _finish(tester, c, "I'LL SET UP LATER");
+
+    expect(duringWrite.path, OnboardingRoutes.summary);
+    expect(routerLocation(c).path, '/home');
+    expect(find.byType(HomeFirstRunScreen), findsOneWidget);
+    expect(
+      c.read(userProfileProvider).requireValue.onboardingCompletedAt,
+      _finishedAt,
+    );
+    // The branch that distinguishes this case from the one above, read
+    // back from the row rather than the notifier's optimistic state, so
+    // the dismiss write has to have landed.
+    expect(await _dismissedInDb(tester, c), isTrue);
+    await unmountApp(tester);
+  });
+
+  testWidgets('a profile that never publishes leaves OB-07 on screen with '
+      'the buttons usable again', (tester) async {
+    final c = await _pumpSummary(tester, publishes: false);
+
+    await tester.tap(find.text('FIND MY FIRST PLANT'));
+    await _settleWrite(tester);
+    // Past the point where Finish gives up waiting.
+    await tester.pump(_routingStateTimeout + const Duration(seconds: 1));
+    await settleDrift(tester);
+
+    // Never stranded on a step the user already finished.
+    expect(routerLocation(c).path, OnboardingRoutes.summary);
+    expect(find.byType(ProfileSummaryScreen), findsOneWidget);
+    expect(find.byType(WelcomeScreen), findsNothing);
+    // The write did land, so a retry is the way out and must be possible.
+    expect(
+      tester
+          .widget<GeauxButton>(
+            find.widgetWithText(GeauxButton, 'FIND MY FIRST PLANT'),
+          )
+          .onPressed,
+      isNotNull,
+    );
+    await unmountApp(tester);
+  });
+
+  testWidgets('a summary row cannot be opened while Finish is saving', (
+    tester,
+  ) async {
+    final c = await _pumpSummary(tester);
+
+    await tester.tap(find.text('FIND MY FIRST PLANT'));
+    await _settleWrite(tester);
+    // Mid-save: the profile has not published yet.
+    expect(routerLocation(c).path, OnboardingRoutes.summary);
+
+    await tester.tap(find.text('SUN'));
+    await _settleWrite(tester);
+    expect(
+      routerLocation(c).path,
+      OnboardingRoutes.summary,
+      reason: 'a row tap must not unmount the screen mid-save',
+    );
+
+    // The Finish the user asked for still completes.
+    await tester.pump(_publishDelay * 2);
+    await settleDrift(tester);
+    expect(routerLocation(c).path, '/home');
+    await unmountApp(tester);
+  });
 }
