@@ -17,6 +17,7 @@ import '../features/onboarding/presentation/profile_summary_screen.dart';
 import '../features/onboarding/presentation/space_step_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
 import '../features/recommendations/presentation/plant_detail_screen.dart';
+import '../features/recommendations/presentation/recommendations_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/weather/presentation/weather_screen.dart';
 import 'tab_shell.dart';
@@ -108,7 +109,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 path: '/home',
                 builder: (context, state) => const HomeFirstRunScreen(),
                 routes: [
-                  _placeholder('recommendations', 'RC-01 Recommendations'),
+                  GoRoute(
+                    path: 'recommendations',
+                    builder: (context, state) => const RecommendationsScreen(),
+                  ),
                 ],
               ),
             ],

@@ -18,6 +18,7 @@ import 'package:geaux_farm/features/onboarding/presentation/profile_summary_scre
 import 'package:geaux_farm/features/onboarding/presentation/space_step_screen.dart';
 import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:geaux_farm/features/recommendations/presentation/plant_detail_screen.dart';
+import 'package:geaux_farm/features/recommendations/presentation/recommendations_screen.dart';
 import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
 import 'package:geaux_farm/features/weather/presentation/weather_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -135,7 +136,6 @@ void main() {
   ) async {
     final router = await _pumpApp(tester, onboardedProfile);
     const placeholders = {
-      '/home/recommendations': 'RC-01 Recommendations',
       '/settings': 'Settings',
       '/settings/edit/space': 'OB-07 Edit step',
       '/garden': 'GD-01 My Garden',
@@ -153,6 +153,7 @@ void main() {
 
     const screens = {
       onboardingStart: WelcomeScreen,
+      '/home/recommendations': RecommendationsScreen,
       '/onboarding/location': LocationScreen,
       '/onboarding/climate': ClimateRevealScreen,
       '/onboarding/space': SpaceStepScreen,
