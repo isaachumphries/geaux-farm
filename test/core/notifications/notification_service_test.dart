@@ -297,6 +297,16 @@ void main() {
       expect(plugin.permissionRequests, 1);
       expect(await _permissionAsked(db), isTrue);
     });
+
+    test('markPermissionAsked records the prompt without asking', () async {
+      await _seedProfile(db);
+
+      await service().markPermissionAsked();
+
+      expect(plugin.permissionRequests, 0);
+      expect(plugin.initializeCount, 0);
+      expect(await _permissionAsked(db), isTrue);
+    });
   });
 
   group('cancel and pending', () {
@@ -329,6 +339,8 @@ void main() {
       ('care?date=2026-13-45', '/care'),
       ('care?date=2026-02-30', '/care'),
       ('care', '/care'),
+      ('weather', '/weather'),
+      ('weather?date=2026-05-14', '/care'),
       ('unknown', '/care'),
       ('', '/care'),
       (null, '/care'),

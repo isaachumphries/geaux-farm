@@ -8,6 +8,7 @@ import '../../../app/widgets/widgets.dart';
 import '../../catalog/domain/plant.dart';
 import '../application/clock_provider.dart';
 import '../application/plant_detail_provider.dart';
+import '../domain/scored_plant.dart';
 import 'widgets/compat_badge.dart';
 import 'widgets/maintenance_pill.dart';
 import 'widgets/month_strip.dart';
@@ -25,8 +26,9 @@ class PlantDetailScreen extends ConsumerWidget {
 
   final String plantId;
 
-  /// Opens the PD-02 grow flow (#23). Null disables the button.
-  final VoidCallback? onGrow;
+  /// Opens the PD-02 grow flow (#23) for the plant as scored here. Null
+  /// disables the button.
+  final ValueChanged<ScoredPlant>? onGrow;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -59,12 +61,13 @@ class _DetailBody extends StatelessWidget {
 
   final PlantDetailView view;
   final DateTime today;
-  final VoidCallback? onGrow;
+  final ValueChanged<ScoredPlant>? onGrow;
 
   @override
   Widget build(BuildContext context) {
     final plant = view.plant;
     final compat = view.compat;
+    final grow = onGrow;
     final state = PlantCardState.of(compat, view.setup);
     final inSeasonMonths = {
       for (var i = 0; i < compat.monthStrip.length; i++)
@@ -179,7 +182,9 @@ class _DetailBody extends StatelessWidget {
               child: GeauxButton(
                 label: 'Grow this',
                 icon: Symbols.add_rounded,
-                onPressed: onGrow,
+                onPressed: grow == null
+                    ? null
+                    : () => grow(ScoredPlant(view.plant, view.compat)),
               ),
             ),
           ),

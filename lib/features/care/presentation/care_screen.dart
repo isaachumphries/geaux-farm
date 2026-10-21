@@ -174,7 +174,8 @@ CareEventType _eventTypeOf(CareTaskKind kind) => switch (kind) {
   CareTaskKind.other => CareEventType.note,
 };
 
-TaskRowType _rowTypeOf(CareTaskKind kind) => switch (kind) {
+/// The [TaskRow] type for a scheduled task's kind (CR-01 and HM-02).
+TaskRowType taskRowTypeOf(CareTaskKind kind) => switch (kind) {
   CareTaskKind.water => TaskRowType.water,
   CareTaskKind.fertilize => TaskRowType.fertilize,
   CareTaskKind.prune => TaskRowType.prune,
@@ -233,7 +234,7 @@ class _List extends ConsumerWidget {
       children: [
         if (overdue.isNotEmpty)
           _Group(
-            header: const _GroupHeader(
+            header: const CareGroupHeader(
               icon: Symbols.error_rounded,
               label: 'Overdue',
               color: AppColors.soil900,
@@ -245,7 +246,7 @@ class _List extends ConsumerWidget {
           ),
         for (final start in starts)
           _Group(
-            header: _GroupHeader(
+            header: CareGroupHeader(
               icon: Symbols.schedule_rounded,
               label: formatClock(context, start),
             ),
@@ -255,7 +256,7 @@ class _List extends ConsumerWidget {
           ),
         if (outside.isNotEmpty)
           _Group(
-            header: const _GroupHeader(
+            header: const CareGroupHeader(
               icon: Symbols.schedule_rounded,
               label: outsideFreeTimesCopy,
             ),
@@ -275,8 +276,11 @@ String formatClock(BuildContext context, DateTime t) =>
       alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
     );
 
-class _GroupHeader extends StatelessWidget {
-  const _GroupHeader({
+/// A task group's overline header: a slot time, "Overdue", or "Outside
+/// your free times" (CR-01, and HM-02's Today).
+class CareGroupHeader extends StatelessWidget {
+  const CareGroupHeader({
+    super.key,
     required this.icon,
     required this.label,
     this.color = AppColors.soil600,
@@ -336,7 +340,7 @@ class _Group extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: TaskRow(
                 key: ValueKey(_keyOf(e.task)),
-                type: _rowTypeOf(e.task.kind),
+                type: taskRowTypeOf(e.task.kind),
                 state: _stateOf(e),
                 plantName: e.task.nickname,
                 note: e.task.note,

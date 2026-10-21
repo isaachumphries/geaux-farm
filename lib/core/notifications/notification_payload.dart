@@ -1,10 +1,12 @@
 /// Maps a notification tap payload to the route it should open.
 ///
-/// Care payloads have the form `care?date=YYYY-MM-DD` (plan/05). Anything else,
+/// Care payloads have the form `care?date=YYYY-MM-DD` (plan/05). Weather
+/// alerts carry [weatherAlertPayload] and open WX-01. Anything else,
 /// including a malformed or impossible date, falls back to the care schedule
 /// without a date.
 String routeForPayload(String? payload) {
   if (payload == null) return _careFallback;
+  if (payload == weatherAlertPayload) return '/weather';
   final uri = Uri.tryParse(payload);
   if (uri == null || uri.path != 'care') return _careFallback;
   final date = uri.queryParameters['date'];
@@ -13,6 +15,9 @@ String routeForPayload(String? payload) {
 }
 
 const _careFallback = '/care';
+
+/// Payload of a frost-eve weather alert (plan/06).
+const weatherAlertPayload = 'weather';
 
 final _datePattern = RegExp(r'^([0-9]{4})-([0-9]{2})-([0-9]{2})$');
 

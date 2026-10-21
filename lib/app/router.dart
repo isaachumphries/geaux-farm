@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../features/care/presentation/care_screen.dart';
 import '../features/community/presentation/community_feed_screen.dart';
+import '../features/garden/presentation/grow_this_sheet.dart';
+import '../features/garden/presentation/my_garden_screen.dart';
+import '../features/garden/presentation/planting_detail_screen.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
 import '../features/onboarding/data/profile_providers.dart';
 import '../features/onboarding/domain/user_profile.dart';
@@ -119,11 +122,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              _placeholder(
-                '/garden',
-                'GD-01 My Garden',
+              GoRoute(
+                path: '/garden',
+                builder: (context, state) => const MyGardenScreen(),
                 routes: [
-                  _placeholder('planting/:id', 'GD-02 Planting detail'),
+                  GoRoute(
+                    path: 'planting/:id',
+                    builder: (context, state) => PlantingDetailScreen(
+                      plantingId: state.pathParameters['id']!,
+                    ),
+                  ),
                   _placeholder('project/:id', 'GD-03 Guide project'),
                 ],
               ),
@@ -156,8 +164,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // Full-screen routes above the tab bar.
       GoRoute(
         path: '/plants/:plantId',
-        builder: (context, state) =>
-            PlantDetailScreen(plantId: state.pathParameters['plantId']!),
+        builder: (context, state) => PlantDetailScreen(
+          plantId: state.pathParameters['plantId']!,
+          onGrow: (plant) => pickPlant(context, plant),
+        ),
       ),
       GoRoute(
         path: '/weather',
