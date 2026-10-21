@@ -86,6 +86,17 @@ void main() {
     expect(s.inserts, hasLength(1));
   });
 
+  test('a note is measured after trimming, as the column is', () async {
+    final s = _server();
+
+    // 205 characters, but 195 once trimmed: the column's
+    // char_length(note) <= 200 accepts it, so the client must too.
+    final padded = '${'x' * 195}          ';
+    await s.repo.reportGuide('g1', reason: ReportReason.other, note: padded);
+
+    expect(s.inserts.single['note'], 'x' * 195);
+  });
+
   test('reporting the same guide twice is success, not an error', () async {
     final s = _server(status: 409);
 

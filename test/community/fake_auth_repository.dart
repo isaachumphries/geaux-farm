@@ -5,7 +5,7 @@ import 'package:geaux_farm/features/community/domain/auth_user.dart';
 
 /// In-memory [AuthRepository]. [calls] records every method call in order.
 class FakeAuthRepository implements AuthRepository {
-  FakeAuthRepository({this.user});
+  FakeAuthRepository({this.user, this.verifiedHasProfile = false});
 
   final calls = <String>[];
   final _changes = StreamController<AuthUser?>.broadcast();
@@ -24,7 +24,7 @@ class FakeAuthRepository implements AuthRepository {
 
   /// What [verifyEmailCode] signs in as, unless the user has a profile.
   String verifiedEmail = 'isaac@example.com';
-  bool verifiedHasProfile = false;
+  bool verifiedHasProfile;
 
   @override
   AuthUser? get currentUser => user;
