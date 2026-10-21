@@ -18,6 +18,7 @@ import 'package:geaux_farm/features/recommendations/presentation/widgets/compat_
 import '../helpers/file_asset_bundle.dart';
 import '../helpers/fixed_climate.dart';
 import 'fixtures/baton_rouge.dart' as fx;
+import 'fixtures/scored.dart';
 
 const _monthNames = [
   'January',
@@ -306,5 +307,76 @@ void main() {
   ) async {
     await _pump(tester, plantId: 'no-such-plant', overrides: _overrides());
     expect(find.text('This plant is not in the catalog.'), findsOneWidget);
+  });
+
+  for (final count in [2, 3, 4]) {
+    testWidgets('a record with $count tips shows all of them in order', (
+      tester,
+    ) async {
+      final tips = [for (var i = 1; i <= count; i++) 'Tip number $i here.'];
+      final plant = kaleWith({'tips': tips});
+      await _pump(
+        tester,
+        plantId: plant.id,
+        overrides: [
+          ..._overrides(),
+          catalogProvider.overrideWith((ref) async => [plant]),
+        ],
+      );
+      final tops = <double>[];
+      for (final tip in tips) {
+        final finder = find.text(tip);
+        await tester.ensureVisible(finder);
+        await tester.pump();
+        tops.add(tester.getTopLeft(finder).dy);
+      }
+      expect(find.textContaining('Tip number'), findsNWidgets(count));
+      expect(tops, [...tops]..sort());
+    });
+  }
+
+  testWidgets('a plant with no daily care shows a dash, not 0m', (
+    tester,
+  ) async {
+    final plant = kaleWith({
+      'care': {
+        ...fx.rawKale()['care'] as Map<String, dynamic>,
+        'dailyMinutes': 0,
+      },
+    });
+    await _pump(
+      tester,
+      plantId: plant.id,
+      overrides: [
+        ..._overrides(),
+        catalogProvider.overrideWith((ref) async => [plant]),
+      ],
+    );
+    expect(find.text('Daily care'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+    expect(find.text('~0m'), findsNothing);
+  });
+
+  testWidgets('sweet-basil: April is a gold month cell and December is not', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await _pump(tester, plantId: 'sweet-basil', overrides: _overrides());
+    Color? fillOf(String month) {
+      final cell = find.byWidgetPredicate(
+        (w) =>
+            w is Semantics && (w.properties.label?.startsWith(month) ?? false),
+      );
+      final box = tester
+          .widget<DecoratedBox>(
+            find.descendant(of: cell, matching: find.byType(DecoratedBox)),
+          )
+          .decoration;
+      return (box as BoxDecoration).color;
+    }
+
+    expect(fillOf('April'), AppColors.geauxGold);
+    expect(fillOf('December'), isNot(AppColors.geauxGold));
+    handle.dispose();
   });
 }
