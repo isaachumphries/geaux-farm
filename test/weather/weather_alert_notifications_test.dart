@@ -191,10 +191,15 @@ void main() {
       expect(pending.single.scheduledDate.hour, 18);
     });
 
-    test('no frost, or an indoor planting, schedules nothing', () async {
+    // One setUpSync per test: each builds its own AppDatabase and
+    // ProviderContainer, and two of them alive at once make drift warn
+    // about a second database on the same executor (#126).
+    test('a warm night schedules nothing', () async {
       final (_, warm, _) = await setUpSync(days: [_day(2, tmin: 21)]);
       expect(warm.pendingById.keys.where(isWeatherAlertId), isEmpty);
+    });
 
+    test('an indoor planting schedules nothing', () async {
       final (_, indoor, _) = await setUpSync(
         days: [_day(2, tmin: 10)],
         setup: GrowSetup.indoor,
