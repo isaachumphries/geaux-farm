@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geaux_farm/core/http.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
 import 'package:geaux_farm/features/weather/data/weather_provider.dart';
 import 'package:geaux_farm/features/weather/data/weather_repository.dart';
