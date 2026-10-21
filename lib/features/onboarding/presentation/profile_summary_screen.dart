@@ -91,8 +91,8 @@ List<(String, String, String)> summaryRows(OnboardingDraft d) {
 }
 
 /// How long Finish waits for the saved profile to reach the router before
-/// navigating anyway, so a profile stream that never publishes leaves the
-/// user on a working screen instead of a dead button (#183).
+/// it gives up and offers the user a retry, so a profile stream that never
+/// publishes leaves a working screen instead of a dead button (#183).
 const _routingStateTimeout = Duration(seconds: 5);
 
 /// OB-07 Profile summary: every answer on one screen, then Finish. No step
@@ -132,26 +132,37 @@ class _ProfileSummaryScreenState extends ConsumerState<ProfileSummaryScreen> {
     // few turns after the transaction resolves. Navigating first hands the
     // redirect a profile that still looks un-onboarded, which bounces the
     // user back to OB-01 (#183).
-    await _awaitOnboardedProfile();
+    final published = await _awaitOnboardedProfile();
     if (!mounted) return;
+    if (!published) {
+      // Leaving now would hand the redirect that stale profile and strand
+      // the user on OB-01, where nothing pulls them back out. Staying put
+      // keeps Finish retryable instead: the write replaces its own row, so
+      // tapping again is safe.
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Couldn't save. Try again.")),
+      );
+      return;
+    }
     context.go('/home');
   }
 
-  /// Completes once [userProfileProvider] reports a finished onboarding,
-  /// or after [_routingStateTimeout].
-  Future<void> _awaitOnboardedProfile() async {
+  /// Whether [userProfileProvider] reported a finished onboarding within
+  /// [_routingStateTimeout].
+  Future<bool> _awaitOnboardedProfile() async {
     bool onboarded(AsyncValue<UserProfile> p) =>
         p.hasValue && p.requireValue.onboardingCompletedAt != null;
-    if (onboarded(ref.read(userProfileProvider))) return;
+    if (onboarded(ref.read(userProfileProvider))) return true;
     final published = Completer<void>();
     final subscription = ref.listenManual(userProfileProvider, (_, next) {
       if (onboarded(next) && !published.isCompleted) published.complete();
     });
     try {
       await published.future.timeout(_routingStateTimeout);
+      return true;
     } on TimeoutException {
-      // Fall through: the write succeeded, so Home is still the right
-      // destination even if the stream has gone quiet.
+      return false;
     } finally {
       subscription.close();
     }

@@ -16,7 +16,10 @@ import 'package:geaux_farm/features/onboarding/data/profile_writer.dart';
 import 'package:geaux_farm/features/onboarding/domain/space.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/onboarding/presentation/onboarding_draft_provider.dart';
+import 'package:geaux_farm/app/widgets/widgets.dart';
 import 'package:geaux_farm/features/onboarding/presentation/onboarding_routes.dart';
+import 'package:geaux_farm/features/onboarding/presentation/profile_summary_screen.dart';
+import 'package:geaux_farm/features/onboarding/presentation/welcome_screen.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
 import 'package:geaux_farm/features/weather/data/weather_provider.dart';
@@ -37,18 +40,26 @@ import 'finished_draft.dart';
 // the profile the router reads arrives only after [_publishDelay].
 const _publishDelay = Duration(milliseconds: 200);
 
+/// How long Finish waits for the profile before it gives up; mirrors
+/// `_routingStateTimeout` in profile_summary_screen.dart.
+const _routingStateTimeout = Duration(seconds: 5);
 final _finishedAt = DateTime(2026, 10, 7, 9, 41);
 
 /// A real writer that publishes the saved profile late, as the device's
 /// Drift stream query does.
 class _LateStreamWriter extends ProfileWriter {
-  _LateStreamWriter(super.db, this._publish);
+  _LateStreamWriter(super.db, this._publish, {this.publishes = true});
 
   final void Function(UserProfile) _publish;
+
+  /// False stands in for a stream that has gone quiet: the write lands,
+  /// but the router never sees the finished profile.
+  final bool publishes;
 
   @override
   Future<void> save(UserProfile profile, Space space) async {
     await super.save(profile, space);
+    if (!publishes) return;
     Future<void>.delayed(_publishDelay, () => _publish(profile));
   }
 }
@@ -56,7 +67,10 @@ class _LateStreamWriter extends ProfileWriter {
 /// The whole app with [finishedDraft] at OB-07 and a profile stream that
 /// starts un-onboarded and only reports completion [_publishDelay] after
 /// the write.
-Future<ProviderContainer> _pumpSummary(WidgetTester tester) async {
+Future<ProviderContainer> _pumpSummary(
+  WidgetTester tester, {
+  bool publishes = true,
+}) async {
   final profiles = StreamController<UserProfile>();
   addTearDown(profiles.close);
   profiles.add(defaultUserProfile);
@@ -85,8 +99,11 @@ Future<ProviderContainer> _pumpSummary(WidgetTester tester) async {
           ),
         ),
         profileWriterProvider.overrideWith(
-          (ref) =>
-              _LateStreamWriter(ref.watch(appDatabaseProvider), profiles.add),
+          (ref) => _LateStreamWriter(
+            ref.watch(appDatabaseProvider),
+            profiles.add,
+            publishes: publishes,
+          ),
         ),
         userProfileProvider.overrideWith((ref) => profiles.stream),
       ],
@@ -176,6 +193,32 @@ void main() {
     // back from the row rather than the notifier's optimistic state, so
     // the dismiss write has to have landed.
     expect(await _dismissedInDb(tester, c), isTrue);
+    await unmountApp(tester);
+  });
+
+  testWidgets('a profile that never publishes leaves OB-07 on screen with '
+      'the buttons usable again', (tester) async {
+    final c = await _pumpSummary(tester, publishes: false);
+
+    await tester.tap(find.text('FIND MY FIRST PLANT'));
+    await _settleWrite(tester);
+    // Past the point where Finish gives up waiting.
+    await tester.pump(_routingStateTimeout + const Duration(seconds: 1));
+    await settleDrift(tester);
+
+    // Never stranded on a step the user already finished.
+    expect(routerLocation(c).path, OnboardingRoutes.summary);
+    expect(find.byType(ProfileSummaryScreen), findsOneWidget);
+    expect(find.byType(WelcomeScreen), findsNothing);
+    // The write did land, so a retry is the way out and must be possible.
+    expect(
+      tester
+          .widget<GeauxButton>(
+            find.widgetWithText(GeauxButton, 'FIND MY FIRST PLANT'),
+          )
+          .onPressed,
+      isNotNull,
+    );
     await unmountApp(tester);
   });
 }
