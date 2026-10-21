@@ -142,4 +142,20 @@ void main() {
     await tester.tap(find.byIcon(Symbols.check_rounded));
     expect(done, 1);
   });
+
+  testWidgets('a title replaces the one built from the type and plant', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      const TaskRow(
+        type: TaskRowType.water,
+        state: TaskRowState.due,
+        plantName: 'Kale',
+        title: 'Water it in today',
+      ),
+    );
+    expect(find.text('Water it in today'), findsOneWidget);
+    expect(find.text('Water Kale'), findsNothing);
+  });
 }

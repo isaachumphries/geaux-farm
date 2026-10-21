@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../../app/theme.dart';
 import '../../../../app/widgets/widgets.dart';
 import '../../../catalog/domain/plant.dart';
+import '../../../catalog/presentation/plant_art.dart';
 import '../../../garden/domain/planting.dart';
 import '../../domain/compatibility.dart';
 import '../../domain/scored_plant.dart';
@@ -71,7 +72,9 @@ class PlantCard extends StatelessWidget {
       width: isList ? double.infinity : plantCardCompactWidth,
       child: GeauxCard(
         onTap: onTap,
-        padding: const EdgeInsets.all(AppBorders.width),
+        padding: EdgeInsets.all(
+          isList ? AppBorders.width + AppSpacing.md : AppBorders.width,
+        ),
         child: isList ? _listBody(p) : _compactBody(p),
       ),
     );
@@ -115,40 +118,32 @@ class PlantCard extends StatelessWidget {
     );
   }
 
-  /// Art tile on the left, 80 square; text on the right, with the "Plant now"
-  /// ribbon above the name when in season.
+  /// The category art as a rounded tile inset in the card, 80 square, with
+  /// the text on its right and the "Plant now" ribbon above the name when in
+  /// season.
   Widget _listBody(Plant p) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
-          borderRadius: const BorderRadius.horizontal(
-            left: Radius.circular(AppRadii.card - AppBorders.width),
-          ),
-          child: SizedBox(
-            width: _listArtSize,
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          child: SizedBox.square(
+            dimension: _listArtSize,
             child: CategoryArt(category: p.category, height: _listArtSize),
           ),
         ),
+        const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.sm,
-              AppSpacing.md,
-              AppSpacing.md,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (state == PlantCardState.inSeason) ...[
-                  const PlantNowRibbon(),
-                  const SizedBox(height: AppSpacing.xs),
-                ],
-                ..._details(p),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (state == PlantCardState.inSeason) ...[
+                const PlantNowRibbon(),
+                const SizedBox(height: AppSpacing.xs),
               ],
-            ),
+              ..._details(p),
+            ],
           ),
         ),
       ],
@@ -220,7 +215,8 @@ const double _artIconSize = 46;
 const double _highlightSize = _haloSize * 0.36;
 const double _highlightInset = _haloSize * 0.1;
 
-// RC-01 list art: an 80-square tile on the left of each list card.
+// RC-01 list art: an 80-square tile, its corners as round as the card's,
+// 12 in from the card's border (measured on the RC-01 export).
 const double _listArtSize = 80;
 
 class CategoryArt extends StatelessWidget {
@@ -235,39 +231,8 @@ class CategoryArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (Color tint, IconData icon, Color ink) = switch (category) {
-      PlantCategory.vegetable => (
-        AppColors.leaf100,
-        Symbols.eco_rounded,
-        AppColors.leaf500,
-      ),
-      PlantCategory.herb => (
-        AppColors.leaf100,
-        Symbols.spa_rounded,
-        AppColors.leaf700,
-      ),
-      PlantCategory.flower => (
-        AppColors.tileSky,
-        Symbols.local_florist_rounded,
-        AppColors.tileSkyLedge,
-      ),
-      PlantCategory.fruit => (
-        AppColors.tilePeach,
-        Symbols.nutrition_rounded,
-        AppColors.heat,
-      ),
-      PlantCategory.shrub => (
-        AppColors.tileSoil,
-        Symbols.park_rounded,
-        AppColors.tileSoilLedge,
-      ),
-      PlantCategory.houseplant => (
-        AppColors.leaf100,
-        Symbols.potted_plant_rounded,
-        AppColors.leaf700,
-      ),
-    };
     final scale = height / _artHeight;
+    final (:tint, :icon, :ink) = plantArtStyle(category);
     return Container(
       height: height,
       color: tint,

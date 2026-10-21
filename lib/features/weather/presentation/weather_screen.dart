@@ -8,9 +8,12 @@ import '../../../app/widgets/widgets.dart';
 import '../../climate/data/climate_provider.dart';
 import '../../onboarding/data/profile_providers.dart';
 import '../../onboarding/domain/user_profile.dart';
+import '../application/garden_alerts_provider.dart';
 import '../data/weather_provider.dart';
+import '../domain/garden_alerts.dart';
 import '../domain/weather.dart';
 import '../domain/weather_format.dart';
+import 'alert_banner.dart';
 import 'attribution_footer.dart';
 import 'climate_section.dart';
 import 'day_details.dart';
@@ -18,13 +21,12 @@ import 'week_strip.dart';
 import 'weather_hero.dart';
 import 'weather_mini.dart';
 
-/// WX-01: current conditions, the 7-day strip, today's sun times, "Your
-/// climate", and the Open-Meteo credit (plan/06 § Weather UI). Garden alerts
-/// (section 2) arrive with #29 and are absent until then.
+/// WX-01: current conditions, garden alerts, the 7-day strip, today's sun
+/// times, "Your climate", and the Open-Meteo credit (plan/06 § Weather UI).
 class WeatherScreen extends ConsumerWidget {
   const WeatherScreen({super.key});
 
-  static const offlineCopy = 'Showing saved weather';
+  static const offlineCopy = AlertBanner.offlineCopy;
   static const climateErrorCopy = 'Climate data unavailable';
 
   @override
@@ -73,6 +75,7 @@ class _Body extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
           ..._weatherSections(
             weather: weather,
+            alerts: ref.watch(gardenAlertsProvider).value ?? const [],
             now: now,
             metric: metric,
             onRetry: () => ref.read(provider.notifier).refresh(force: true),
@@ -89,6 +92,7 @@ class _Body extends ConsumerWidget {
 
   List<Widget> _weatherSections({
     required AsyncValue<WeatherState> weather,
+    required List<GardenAlert> alerts,
     required DateTime now,
     required bool metric,
     required VoidCallback onRetry,
@@ -121,12 +125,7 @@ class _Body extends ConsumerWidget {
         showsOfflineBanner(snapshot.fetchedAt, now);
     return [
       if (offline) ...[
-        const GeauxAlertBanner(
-          message: WeatherScreen.offlineCopy,
-          icon: Symbols.cloud_off_rounded,
-          accent: AppColors.soil600,
-          tint: AppColors.gold100,
-        ),
+        const AlertBanner.offline(),
         const SizedBox(height: AppSpacing.md),
       ],
       WeatherHero(snapshot: snapshot, metric: metric),
@@ -138,6 +137,10 @@ class _Body extends ConsumerWidget {
           style: AppText.caption.copyWith(color: AppColors.soil600),
         ),
       ),
+      for (final alert in alerts) ...[
+        const SizedBox(height: AppSpacing.md),
+        AlertBanner.alert(alert),
+      ],
       if (week.isNotEmpty) ...[
         const _SectionTitle('Next 7 days'),
         const SizedBox(height: AppSpacing.md),

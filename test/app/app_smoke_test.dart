@@ -5,8 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/app.dart';
+import 'package:geaux_farm/app/notification_wiring.dart';
+import 'package:geaux_farm/features/care/application/care_reminders.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_card.dart';
+import 'package:geaux_farm/features/weather/application/garden_alerts_provider.dart';
+import 'package:geaux_farm/features/weather/application/weather_resume.dart';
 
 import '../helpers/app_harness.dart';
 
@@ -48,5 +52,30 @@ void main() {
     expect(catalogIds, containsAll(ids));
 
     await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('the root keeps the notification and weather syncs alive', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: appOverrides(profile: onboardedProfile),
+        child: const GeauxFarmApp(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(GeauxFarmApp)),
+    );
+
+    // Only the app root watches these, so nothing else would build them.
+    expect(container.exists(notificationStartupProvider), isTrue);
+    expect(container.exists(careRemindersSyncProvider), isTrue);
+    expect(container.exists(weatherResumeRefreshProvider), isTrue);
+    expect(container.exists(weatherAlertsSyncProvider), isTrue);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(Duration.zero);
   });
 }

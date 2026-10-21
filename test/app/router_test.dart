@@ -6,6 +6,8 @@ import 'package:geaux_farm/app/router.dart';
 import 'package:geaux_farm/app/widgets/widgets.dart';
 import 'package:geaux_farm/features/care/presentation/care_screen.dart';
 import 'package:geaux_farm/features/community/presentation/community_feed_screen.dart';
+import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
+import 'package:geaux_farm/features/garden/presentation/planting_detail_screen.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
@@ -69,6 +71,14 @@ Finder _navTab(String label) => find.descendant(
 Future<void> _teardown(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox());
   await tester.pump(Duration.zero);
+}
+
+/// GD-02 is the real [PlantingDetailScreen], not a placeholder; check it
+/// is on screen for [id].
+void _expectPlantingDetail(WidgetTester tester, String id) {
+  final screen = find.byType(PlantingDetailScreen);
+  expect(screen, findsOneWidget);
+  expect(tester.widget<PlantingDetailScreen>(screen).plantingId, id);
 }
 
 void main() {
@@ -138,8 +148,6 @@ void main() {
     const placeholders = {
       '/settings': 'Settings',
       '/settings/edit/space': 'OB-07 Edit step',
-      '/garden': 'GD-01 My Garden',
-      '/garden/planting/p1': 'GD-02 Planting detail',
       '/garden/project/g1': 'GD-03 Guide project',
       '/community/guide/g1': 'CM-02 Guide detail',
       '/community/editor/new': 'CM-03 Editor',
@@ -151,9 +159,22 @@ void main() {
       expect(_title(tester), title, reason: path);
     }
 
+    const realScreens = {
+      '/home/recommendations': RecommendationsScreen,
+      '/garden': MyGardenScreen,
+    };
+    for (final MapEntry(key: path, value: type) in realScreens.entries) {
+      await _go(tester, router, path);
+      expect(_location(router).path, path);
+      expect(find.byType(type), findsOneWidget, reason: path);
+    }
+
+    await _go(tester, router, '/garden/planting/p1');
+    expect(_location(router).path, '/garden/planting/p1');
+    _expectPlantingDetail(tester, 'p1');
+
     const screens = {
       onboardingStart: WelcomeScreen,
-      '/home/recommendations': RecommendationsScreen,
       '/onboarding/location': LocationScreen,
       '/onboarding/climate': ClimateRevealScreen,
       '/onboarding/space': SpaceStepScreen,
@@ -172,6 +193,19 @@ void main() {
     }
     await _go(tester, router, '/home');
     expect(find.byType(HomeFirstRunScreen), findsOneWidget);
+    await _teardown(tester);
+  });
+
+  testWidgets('PD-01 "Grow this" is wired to the PD-02 sheet (#23)', (
+    tester,
+  ) async {
+    final router = await _pumpApp(tester, onboardedProfile);
+    await _go(tester, router, '/plants/kale');
+
+    final screen = tester.widget<PlantDetailScreen>(
+      find.byType(PlantDetailScreen),
+    );
+    expect(screen.onGrow, isNotNull);
     await _teardown(tester);
   });
 
@@ -202,7 +236,7 @@ void main() {
     await tester.tap(_navTab('Garden'));
     await tester.pump();
     await _go(tester, router, '/garden/planting/p1');
-    expect(_title(tester), 'GD-02 Planting detail');
+    _expectPlantingDetail(tester, 'p1');
 
     await tester.tap(_navTab('Care'));
     await tester.pump();

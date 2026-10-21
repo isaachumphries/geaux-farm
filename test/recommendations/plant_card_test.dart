@@ -252,6 +252,26 @@ void main() {
       expect(find.byIcon(Symbols.nutrition_rounded), findsOneWidget);
     });
 
+    testWidgets('draws an 80-square rounded tile inset 12 inside the border', (
+      tester,
+    ) async {
+      await _pumpList(tester, scored(kaleWith({})));
+
+      // The RC-01 frame: the tile sits 12 inside the 2-thick border and its
+      // corners are as round as the card's.
+      const inset = AppBorders.width + AppSpacing.md;
+      final art = find.byType(CategoryArt);
+      expect(tester.getSize(art), const Size.square(80));
+      expect(
+        tester.getTopLeft(art) - tester.getTopLeft(find.byType(PlantCard)),
+        const Offset(inset, inset),
+      );
+      final clip = tester.widget<ClipRRect>(
+        find.ancestor(of: art, matching: find.byType(ClipRRect)).first,
+      );
+      expect(clip.borderRadius, BorderRadius.circular(AppRadii.card));
+    });
+
     testWidgets('shows PLANT NOW only in the inSeason state', (tester) async {
       await _pumpList(
         tester,

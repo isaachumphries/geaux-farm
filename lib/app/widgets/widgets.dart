@@ -2,6 +2,7 @@ export 'alert_banner.dart';
 export 'bottom_nav.dart';
 export 'button.dart';
 export 'card.dart';
+export 'circle_button.dart';
 export 'empty_state.dart';
 export 'ledge_capsule.dart';
 export 'segmented_choice.dart';

@@ -11,7 +11,9 @@ import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
 import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/recommendations/application/plant_detail_provider.dart';
+import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/plant_detail_screen.dart';
+import 'package:geaux_farm/features/recommendations/presentation/widgets/compat_badge.dart';
 
 import '../helpers/file_asset_bundle.dart';
 import '../helpers/fixed_climate.dart';
@@ -68,7 +70,7 @@ Future<void> _pump(
   WidgetTester tester, {
   required String plantId,
   required List<Override> overrides,
-  VoidCallback? onGrow,
+  ValueChanged<ScoredPlant>? onGrow,
 }) async {
   tester.view.physicalSize = const Size(720, 1600);
   tester.view.devicePixelRatio = 2.0;
@@ -248,19 +250,22 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('Grow this calls onGrow once', (tester) async {
-    var taps = 0;
+  testWidgets('Grow this calls onGrow once with the plant as scored here', (
+    tester,
+  ) async {
+    final grown = <ScoredPlant>[];
     await _pump(
       tester,
       plantId: 'sweet-basil',
       overrides: _overrides(),
-      onGrow: () {
-        taps++;
-      },
+      onGrow: grown.add,
     );
     await tester.tap(find.text('GROW THIS'));
     await tester.pump();
-    expect(taps, 1);
+    expect(grown, hasLength(1));
+    expect(grown.single.plant.id, 'sweet-basil');
+    final badge = tester.widget<CompatBadge>(find.byType(CompatBadge).first);
+    expect(grown.single.compatibility.score, badge.score);
   });
 
   testWidgets('Grow this stays pinned while the body scrolls', (tester) async {

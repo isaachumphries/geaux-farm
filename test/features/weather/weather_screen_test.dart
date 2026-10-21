@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/widgets/widgets.dart';
+import 'package:geaux_farm/features/weather/application/garden_alerts_provider.dart';
+import 'package:geaux_farm/features/weather/domain/garden_alerts.dart';
 import 'package:geaux_farm/features/weather/domain/weather.dart';
 import 'package:geaux_farm/features/weather/domain/weather_format.dart';
+import 'package:geaux_farm/features/weather/presentation/alert_banner.dart';
 import 'package:geaux_farm/features/weather/presentation/attribution_footer.dart';
 import 'package:geaux_farm/features/weather/presentation/weather_hero.dart';
 import 'package:geaux_farm/features/weather/presentation/weather_screen.dart';
@@ -51,7 +54,7 @@ void main() {
     expect(find.text('Zone 8b'), findsOneWidget);
     expect(find.text(attributionText), findsOneWidget);
 
-    // Section 2 (alerts) is #29: nothing is drawn for it.
+    // Section 2: no outdoor plantings, so no alert is drawn.
     expect(find.byType(GeauxAlertBanner), findsNothing);
 
     final order = [
@@ -65,6 +68,48 @@ void main() {
     expect(order, orderedEquals([...order]..sort()));
     expect(order.toSet().length, order.length);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('section 2: garden alerts sit between today and the week', (
+    tester,
+  ) async {
+    await pumpWeatherScreen(
+      tester,
+      height: 2000,
+      extra: [
+        gardenAlertsProvider.overrideWith(
+          (ref) async => [
+            GardenAlert(
+              type: GardenAlertType.frost,
+              day: DateTime(2026, 10, 14),
+              message: 'Frost Wed: cover or bring in Kale',
+            ),
+            GardenAlert(
+              type: GardenAlertType.heat,
+              day: DateTime(2026, 10, 15),
+              message: 'Heat Thu: water early and shade young plants',
+            ),
+          ],
+        ),
+      ],
+    );
+    await tester.pump();
+
+    final banners = tester
+        .widgetList<AlertBanner>(find.byType(AlertBanner))
+        .toList();
+    expect(
+      [for (final b in banners) b.type],
+      [AlertBannerType.frost, AlertBannerType.heat],
+    );
+    final frost = _top(tester, find.text('Frost Wed: cover or bring in Kale'));
+    final heat = _top(
+      tester,
+      find.text('Heat Thu: water early and shade young plants'),
+    );
+    expect(_top(tester, find.text('TODAY · TUE, OCT 13')), lessThan(frost));
+    expect(frost, lessThan(heat));
+    expect(heat, lessThan(_top(tester, find.text('Next 7 days'))));
   });
 
   testWidgets('loading: spinner, no empty sections, footer still there', (
