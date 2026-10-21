@@ -19,6 +19,7 @@ import 'package:http/testing.dart';
 
 import 'app_harness.dart';
 import 'fixed_climate.dart';
+import 'in_memory_database.dart';
 
 final forecastFixture = File(
   'test/fixtures/open_meteo/forecast_baton_rouge.json',
@@ -69,6 +70,7 @@ class WeatherRig {
   }
 
   List<Override> overrides({UserProfile? profile, Override? climate}) => [
+    inMemoryDatabaseOverride(),
     userProfileProvider.overrideWith(
       (ref) => Stream.value(profile ?? onboardedProfile),
     ),
