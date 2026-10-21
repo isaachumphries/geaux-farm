@@ -199,7 +199,10 @@ class _ProfileSummaryScreenState extends ConsumerState<ProfileSummaryScreen> {
             _SummaryRow(
               label: label,
               value: value,
-              onTap: () => context.go(step),
+              // While Finish is saving, leaving for a step would unmount
+              // this screen and drop the navigation it is waiting to make
+              // (#183).
+              onTap: _saving ? null : () => context.go(step),
             ),
             const SizedBox(height: AppSpacing.sm),
           ],
@@ -218,7 +221,10 @@ class _SummaryRow extends StatelessWidget {
 
   final String label;
   final String value;
-  final VoidCallback onTap;
+
+  /// Null while Finish is saving: the row still shows its value, it just
+  /// cannot be opened.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

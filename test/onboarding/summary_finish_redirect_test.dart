@@ -221,4 +221,29 @@ void main() {
     );
     await unmountApp(tester);
   });
+
+  testWidgets('a summary row cannot be opened while Finish is saving', (
+    tester,
+  ) async {
+    final c = await _pumpSummary(tester);
+
+    await tester.tap(find.text('FIND MY FIRST PLANT'));
+    await _settleWrite(tester);
+    // Mid-save: the profile has not published yet.
+    expect(routerLocation(c).path, OnboardingRoutes.summary);
+
+    await tester.tap(find.text('SUN'));
+    await _settleWrite(tester);
+    expect(
+      routerLocation(c).path,
+      OnboardingRoutes.summary,
+      reason: 'a row tap must not unmount the screen mid-save',
+    );
+
+    // The Finish the user asked for still completes.
+    await tester.pump(_publishDelay * 2);
+    await settleDrift(tester);
+    expect(routerLocation(c).path, '/home');
+    await unmountApp(tester);
+  });
 }
