@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +9,8 @@ import 'package:geaux_farm/core/notifications/notification_providers.dart';
 import 'package:geaux_farm/core/notifications/notification_service.dart';
 import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
+import 'package:geaux_farm/features/onboarding/data/profile_providers.dart';
+import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/weather/application/garden_alerts_provider.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
@@ -24,7 +29,13 @@ import '../helpers/recording_notification_plugin.dart';
 /// Wednesday, Oct 7 2026, 09:00.
 final _now = DateTime(2026, 10, 7, 9);
 
-WeatherDay _day(int offset, {double tmin = 60}) {
+WeatherDay _day(
+  int offset, {
+  double tmin = 60,
+  double tmax = 70,
+  double precip = 0,
+  double uv = 3,
+}) {
   final d = DateTime(2026, 10, 7 + offset);
   final key =
       '${d.year}-${d.month.toString().padLeft(2, '0')}-'
@@ -32,11 +43,11 @@ WeatherDay _day(int offset, {double tmin = 60}) {
   return WeatherDay(
     date: key,
     weatherCode: 0,
-    tmaxF: 70,
+    tmaxF: tmax,
     tminF: tmin,
-    precipIn: 0,
+    precipIn: precip,
     precipProb: 0,
-    uvMax: 3,
+    uvMax: uv,
     sunshineS: 0,
     daylightS: 0,
     et0In: 0,
@@ -139,6 +150,26 @@ void main() {
       ]);
       expect(plugin.pendingById.keys, [1000, 1001, 1002]);
     });
+
+    test('four unordered frost days schedule the soonest three', () async {
+      final db = openGardenDb();
+      final plugin = RecordingNotificationPlugin();
+      final alerts = [
+        for (final day in [11, 9, 10, 8])
+          GardenAlert(
+            type: GardenAlertType.frost,
+            day: DateTime(2026, 10, day),
+            message: 'Frost $day',
+          ),
+      ];
+      await WeatherAlertScheduler(_service(plugin, db))
+          .replace(planFrostNotices(alerts, _now));
+      expect(plugin.pendingById.values.map((n) => n.body), [
+        'Frost 8',
+        'Frost 9',
+        'Frost 10',
+      ]);
+    });
   });
 
   group('weatherAlertsSyncProvider', () {
@@ -146,11 +177,17 @@ void main() {
     setUpSync({
       required List<WeatherDay> days,
       GrowSetup setup = GrowSetup.outdoor,
+      PlantingStatus status = PlantingStatus.active,
+      String startMethod = 'transplant',
+      DateTime? plantedOn,
+      String units = 'imperial',
       bool notificationsEnabled = true,
     }) async {
       final db = openGardenDb();
       await seedSpace(db);
       await seedProfile(db);
+      await (db.update(db.userProfileTable)..where((t) => t.id.equals(1)))
+          .write(UserProfileTableCompanion(units: Value(units)));
       if (!notificationsEnabled) {
         await (db.update(
           db.userProfileTable,
@@ -159,7 +196,13 @@ void main() {
         );
       }
       // Kale is frost-hard (≤20 °F), so 20 °F frosts it and 21 °F doesn't.
-      await seedPlanting(db, setup: setup, plantedOn: DateTime(2026, 9, 1));
+      await seedPlanting(
+        db,
+        setup: setup,
+        status: status,
+        startMethod: startMethod,
+        plantedOn: plantedOn ?? DateTime(2026, 9, 1),
+      );
       final plugin = RecordingNotificationPlugin();
       final forecast = _FakeForecast(days);
       final container = ProviderContainer(
@@ -207,6 +250,94 @@ void main() {
       expect(indoor.pendingById.keys.where(isWeatherAlertId), isEmpty);
     });
 
+    for (final (setup, status) in [
+      (GrowSetup.indoor, PlantingStatus.active),
+      (GrowSetup.greenhouse, PlantingStatus.active),
+      (GrowSetup.outdoor, PlantingStatus.planned),
+      (GrowSetup.outdoor, PlantingStatus.harvested),
+      (GrowSetup.outdoor, PlantingStatus.removed),
+    ]) {
+      test('${setup.name}/${status.name} never contributes alerts', () async {
+        final (container, plugin, forecast) = await setUpSync(
+          days: [_day(0, tmin: 10, tmax: 95, precip: 1, uv: 8)],
+          setup: setup,
+          status: status,
+          startMethod: 'seed',
+          plantedOn: DateTime(2026, 10, 7),
+        );
+        expect(await container.read(gardenAlertsProvider.future), isEmpty);
+        expect(plugin.pendingById.keys.where(isWeatherAlertId), isEmpty);
+        expect(forecast.fetches, 0);
+      });
+    }
+
+    test('UV uses the outdoor seed stage, not indoor seedlings', () async {
+      final (container, _, _) = await setUpSync(days: [_day(0, uv: 8)]);
+      final db = container.read(appDatabaseProvider);
+      await seedPlanting(
+        db,
+        id: 'seedling',
+        setup: GrowSetup.indoor,
+        startMethod: 'seed',
+        plantedOn: DateTime(2026, 10, 7),
+      );
+      await _settle(container);
+      expect(await container.read(gardenAlertsProvider.future), isEmpty);
+
+      await (db.update(
+        db.plantingsTable,
+      )..where((t) => t.id.equals('seedling'))).write(
+        const PlantingsTableCompanion(setup: Value(GrowSetup.outdoor)),
+      );
+      await _settle(container);
+      expect(
+        (await container.read(gardenAlertsProvider.future)).single.message,
+        'High UV today: shade new seedlings at midday',
+      );
+    });
+
+    test('metric display does not convert forecast alert thresholds', () async {
+      for (final units in ['imperial', 'metric']) {
+        final (container, plugin, _) = await setUpSync(
+          days: [_day(0, tmax: 95, precip: 1, uv: 8), _day(1, tmin: 20)],
+          startMethod: 'seed',
+          plantedOn: DateTime(2026, 10, 7),
+          units: units,
+        );
+        expect(
+          [
+            for (final alert in await container.read(
+              gardenAlertsProvider.future,
+            ))
+              alert.message,
+          ],
+          [
+            'Heat Wed: water early and shade young plants',
+            'Heavy rain Wed: check drainage — your watering schedule already '
+                'accounts for it',
+            'High UV today: shade new seedlings at midday',
+            'Frost Thu: cover or bring in Kale',
+          ],
+          reason: units,
+        );
+        expect(plugin.pendingById[1000]!.scheduledDate.hour, 18);
+      }
+    });
+
+    test('removing the last outdoor planting clears frost notices', () async {
+      final (container, plugin, _) = await setUpSync(days: [_day(2, tmin: 20)]);
+      expect(plugin.pendingById.keys.where(isWeatherAlertId), hasLength(1));
+      final db = container.read(appDatabaseProvider);
+      await (db.update(
+        db.plantingsTable,
+      )..where((t) => t.id.equals('p1'))).write(
+        const PlantingsTableCompanion(status: Value(PlantingStatus.removed)),
+      );
+      await _settle(container);
+      expect(await container.read(gardenAlertsProvider.future), isEmpty);
+      expect(plugin.pendingById.keys.where(isWeatherAlertId), isEmpty);
+    });
+
     test('notifications switched off schedule nothing', () async {
       final (_, plugin, _) = await setUpSync(
         days: [_day(2, tmin: 10)],
@@ -250,6 +381,31 @@ void main() {
       expect(pending.single.body, 'Frost Thu: cover or bring in Kale');
       expect(forecast.fetches, 2);
     });
+
+    test(
+      'disposing during profile loading cancels sync without an error',
+      () async {
+        final profiles = StreamController<UserProfile>();
+        addTearDown(profiles.close);
+        final errors = <FlutterErrorDetails>[];
+        final previous = FlutterError.onError;
+        FlutterError.onError = errors.add;
+        addTearDown(() => FlutterError.onError = previous);
+        final container = ProviderContainer(
+          overrides: [
+            outdoorPlantingsProvider.overrideWith((ref) async => []),
+            userProfileProvider.overrideWith((ref) => profiles.stream),
+          ],
+        );
+        container.listen(weatherAlertsSyncProvider, (_, _) {});
+        await _settle(container);
+        container.dispose();
+        for (var i = 0; i < 20; i++) {
+          await Future<void>.delayed(Duration.zero);
+        }
+        expect(errors, isEmpty);
+      },
+    );
   });
 }
 
