@@ -294,6 +294,32 @@ void main() {
       await unmount(tester);
     });
 
+    testWidgets('error: Retry reads the "Starred by me" set again too', (
+      tester,
+    ) async {
+      // The guide loads, but the signed-in user's stars do not.
+      final repo = FakeGuideRepository(
+        guides: {'g1': _fullGuide()},
+        starred: {'g1'},
+      )..starredError = Exception('offline');
+      await pumpGuideDetail(
+        tester,
+        repo,
+        auth: FakeAuthRepository(user: signedInUser),
+      );
+      expect(find.text("Couldn't load this guide."), findsOneWidget);
+      expect(find.byType(StatButton), findsNothing);
+
+      repo.starredError = null;
+      await tester.tap(find.text('RETRY'));
+      await settle(tester);
+
+      expect(find.text("Couldn't load this guide."), findsNothing);
+      expect(find.text('Starred'), findsOneWidget);
+      expect(repo.starredFetches, 2);
+      await unmount(tester);
+    });
+
     testWidgets('a guide that does not exist says so, without Retry', (
       tester,
     ) async {

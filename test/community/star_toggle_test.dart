@@ -350,5 +350,24 @@ void main() {
 
       expect(repo.starredFetches, 2);
     });
+
+    test('a failed starred set fetch is tried once, not retried', () async {
+      final repo = FakeGuideRepository(guides: {'g1': guide})
+        ..starredError = Exception('offline');
+      final c = container(repo);
+      await c.read(authStateProvider.future);
+      final sub = c.listen(starredGuideIdsProvider, (_, _) {});
+      addTearDown(sub.close);
+
+      await expectLater(
+        c.read(starredGuideIdsProvider.future),
+        throwsException,
+      );
+
+      // Riverpod's own retry would fetch again after 200 ms; plan/09 says
+      // none.
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      expect(repo.starredFetches, 1);
+    });
   });
 }

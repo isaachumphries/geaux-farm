@@ -136,6 +136,9 @@ class FakeGuideRepository implements GuideRepository {
   /// While true, [fetchFeed] throws.
   bool failFetch;
 
+  /// While set, [starredGuideIds] throws it after counting the call.
+  Object? starredError;
+
   /// While set, [starGuide] and [unstarGuide] throw it after recording the
   /// call.
   Object? writeError;
@@ -160,6 +163,7 @@ class FakeGuideRepository implements GuideRepository {
   @override
   Future<Set<String>> starredGuideIds() async {
     starredFetches++;
+    if (starredError != null) throw starredError!;
     return starred;
   }
 
