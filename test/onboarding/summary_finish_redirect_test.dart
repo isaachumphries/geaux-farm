@@ -36,6 +36,7 @@ import 'finished_draft.dart';
 // file models it: the write still goes through the real ProfileWriter, but
 // the profile the router reads arrives only after [_publishDelay].
 const _publishDelay = Duration(milliseconds: 200);
+
 final _finishedAt = DateTime(2026, 10, 7, 9, 41);
 
 /// A real writer that publishes the saved profile late, as the device's
@@ -127,24 +128,54 @@ Future<Uri> _finish(
   return duringWrite;
 }
 
-void main() {
-  for (final button in ['FIND MY FIRST PLANT', "I'LL SET UP LATER"]) {
-    testWidgets('$button lands on Home when the profile publishes late', (
-      tester,
-    ) async {
-      final c = await _pumpSummary(tester);
-      final duringWrite = await _finish(tester, c, button);
+/// `user_profile.first_plant_prompt_dismissed` as actually stored.
+Future<bool> _dismissedInDb(WidgetTester tester, ProviderContainer c) async {
+  final db = c.read(appDatabaseProvider);
+  final row = await tester.runAsync(
+    () => (db.select(
+      db.userProfileTable,
+    )..where((t) => t.id.equals(1))).getSingleOrNull(),
+  );
+  return row?.firstPlantPromptDismissed ?? false;
+}
 
-      // No Welcome flash: Finish holds OB-07 until the router can see the
-      // finished profile.
-      expect(duringWrite.path, OnboardingRoutes.summary);
-      expect(routerLocation(c).path, '/home');
-      expect(find.byType(HomeFirstRunScreen), findsOneWidget);
-      expect(
-        c.read(userProfileProvider).requireValue.onboardingCompletedAt,
-        _finishedAt,
-      );
-      await unmountApp(tester);
-    });
-  }
+void main() {
+  testWidgets('Find my first plant lands on Home when the profile '
+      'publishes late', (tester) async {
+    final c = await _pumpSummary(tester);
+    final duringWrite = await _finish(tester, c, 'FIND MY FIRST PLANT');
+
+    // No Welcome flash: Finish holds OB-07 until the router can see the
+    // finished profile.
+    expect(duringWrite.path, OnboardingRoutes.summary);
+    expect(routerLocation(c).path, '/home');
+    expect(find.byType(HomeFirstRunScreen), findsOneWidget);
+    expect(
+      c.read(userProfileProvider).requireValue.onboardingCompletedAt,
+      _finishedAt,
+    );
+    // HM-01, the carousel: this branch does not dismiss the prompt.
+    expect(await _dismissedInDb(tester, c), isFalse);
+    await unmountApp(tester);
+  });
+
+  testWidgets("I'll set up later lands on HM-01b with the prompt dismissed", (
+    tester,
+  ) async {
+    final c = await _pumpSummary(tester);
+    final duringWrite = await _finish(tester, c, "I'LL SET UP LATER");
+
+    expect(duringWrite.path, OnboardingRoutes.summary);
+    expect(routerLocation(c).path, '/home');
+    expect(find.byType(HomeFirstRunScreen), findsOneWidget);
+    expect(
+      c.read(userProfileProvider).requireValue.onboardingCompletedAt,
+      _finishedAt,
+    );
+    // The branch that distinguishes this case from the one above, read
+    // back from the row rather than the notifier's optimistic state, so
+    // the dismiss write has to have landed.
+    expect(await _dismissedInDb(tester, c), isTrue);
+    await unmountApp(tester);
+  });
 }
