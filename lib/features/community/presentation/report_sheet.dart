@@ -4,6 +4,8 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
+import '../application/guide_detail_provider.dart';
+import '../data/auth_providers.dart';
 import '../data/guide_repository_provider.dart';
 import '../domain/report_reason.dart';
 import 'sign_in_sheet.dart';
@@ -15,16 +17,36 @@ Future<void> reportGuide(
   WidgetRef ref, {
   required String guideId,
 }) {
+  final messenger = ScaffoldMessenger.of(context);
   return requireSignIn(
     context,
     ref,
     reason: SignInAction.report,
-    action: () {
+    action: () async {
       // The sign-in sheet can outlive the screen behind it.
       if (!context.mounted) return;
-      showReportSheet(context, guideId: guideId);
+      // CM-02 decides whether to offer Report from the signed-out state,
+      // where no guide is anyone's own. Signing in as the author from
+      // that menu must not land on the author reporting themselves, which
+      // RLS allows and which would count toward hiding their own guide.
+      if (_isOwnGuide(ref, guideId)) return;
+      final sent = await showReportSheet(context, guideId: guideId);
+      if (sent) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Thanks. We will review this guide.')),
+        );
+      }
     },
   );
+}
+
+/// Whether the signed-in user wrote [guideId]. False while the guide or
+/// the user is still unread: the server is the real guard, this only keeps
+/// the app from offering the action.
+bool _isOwnGuide(WidgetRef ref, String guideId) {
+  final guide = ref.read(guideDetailProvider(guideId)).value;
+  final userId = ref.read(authStateProvider).value?.id;
+  return guide != null && userId != null && guide.authorId == userId;
 }
 
 /// Shows the report sheet. Completes with true once a report was stored.
@@ -110,7 +132,15 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
   @override
   Widget build(BuildContext context) {
     final inset = MediaQuery.viewInsetsOf(context).bottom;
-    final noteTooLong = !isValidReportNote(_note.text);
+    return PopScope(
+      // A send already on its way cannot be called back, so the sheet
+      // stops taking a swipe or a scrim tap until it lands.
+      canPop: !_sending,
+      child: _sheet(context, inset),
+    );
+  }
+
+  Widget _sheet(BuildContext context, double inset) {
     return Material(
       color: AppColors.cream50,
       shape: const RoundedRectangleBorder(
@@ -155,7 +185,10 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
                       selected: _reason == reason,
                       onTap: _sending
                           ? () {}
-                          : () => setState(() => _reason = reason),
+                          : () => setState(() {
+                              _reason = reason;
+                              _error = null;
+                            }),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                   ],
@@ -163,9 +196,10 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
                   GeauxTextField(
                     controller: _note,
                     hintText: 'Add a note (optional)',
+                    // The field stops at the length guide_reports.note
+                    // accepts, so an over-long note cannot be typed.
                     maxLength: maxReportNoteLength,
-                    onChanged: (_) => setState(() {}),
-                    hasError: noteTooLong,
+                    onChanged: (_) => setState(() => _error = null),
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: AppSpacing.sm),
@@ -179,9 +213,7 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
                   GeauxButton(
                     label: 'Send report',
                     icon: Symbols.flag_rounded,
-                    onPressed: _reason == null || _sending || noteTooLong
-                        ? null
-                        : _send,
+                    onPressed: _reason == null || _sending ? null : _send,
                   ),
                 ],
               ),

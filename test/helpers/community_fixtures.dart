@@ -13,6 +13,7 @@ Guide testGuide(
   String id, {
   String title = 'Balcony salsa garden in 4 pots',
   String author = 'geauxfarm',
+  String? authorId,
   int difficulty = 1,
   List<String> spaceTypes = const ['balcony'],
   List<String> tags = const [],
@@ -29,7 +30,7 @@ Guide testGuide(
   String? forkedFrom,
 }) => Guide(
   id: id,
-  authorId: 'author-$author',
+  authorId: authorId ?? 'author-$author',
   authorUsername: author,
   title: title,
   summary: 'A made-up guide.',
@@ -153,8 +154,10 @@ class FakeGuideRepository implements GuideRepository {
   /// `star:<id>`, `unstar:<id>` and `report:<id>`, in call order.
   final writes = <String>[];
 
-  /// One row per stored report, keyed by guide id, as the
-  /// `guide_reports` primary key keeps it: one per user per guide.
+  /// One row per stored report, keyed by guide id. The fake has a single
+  /// signed-in user, so guide id stands in for the `(guide_id,
+  /// reporter_id)` primary key; it cannot model two reporters on one
+  /// guide.
   final reports = <String, ({ReportReason reason, String? note})>{};
   var starredFetches = 0;
 
@@ -200,10 +203,12 @@ class FakeGuideRepository implements GuideRepository {
     required ReportReason reason,
     String? note,
   }) async {
-    await _write('report:$id');
-    if (!isValidReportNote(note)) {
+    // The real repository validates before it sends, so the fake must
+    // not record a write the real one would never make.
+    if (!isValidReportNote(note?.trim())) {
       throw ArgumentError.value(note, 'note', 'too long');
     }
+    await _write('report:$id');
     // The primary key keeps the first report; a second one changes nothing.
     reports.putIfAbsent(id, () => (reason: reason, note: note));
   }
