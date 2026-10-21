@@ -1,4 +1,5 @@
 import '../domain/guide.dart';
+import '../domain/guide_validation.dart';
 
 /// A `guide_feed` row as a [Guide]. Throws when a required column is
 /// missing or mistyped.
@@ -47,3 +48,36 @@ Guide guideFromJson(Map<String, dynamic> row) {
     publishedAt: publishedAt == null ? null : DateTime.parse(publishedAt),
   );
 }
+
+/// The `guides` columns for [draft] at [status], as PostgREST takes them
+/// (plan/07 § Editor).
+///
+/// [authorId] is set on an insert only; `guides_insert` checks it against
+/// `auth.uid()`. The counters (`star_count`, `grow_count`, `remix_count`,
+/// `report_count`) are maintained by triggers and never appear here.
+Map<String, Object?> guideDraftPayload(
+  GuideDraft draft, {
+  required String status,
+  String? authorId,
+}) => {
+  'author_id': ?authorId,
+  'title': draft.title.trim(),
+  // The column is `not null`; a draft with no summary stores ''.
+  'summary': draft.summary.trim(),
+  'cover_path': draft.coverPath,
+  'difficulty': draft.difficulty,
+  'space_types': draft.spaceTypes,
+  'est_cost_usd': draft.estCostUsd,
+  'setup_minutes': draft.setupMinutes,
+  'materials': [
+    for (final m in draft.materials)
+      {'name': m.name, 'qty': m.qty, 'estCostUsd': m.estCostUsd, 'url': m.url},
+  ],
+  'steps': [
+    for (final s in draft.steps)
+      {'title': s.title, 'body': s.body, 'imagePath': s.imagePath},
+  ],
+  'plant_ids': draft.plantIds,
+  'tags': draft.tags,
+  'status': status,
+};
