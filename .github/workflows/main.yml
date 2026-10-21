@@ -54,3 +54,85 @@ jobs:
         with:
           name: app-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+
+  coverage:
+    name: Test coverage gate
+    runs-on: ubuntu-latest
+    env:
+      # Minimum line coverage for hand-written code (*.g.dart excluded).
+      MIN_LINE_COVERAGE: '90'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Report and enforce line coverage
+        run: .github/scripts/coverage_gate.sh coverage/lcov.info "$MIN_LINE_COVERAGE"
+
+      - name: Upload lcov report
+        if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov
+          path: coverage/lcov.info
+
+  codegen:
+    name: Generated code is up to date
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Regenerate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Fail on stale or missing generated files
+        run: |
+          changes="$(git status --porcelain --untracked-files=all)"
+          if [ -n "$changes" ]; then
+            echo "::error::Generated code is out of date. Run 'dart run build_runner build --delete-conflicting-outputs' and commit the result together with the source change that produced it."
+            echo "$changes"
+            git --no-pager diff --stat
+            exit 1
+          fi
+
+  supabase-tests:
+    name: Supabase migrations and pgTAP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+
+      - name: Start local database and apply migrations
+        run: supabase db start
+
+      - name: Run pgTAP tests
+        run: supabase test db

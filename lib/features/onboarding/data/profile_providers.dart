@@ -28,6 +28,17 @@ final primarySpaceProvider = StreamProvider<Space>((ref) {
   );
 });
 
+/// Every row in the `spaces` table. Empty until onboarding adds one (#69).
+/// Care scheduling reads all spaces, not only the primary one, so each
+/// planting resolves to the space it actually sits in.
+final spacesProvider = StreamProvider<List<Space>>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return db
+      .select(db.spacesTable)
+      .watch()
+      .map((rows) => rows.map(_spaceFromRow).toList());
+});
+
 UserProfile _profileFromRow(UserProfileRow r) => UserProfile(
   city: r.city,
   admin1: r.admin1,

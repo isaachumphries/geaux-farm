@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/care/application/care_reminders.dart';
+import '../features/weather/application/garden_alerts_provider.dart';
 import '../features/onboarding/data/profile_providers.dart';
+import 'notification_wiring.dart';
 import 'router.dart';
 import 'theme.dart';
 
@@ -11,6 +14,9 @@ class GeauxFarmApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(notificationStartupProvider);
+    ref.watch(careRemindersSyncProvider);
+    ref.watch(weatherAlertsSyncProvider);
     // Hold a blank cream screen until the first profile read lands, so the
     // onboarding redirect is decided before any screen shows.
     final profile = ref.watch(userProfileProvider);

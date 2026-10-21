@@ -30,6 +30,7 @@ Future<void> pumpMini(
   VoidCallback? onRetry,
   VoidCallback? onTap,
   double width = 360,
+  bool metric = false,
 }) async {
   tester.view.physicalSize = Size(width, 800);
   tester.view.devicePixelRatio = 1;
@@ -44,6 +45,7 @@ Future<void> pumpMini(
             now: now ?? fetchedAt,
             onRetry: onRetry ?? () {},
             onTap: onTap,
+            metric: metric,
           ),
         ),
       ),
@@ -201,5 +203,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(calls, 2);
     expect(find.text('90°'), findsOneWidget);
+  });
+
+  testWidgets('metric shows Celsius for the current temp and the day range', (
+    tester,
+  ) async {
+    await pumpMini(tester, AsyncData(WeatherState(snapshot())), metric: true);
+    // 90.4 → 32; today 93.4 / 66.3 → 34 / 19.
+    expect(find.text('32°'), findsOneWidget);
+    expect(find.text('H 34 / L 19'), findsOneWidget);
+    expect(find.text('90°'), findsNothing);
   });
 }

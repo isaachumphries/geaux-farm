@@ -1,6 +1,13 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart' show AssetBundle;
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:geaux_farm/core/db/app_database.dart';
+import 'package:geaux_farm/core/notifications/notification_plugin.dart';
+import 'package:geaux_farm/core/notifications/notification_providers.dart';
+import 'package:geaux_farm/core/notifications/notification_service.dart';
+import 'package:geaux_farm/features/care/application/care_schedule_provider.dart';
+import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
@@ -12,8 +19,10 @@ import 'package:geaux_farm/features/weather/data/weather_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import 'file_asset_bundle.dart';
 import 'fixed_climate.dart';
 import 'in_memory_database.dart';
+import 'inert_notification_plugin.dart';
 
 /// [defaultUserProfile] with onboarding finished.
 final onboardedProfile = UserProfile(
@@ -30,25 +39,38 @@ final onboardedProfile = UserProfile(
 );
 
 /// Overrides for pumping the whole app: [profile] instead of the Drift
-/// row, the default space, no plantings, an in-memory database, the
-/// plan/04 climate instead of an archive build, and the recorded Baton
-/// Rouge forecast instead of Open-Meteo.
-List<Override> appOverrides({required UserProfile profile}) {
+/// row, the default space, no plantings or care events, the plan/04
+/// climate instead of an archive build, the recorded Baton Rouge forecast
+/// instead of Open-Meteo, and [notificationPlugin] (inert by default)
+/// instead of the OS plugin. The catalog reads from [FileAssetBundle]: see
+/// there for why `rootBundle` must not be used by whole-app tests.
+List<Override> appOverrides({
+  required UserProfile profile,
+  NotificationPlugin? notificationPlugin,
+  AssetBundle? assetBundle,
+}) {
   final forecast = File('test/fixtures/open_meteo/forecast_baton_rouge.json')
       .readAsStringSync();
   return [
+    inMemoryDatabaseOverride(),
+    assetBundleProvider.overrideWithValue(assetBundle ?? FileAssetBundle()),
+    notificationServiceProvider.overrideWith(
+      (ref) => NotificationService(
+        notificationPlugin ?? InertNotificationPlugin(),
+        ref.watch(appDatabaseProvider),
+        () async => 'UTC',
+      ),
+    ),
     userProfileProvider.overrideWith((ref) => Stream.value(profile)),
     primarySpaceProvider.overrideWith((ref) => Stream.value(defaultSpace)),
+    spacesProvider.overrideWith((ref) => Stream.value([defaultSpace])),
     plantingsProvider.overrideWith((ref) => Stream.value(const <Planting>[])),
+    careEventsProvider.overrideWith((ref) => Stream.value(const [])),
     climateProvider.overrideWith(FixedClimate.new),
     forecastClientProvider.overrideWithValue(
       OpenMeteoForecastClient(
         MockClient((_) async => http.Response(forecast, 200)),
       ),
     ),
-    // Home reads gardenProvider, which reaches the database through
-    // gardenSpacesProvider. Without this the whole-app tests open the real
-    // on-device database a second time.
-    inMemoryDatabaseOverride(),
   ];
 }

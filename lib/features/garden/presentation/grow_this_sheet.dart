@@ -9,30 +9,30 @@ import '../../../app/widgets/widgets.dart';
 import '../../catalog/domain/plant.dart';
 import '../../catalog/presentation/plant_art.dart';
 import '../../onboarding/data/profile_providers.dart';
-import '../../onboarding/domain/space.dart';
 import '../../recommendations/application/clock_provider.dart';
-import '../../recommendations/application/recommendations_provider.dart';
 import '../../recommendations/domain/scored_plant.dart';
 import '../../recommendations/presentation/widgets/compat_badge.dart';
-import '../data/garden_repository.dart';
+import '../application/add_planting_controller.dart';
+import '../application/grow_setup_controller.dart';
 import '../domain/planting.dart';
 import '../domain/planting_copy.dart';
+import 'planting_added_screen.dart';
 
-/// Opens PD-02 for [plant]. When the user adds it, shows a confirmation
-/// and opens the new planting in My Garden (GD-02).
+/// Opens PD-02 for [plant]. When the user adds it, shows PD-03 Added, then
+/// Home (HM-02) once they answer it (plan/01 § PD-03).
 Future<void> pickPlant(BuildContext context, ScoredPlant plant) async {
-  final added = await showModalBottomSheet<String>(
+  final name = await showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: AppColors.cream50,
     builder: (_) => GrowThisSheet(plant: plant),
   );
-  if (added == null || !context.mounted) return;
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('${plant.plant.commonName} is in your garden!')),
+  if (name == null || !context.mounted) return;
+  await Navigator.of(context, rootNavigator: true).push(
+    MaterialPageRoute<void>(builder: (_) => PlantingAddedScreen(name: name)),
   );
-  context.go('/garden/planting/$added');
+  if (context.mounted) context.go('/home');
 }
 
 /// "Harvest in 50–65 days" for one way of starting [p]; the day range
@@ -59,9 +59,15 @@ String plantedDateLabel(DateTime date, DateTime today) {
   return DateUtils.isSameDay(date, today) ? 'Today, $md' : md;
 }
 
+/// The PD-02 warning for Outdoors on a plant that is not outdoor-viable
+/// (plan/05 § Grow this flow).
+String outdoorWarningCopy(String city) =>
+    'This plant struggles outdoors in $city. '
+    'Indoors or a greenhouse gives it a better shot.';
+
 /// PD-02 "Grow this" sheet: where the plant grows, container or not, how
 /// it starts, when it was planted, and an optional nickname. Pops with the
-/// new planting's id.
+/// new planting's display name.
 class GrowThisSheet extends ConsumerStatefulWidget {
   const GrowThisSheet({super.key, required this.plant});
 
@@ -73,13 +79,12 @@ class GrowThisSheet extends ConsumerStatefulWidget {
 
 class _GrowThisSheetState extends ConsumerState<GrowThisSheet> {
   final _nickname = TextEditingController();
-  GrowSetup? _setup;
-  bool? _inContainer;
-  StartMethod? _start;
-  DateTime? _plantedOn;
   bool _saving = false;
 
   Plant get _plant => widget.plant.plant;
+
+  GrowSetupController get _controller =>
+      ref.read(growSetupControllerProvider(widget.plant).notifier);
 
   @override
   void dispose() {
@@ -91,34 +96,21 @@ class _GrowThisSheetState extends ConsumerState<GrowThisSheet> {
     final picked = await showDatePicker(
       context: context,
       initialDate: current,
-      firstDate: DateTime(today.year - 1, today.month, today.day),
+      firstDate: earliestPlantedOn(today),
       // Stage and care count from this date, so it can't be in the future.
       lastDate: today,
     );
-    if (picked != null && mounted) setState(() => _plantedOn = picked);
+    if (picked != null && mounted) _controller.setPlantedOn(picked);
   }
 
-  Future<void> _add({
-    required String spaceId,
-    required GrowSetup setup,
-    required bool inContainer,
-    required StartMethod start,
-    required DateTime plantedOn,
-  }) async {
+  Future<void> _add(GrowSetupState setup) async {
     setState(() => _saving = true);
     try {
-      final id = await ref
-          .read(gardenRepositoryProvider)
-          .addPlanting(
-            plant: _plant,
-            spaceId: spaceId,
-            nickname: _nickname.text,
-            setup: setup,
-            inContainer: inContainer,
-            startMethod: start,
-            plantedOn: plantedOn,
-          );
-      if (mounted) Navigator.of(context).pop(id);
+      await ref.read(addPlantingControllerProvider).addPlanting(_plant, setup);
+      final name = setup.nickname.trim();
+      if (mounted) {
+        Navigator.of(context).pop(name.isEmpty ? _plant.commonName : name);
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -130,27 +122,17 @@ class _GrowThisSheetState extends ConsumerState<GrowThisSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final space = ref.watch(primarySpaceProvider).value;
+    final state = ref.watch(growSetupControllerProvider(widget.plant));
+    final city = ref.watch(userProfileProvider).value?.city;
     final today = ref.watch(todayProvider);
     final p = _plant;
     final starts = p.starts ?? const <PlantStart>[];
     final containerOk = p.space?.containerOk ?? true;
 
-    final setup = _setup ?? defaultGrowSetup(space?.type ?? SpaceType.balcony);
-    final inContainer =
-        containerOk && (_inContainer ?? space?.inContainerDefault ?? false);
-    final start = _start ?? (starts.isEmpty ? null : starts.first.method);
-    final plantedOn = _plantedOn ?? today;
-
-    final VoidCallback? onAdd = _saving || space == null || start == null
+    final VoidCallback? onAdd =
+        _saving || state == null || state.startMethod == null
         ? null
-        : () => _add(
-            spaceId: space.id,
-            setup: setup,
-            inContainer: inContainer,
-            start: start,
-            plantedOn: plantedOn,
-          );
+        : () => _add(state);
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -190,91 +172,107 @@ class _GrowThisSheetState extends ConsumerState<GrowThisSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.xl),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Where will it grow?',
-                    style: AppText.body.copyWith(
-                      color: AppColors.soil900,
-                      fontWeight: FontWeight.w800,
+            if (state != null) ...[
+              const SizedBox(height: AppSpacing.xl),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Where will it grow?',
+                      style: AppText.body.copyWith(
+                        color: AppColors.soil900,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
-                ),
-                CompatBadge(score: widget.plant.compatibility.score),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            GeauxSegmentedChoice<GrowSetup>(
-              options: [
-                for (final s in GrowSetup.values) (s, growSetupLabel(s)),
-              ],
-              selected: setup,
-              onSelected: (s) => setState(() => _setup = s),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _ContainerCard(
-              containerOk: containerOk,
-              minGallons: p.space?.minContainerGal,
-              value: inContainer,
-              onChanged: (v) => setState(() => _inContainer = v),
-            ),
-            if (starts.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.xl),
-              Text(
-                'How are you starting it?',
-                style: AppText.body.copyWith(
-                  color: AppColors.soil900,
-                  fontWeight: FontWeight.w800,
-                ),
+                  CompatBadge(score: state.compat.score),
+                ],
               ),
               const SizedBox(height: AppSpacing.sm),
+              GeauxSegmentedChoice<GrowSetup>(
+                options: [
+                  for (final s in GrowSetup.values) (s, growSetupLabel(s)),
+                ],
+                selected: state.setup,
+                onSelected: _controller.setSetup,
+              ),
+              if (state.outdoorWarning && city != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                GeauxAlertBanner(
+                  message: outdoorWarningCopy(city),
+                  icon: Symbols.warning_rounded,
+                  accent: AppColors.possible,
+                  tint: AppColors.gold100,
+                ),
+              ],
+              const SizedBox(height: AppSpacing.lg),
+              _ContainerCard(
+                containerOk: containerOk,
+                minGallons: p.space?.minContainerGal,
+                value: state.inContainer,
+                onChanged: _controller.setInContainer,
+              ),
+              if (starts.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xl),
+                Text(
+                  'How are you starting it?',
+                  style: AppText.body.copyWith(
+                    color: AppColors.soil900,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final (i, s) in starts.indexed) ...[
+                      if (i > 0) const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: _StartChoice(
+                          title: startMethodLabel(s.method),
+                          subtitle: startTimeLabel(p, s),
+                          selected: s.method == state.startMethod,
+                          onTap: () => _controller.setStartMethod(s.method),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+              const SizedBox(height: AppSpacing.xl),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final (i, s) in starts.indexed) ...[
-                    if (i > 0) const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: _StartChoice(
-                        title: startMethodLabel(s.method),
-                        subtitle: startTimeLabel(p, s),
-                        selected: s.method == start,
-                        onTap: () => setState(() => _start = s.method),
+                  Expanded(
+                    child: _Labeled(
+                      label: 'Planted',
+                      child: _DateField(
+                        text: plantedDateLabel(state.plantedOn, today),
+                        onTap: () => _pickDate(state.plantedOn, today),
                       ),
                     ),
-                  ],
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _Labeled(
+                      label: 'Nickname',
+                      child: GeauxTextField(
+                        controller: _nickname,
+                        hintText: 'e.g. Big ${p.commonName}',
+                        prefixIcon: Symbols.edit_rounded,
+                        maxLength: 30,
+                        onChanged: _controller.setNickname,
+                        textInputAction: TextInputAction.done,
+                      ),
+                    ),
+                  ),
                 ],
               ),
+              Text(
+                'Already growing it? Set the date you planted.',
+                style: AppText.caption.copyWith(color: AppColors.soil600),
+              ),
             ],
-            const SizedBox(height: AppSpacing.xl),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _Labeled(
-                    label: 'Planted',
-                    child: _DateField(
-                      text: plantedDateLabel(plantedOn, today),
-                      onTap: () => _pickDate(plantedOn, today),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: _Labeled(
-                    label: 'Nickname',
-                    child: GeauxTextField(
-                      controller: _nickname,
-                      hintText: 'e.g. Big ${p.commonName}',
-                      prefixIcon: Symbols.edit_rounded,
-                      maxLength: 30,
-                      textInputAction: TextInputAction.done,
-                    ),
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: AppSpacing.xl),
             GeauxButton(label: 'Add to my garden', onPressed: onAdd),
           ],
@@ -348,7 +346,7 @@ class _ContainerCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'In a container',
+                  'In a pot or container',
                   style: AppText.body.copyWith(
                     color: AppColors.soil900,
                     fontWeight: FontWeight.w800,

@@ -10,7 +10,8 @@ import 'compatibility.dart';
 import 'in_season.dart';
 import 'indoor_climate.dart';
 
-const _weights = {
+/// Points each factor adds to the 0–100 score; the values sum to 100.
+const scoreWeights = {
   'climate': 35,
   'light': 20,
   'space': 15,
@@ -35,7 +36,7 @@ Compatibility scorePlant(
 
   final fits = <String, double>{
     'climate': outdoor ? outdoorClimate : _indoorClimateFit(p),
-    'light': lightFit(_userSun(ctx.space, setup), p.sun!),
+    'light': lightFit(userSun(ctx.space, setup), p.sun!),
     'space': _spaceFit(p, ctx.space, setup),
     'care': careFit(
       outdoor ? p.water!.everyDaysOutdoor : p.water!.everyDaysIndoor,
@@ -44,7 +45,7 @@ Compatibility scorePlant(
     'goals': goalsFit(ctx.profile.goals, p.purposes),
     'experience': experienceFit(p.difficulty, ctx.profile.experience),
   };
-  final score = _weights.entries
+  final score = scoreWeights.entries
       .fold<double>(0, (sum, e) => sum + e.value * fits[e.key]!)
       .round();
 
@@ -75,7 +76,7 @@ double _outdoorClimateFit(Plant p, ClimateProfile climate) {
     // share of growing-window months that pass.
     fit = _annualClimateFit(p, climate.months);
   }
-  return fit * _humidityMultiplier(p.humidity, climate.annualRhPct);
+  return fit * humidityMultiplier(p.humidity, climate.annualRhPct);
 }
 
 double _annualClimateFit(Plant p, List<ClimateMonth> months) {
@@ -94,18 +95,22 @@ double _annualClimateFit(Plant p, List<ClimateMonth> months) {
   return best / n;
 }
 
-double _indoorClimateFit(Plant p) {
+double _indoorClimateFit(Plant p) =>
+    (indoorTempsSuit(p) ? 1.0 : 0.5) *
+    humidityMultiplier(p.humidity, indoorRhPct);
+
+/// Whether the grow-temperature range covers the 65–75 °F indoor band.
+bool indoorTempsSuit(Plant p) {
   final g = p.growTempF!;
-  final fit = g.min <= 65 && g.max >= 75 ? 1.0 : 0.5;
-  return fit * _humidityMultiplier(p.humidity, indoorRhPct);
+  return g.min <= 65 && g.max >= 75;
 }
 
-double _humidityMultiplier(Humidity h, double rhPct) =>
+double humidityMultiplier(Humidity h, double rhPct) =>
     (h == Humidity.low && rhPct >= 70) || (h == Humidity.high && rhPct < 45)
     ? 0.8
     : 1.0;
 
-SunLevel _userSun(Space space, GrowSetup setup) => switch (setup) {
+SunLevel userSun(Space space, GrowSetup setup) => switch (setup) {
   GrowSetup.outdoor => space.sun,
   GrowSetup.indoor =>
     space.type == SpaceType.windowsill ? space.sun : SunLevel.partial,

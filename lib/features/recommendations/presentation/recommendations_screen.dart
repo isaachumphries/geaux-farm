@@ -6,7 +6,6 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../garden/domain/planting.dart';
-import '../../garden/presentation/grow_this_sheet.dart';
 import '../../onboarding/data/profile_providers.dart';
 import '../application/recommendations_provider.dart';
 import '../domain/recommendation_filter.dart';
@@ -22,11 +21,11 @@ String recommendationChipLabel(RecommendationChip chip) => switch (chip) {
   RecommendationChip.flowers => 'Flowers',
   RecommendationChip.shrubs => 'Shrubs',
   RecommendationChip.indoor => 'Indoor',
-  RecommendationChip.lowMaintenance => 'Low care',
+  RecommendationChip.lowMaintenance => 'Low maintenance',
 };
 
 /// RC-01 "Plants for you": every recommendation, best fit first, with
-/// search and filter chips. Tapping a plant opens PD-02 to add it.
+/// search and filter chips. Tapping a plant opens PD-01 (plan/01 RC-01).
 class RecommendationsScreen extends ConsumerStatefulWidget {
   const RecommendationsScreen({super.key});
 
@@ -139,13 +138,9 @@ class _List extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         if (plants.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Text(
-              'No plants match. Try another search or filter.',
-              textAlign: TextAlign.center,
-              style: AppText.bodySm.copyWith(color: AppColors.soil600),
-            ),
+          const GeauxEmptyState(
+            message: 'No plants match. Try another search or filter.',
+            icon: Symbols.search_off_rounded,
           ),
         for (final s in plants)
           Padding(
@@ -159,7 +154,7 @@ class _List extends StatelessWidget {
               key: ValueKey(s.plant.id),
               plant: s,
               state: PlantCardState.of(s.compatibility, setup),
-              onTap: () => pickPlant(context, s),
+              onTap: () => context.push('/plants/${s.plant.id}'),
             ),
           ),
       ],

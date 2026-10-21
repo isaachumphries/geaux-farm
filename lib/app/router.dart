@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/care/presentation/care_screen.dart';
+import '../features/community/presentation/community_feed_screen.dart';
+import '../features/garden/presentation/grow_this_sheet.dart';
 import '../features/garden/presentation/my_garden_screen.dart';
 import '../features/garden/presentation/planting_detail_screen.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
@@ -16,6 +19,9 @@ import '../features/onboarding/presentation/onboarding_routes.dart';
 import '../features/onboarding/presentation/profile_summary_screen.dart';
 import '../features/onboarding/presentation/space_step_screen.dart';
 import '../features/onboarding/presentation/welcome_screen.dart';
+import '../features/recommendations/presentation/plant_detail_screen.dart';
+import '../features/settings/presentation/settings_screen.dart';
+import '../features/weather/presentation/weather_screen.dart';
 import '../features/recommendations/presentation/recommendations_screen.dart';
 import 'tab_shell.dart';
 import 'titled_scaffold.dart';
@@ -132,13 +138,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
           StatefulShellBranch(
-            routes: [_placeholder('/care', 'CR-01 Care schedule')],
+            routes: [
+              GoRoute(
+                path: '/care',
+                builder: (context, state) =>
+                    CareScreen(date: careDateFrom(state.uri)),
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: [
-              _placeholder(
-                '/community',
-                'CM-01 Feed',
+              GoRoute(
+                path: '/community',
+                builder: (context, state) => const CommunityFeedScreen(),
                 routes: [
                   _placeholder('guide/:id', 'CM-02 Guide detail'),
                   _placeholder('editor/:id', 'CM-03 Editor'),
@@ -150,11 +162,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       // Full-screen routes above the tab bar.
-      _placeholder('/plants/:plantId', 'PD-01 Plant detail'),
-      _placeholder('/weather', 'WX-01 Weather'),
-      _placeholder(
-        '/settings',
-        'ST-01 Settings',
+      GoRoute(
+        path: '/plants/:plantId',
+        builder: (context, state) => PlantDetailScreen(
+          plantId: state.pathParameters['plantId']!,
+          onGrow: (plant) => pickPlant(context, plant),
+        ),
+      ),
+      GoRoute(
+        path: '/weather',
+        builder: (context, state) => const WeatherScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
         routes: [_placeholder('edit/:step', 'OB-07 Edit step')],
       ),
     ],

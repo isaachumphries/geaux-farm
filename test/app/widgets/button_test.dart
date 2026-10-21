@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/widgets/widgets.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 Widget _host(Widget child) => MaterialApp(
   home: Scaffold(body: Center(child: child)),
@@ -46,4 +47,24 @@ void main() {
       handle.dispose();
     });
   }
+  testWidgets('icon draws before the label and the tap still fires', (
+    tester,
+  ) async {
+    var taps = 0;
+    await tester.pumpWidget(
+      _host(
+        GeauxButton(
+          label: 'Go',
+          icon: Symbols.add_rounded,
+          onPressed: () => taps++,
+        ),
+      ),
+    );
+
+    final icon = tester.getCenter(find.byIcon(Symbols.add_rounded));
+    final label = tester.getCenter(find.text('GO'));
+    expect(icon.dx, lessThan(label.dx));
+    await tester.tap(find.text('GO'));
+    expect(taps, 1);
+  });
 }
