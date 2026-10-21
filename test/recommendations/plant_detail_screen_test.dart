@@ -113,6 +113,102 @@ Future<Plant> _plant(WidgetTester tester, String id) async {
 }
 
 void main() {
+  testWidgets('sections and every season tag follow record and spec order', (
+    tester,
+  ) async {
+    final plant = kaleWith({
+      'seasonTags': ['cool-season', 'warm-season', 'evergreen', 'perennial'],
+    });
+    await _pump(
+      tester,
+      plantId: plant.id,
+      overrides: [
+        ..._overrides(),
+        catalogProvider.overrideWith((ref) async => [plant]),
+      ],
+    );
+    final sections = [
+      'Kale',
+      'Why it fits',
+      'Time to grow',
+      'When to plant',
+      'Tips',
+      'Image credit: ${plant.image.credit} · ${plant.image.license}',
+    ];
+    final tops = [
+      for (final text in sections) tester.getTopLeft(find.text(text)).dy,
+    ];
+    for (var i = 1; i < tops.length; i++) {
+      expect(tops[i], greaterThan(tops[i - 1]), reason: sections[i]);
+    }
+    const labels = ['Cool-season', 'Warm-season', 'Evergreen', 'Perennial'];
+    final tags = [
+      for (final label in labels) tester.getTopLeft(find.text(label)),
+    ];
+    for (var i = 1; i < tags.length; i++) {
+      expect(
+        tags[i].dy > tags[i - 1].dy ||
+            (tags[i].dy == tags[i - 1].dy && tags[i].dx > tags[i - 1].dx),
+        isTrue,
+        reason: labels[i],
+      );
+    }
+  });
+
+  for (final (weekly, label) in [
+    (15, 'Low care'),
+    (16, 'Medium care'),
+    (40, 'Medium care'),
+    (41, 'High care'),
+  ]) {
+    testWidgets('detail weekly care $weekly shows $label', (tester) async {
+      final plant = kaleWith({
+        'care': {
+          ...fx.rawKale()['care'] as Map<String, dynamic>,
+          'dailyMinutes': 2,
+          'weeklyMinutes': weekly,
+        },
+      });
+      await _pump(
+        tester,
+        plantId: plant.id,
+        overrides: [
+          ..._overrides(),
+          catalogProvider.overrideWith((ref) async => [plant]),
+        ],
+      );
+      expect(find.text(label), findsOneWidget);
+      expect(find.text('~${weekly}m'), findsOneWidget);
+    });
+  }
+
+  for (final (kind, max, label) in [
+    ('harvest', 90, 'Harvest in 60–90 days'),
+    ('bloom', 90, 'Blooms in 60–90 days'),
+    ('establish', 180, 'Settles in over ~6 months'),
+    ('establish', 181, 'Settles in over ~7 months'),
+    ('foliage', 90, 'Grows year-round'),
+  ]) {
+    testWidgets('detail $kind $max uses the first start', (tester) async {
+      final plant = kaleWith({
+        'maturityKind': kind,
+        'starts': [
+          {'method': 'seed', 'daysMin': 60, 'daysMax': max},
+          {'method': 'transplant', 'daysMin': 10, 'daysMax': 20},
+        ],
+      });
+      await _pump(
+        tester,
+        plantId: plant.id,
+        overrides: [
+          ..._overrides(),
+          catalogProvider.overrideWith((ref) async => [plant]),
+        ],
+      );
+      expect(find.text(label), findsOneWidget);
+    });
+  }
+
   testWidgets('english-lavender shows score, bars, care, and season', (
     tester,
   ) async {
@@ -382,15 +478,13 @@ void main() {
           catalogProvider.overrideWith((ref) async => [plant]),
         ],
       );
-      final tops = <double>[];
-      for (final tip in tips) {
-        final finder = find.text(tip);
-        await tester.ensureVisible(finder);
-        await tester.pump();
-        tops.add(tester.getTopLeft(finder).dy);
-      }
+      final tops = [
+        for (final tip in tips) tester.getTopLeft(find.text(tip)).dy,
+      ];
       expect(find.textContaining('Tip number'), findsNWidgets(count));
-      expect(tops, [...tops]..sort());
+      for (var i = 1; i < tops.length; i++) {
+        expect(tops[i], greaterThan(tops[i - 1]));
+      }
     });
   }
 

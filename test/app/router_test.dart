@@ -210,6 +210,20 @@ void main() {
       tester.widget<GrowThisSheet>(find.byType(GrowThisSheet)).plant.plant.id,
       'kale',
     );
+    expect(find.text('Grow Kale'), findsOneWidget);
+    expect(find.text('Where will it grow?'), findsOneWidget);
+    expect(find.text('Outdoors'), findsOneWidget);
+    expect(find.text('Indoors'), findsOneWidget);
+    expect(find.text('Greenhouse'), findsOneWidget);
+    await tester.tap(find.text('Indoors'));
+    await tester.pumpAndSettle();
+    expect(find.text('ADD TO MY GARDEN'), findsOneWidget);
+    // Dismiss the actual modal and return to the same detail, not a stand-in.
+    Navigator.of(tester.element(find.byType(GrowThisSheet))).pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(GrowThisSheet), findsNothing);
+    expect(find.text('Kale'), findsOneWidget);
+    expect(_location(router).path, '/plants/kale');
     await _teardown(tester);
   });
 
