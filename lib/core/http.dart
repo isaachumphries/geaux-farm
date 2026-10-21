@@ -49,9 +49,23 @@ class AppHttpClient {
 
   /// Sends one GET. Any status code is returned to the caller; only a
   /// timeout or connection failure throws, as [NetworkException].
-  Future<http.Response> get(Uri uri, {Map<String, String>? headers}) async {
+  Future<http.Response> get(Uri uri, {Map<String, String>? headers}) =>
+      _send(uri, () => _client.get(uri, headers: headers));
+
+  /// Sends one POST with [body]. Same contract as [get]: one attempt, and
+  /// only a timeout or connection failure throws.
+  Future<http.Response> post(
+    Uri uri, {
+    Map<String, String>? headers,
+    Object? body,
+  }) => _send(uri, () => _client.post(uri, headers: headers, body: body));
+
+  Future<http.Response> _send(
+    Uri uri,
+    Future<http.Response> Function() request,
+  ) async {
     try {
-      return await _client.get(uri, headers: headers).timeout(timeout);
+      return await request().timeout(timeout);
     } on TimeoutException {
       throw NetworkException('Request timed out: ${uri.host}');
     } on SocketException catch (e) {
