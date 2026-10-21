@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:geaux_farm/features/community/domain/guide.dart';
 import 'package:geaux_farm/features/community/domain/guide_feed_query.dart';
 import 'package:geaux_farm/features/community/domain/guide_repository.dart';
+import 'package:geaux_farm/features/community/domain/report_reason.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -149,8 +150,12 @@ class FakeGuideRepository implements GuideRepository {
   final fetches = <(GuideFeedQuery, int)>[];
   final guideFetches = <String>[];
 
-  /// `star:<id>` and `unstar:<id>`, in call order.
+  /// `star:<id>`, `unstar:<id>` and `report:<id>`, in call order.
   final writes = <String>[];
+
+  /// One row per stored report, keyed by guide id, as the
+  /// `guide_reports` primary key keeps it: one per user per guide.
+  final reports = <String, ({ReportReason reason, String? note})>{};
   var starredFetches = 0;
 
   @override
@@ -187,6 +192,20 @@ class FakeGuideRepository implements GuideRepository {
   Future<void> unstarGuide(String id) async {
     await _write('unstar:$id');
     if (starred.remove(id)) _starDelta[id] = (_starDelta[id] ?? 0) - 1;
+  }
+
+  @override
+  Future<void> reportGuide(
+    String id, {
+    required ReportReason reason,
+    String? note,
+  }) async {
+    await _write('report:$id');
+    if (!isValidReportNote(note)) {
+      throw ArgumentError.value(note, 'note', 'too long');
+    }
+    // The primary key keeps the first report; a second one changes nothing.
+    reports.putIfAbsent(id, () => (reason: reason, note: note));
   }
 
   Future<void> _write(String call) async {

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../features/care/presentation/care_screen.dart';
 import '../features/community/presentation/community_feed_screen.dart';
 import '../features/community/presentation/guide_detail_screen.dart';
+import '../features/community/presentation/report_sheet.dart';
 import '../features/garden/presentation/grow_this_sheet.dart';
 import '../features/garden/presentation/my_garden_screen.dart';
 import '../features/garden/presentation/planting_detail_screen.dart';
@@ -155,8 +156,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'guide/:id',
-                    builder: (context, state) =>
-                        GuideDetailScreen(guideId: state.pathParameters['id']!),
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return Consumer(
+                        builder: (context, ref, _) => GuideDetailScreen(
+                          guideId: id,
+                          onReport: () =>
+                              reportGuide(context, ref, guideId: id),
+                        ),
+                      );
+                    },
                   ),
                   _placeholder('editor/:id', 'CM-03 Editor'),
                   _placeholder('me', 'CM-05 My profile'),

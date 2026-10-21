@@ -8,13 +8,15 @@ import '../../../core/http.dart';
 import '../domain/guide.dart';
 import '../domain/guide_feed_query.dart';
 import '../domain/guide_repository.dart';
+import '../domain/report_reason.dart';
 import 'guide_feed_request.dart';
 import 'guide_json.dart';
 
 /// Storage bucket of guide covers and step images (0001_init.sql).
 const guideImagesBucket = 'guide-images';
 
-/// Postgres `unique_violation`: the `guide_stars` primary key.
+/// Postgres `unique_violation`: the `guide_stars` and `guide_reports`
+/// primary keys.
 const _uniqueViolation = '23505';
 
 /// [GuideRepository] over the `guide_feed` view and `guide_stars`.
@@ -77,6 +79,37 @@ class SupabaseGuideRepository implements GuideRepository {
           .eq('user_id', userId)
           .eq('guide_id', id),
     );
+  }
+
+  @override
+  Future<void> reportGuide(
+    String id, {
+    required ReportReason reason,
+    String? note,
+  }) async {
+    final userId = _requireUserId();
+    if (!isValidReportNote(note)) {
+      throw ArgumentError.value(
+        note,
+        'note',
+        'longer than $maxReportNoteLength characters',
+      );
+    }
+    final trimmed = note?.trim();
+    try {
+      await _send(
+        _client.from('guide_reports').insert({
+          'guide_id': id,
+          'reporter_id': userId,
+          'reason': reason.wireValue,
+          if (trimmed != null && trimmed.isNotEmpty) 'note': trimmed,
+        }),
+      );
+    } on PostgrestException catch (e) {
+      // This user already reported this guide: one report per user per
+      // guide, so the report stands and there is nothing more to do.
+      if (e.code != _uniqueViolation) rethrow;
+    }
   }
 
   @override

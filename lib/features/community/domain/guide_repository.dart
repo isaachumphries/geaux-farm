@@ -1,5 +1,6 @@
 import 'guide.dart';
 import 'guide_feed_query.dart';
+import 'report_reason.dart';
 
 /// Community guides (plan/07, plan/09 § Supabase). Presentation and
 /// providers depend on this interface only.
@@ -28,6 +29,21 @@ abstract interface class GuideRepository {
   /// Deletes the signed-in user's `guide_stars` row for [id]. Not starred is
   /// success. Throws `AuthRequiredException` when signed out.
   Future<void> unstarGuide(String id);
+
+  /// Inserts the signed-in user's `guide_reports` row for [id] (plan/07 §
+  /// Moderation). Reporting the same guide a second time is success and
+  /// leaves the first row alone, because one report per user per guide is
+  /// the table's primary key. The client never writes `report_count` or
+  /// `status`: the `apply_report` trigger hides a guide on the 3rd
+  /// distinct reporter.
+  ///
+  /// Throws `AuthRequiredException` when signed out, and [ArgumentError]
+  /// when [note] is longer than [maxReportNoteLength].
+  Future<void> reportGuide(
+    String id, {
+    required ReportReason reason,
+    String? note,
+  });
 
   /// The public URL of a cover stored at [coverPath].
   String coverUrl(String coverPath);

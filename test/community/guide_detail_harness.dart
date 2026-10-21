@@ -9,6 +9,7 @@ import 'package:geaux_farm/features/community/data/auth_providers.dart';
 import 'package:geaux_farm/features/community/data/guide_repository_provider.dart';
 import 'package:geaux_farm/features/community/domain/auth_user.dart';
 import 'package:geaux_farm/features/community/presentation/guide_detail_screen.dart';
+import 'package:geaux_farm/features/community/presentation/report_sheet.dart';
 import 'package:go_router/go_router.dart';
 
 import '../helpers/app_harness.dart';
@@ -42,6 +43,7 @@ Future<GoRouter> pumpGuideDetail(
   VoidCallback? onGrow,
   VoidCallback? onRemix,
   VoidCallback? onReport,
+  bool wireReport = false,
 }) async {
   tester.view.physicalSize = Size(360, height);
   tester.view.devicePixelRatio = 1;
@@ -52,12 +54,22 @@ Future<GoRouter> pumpGuideDetail(
       GoRoute(path: '/', builder: (_, _) => const Text('home')),
       GoRoute(
         path: '/community/guide/:id',
-        builder: (_, state) => GuideDetailScreen(
-          guideId: state.pathParameters['id']!,
-          onGrow: onGrow,
-          onRemix: onRemix,
-          onReport: onReport,
-        ),
+        builder: (_, state) {
+          final guideId = state.pathParameters['id']!;
+          // wireReport runs the real router wiring (sign-in gate plus the
+          // report sheet) instead of a stub callback, so #60's flow test
+          // covers what the app actually does.
+          return Consumer(
+            builder: (context, ref, _) => GuideDetailScreen(
+              guideId: guideId,
+              onGrow: onGrow,
+              onRemix: onRemix,
+              onReport: wireReport
+                  ? () => reportGuide(context, ref, guideId: guideId)
+                  : onReport,
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/community/editor/:id',
