@@ -261,8 +261,8 @@ void main() {
     await _pumpAll(tester);
 
     // The cards are the list variant from #68. Its height is content
-    // driven (247 here), not the 112 plan/01 § Components specifies; see
-    // the note on #71.
+    // driven, not the 112 plan/01 § Components specifies; see the note on
+    // #71.
     final card = tester.widgetList<PlantCard>(find.byType(PlantCard)).first;
     expect(card.size, PlantCardSize.list);
     expect(
