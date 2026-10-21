@@ -7,6 +7,7 @@ import 'package:geaux_farm/app/widgets/widgets.dart';
 import 'package:geaux_farm/features/care/presentation/care_screen.dart';
 import 'package:geaux_farm/features/community/presentation/community_feed_screen.dart';
 import 'package:geaux_farm/features/community/presentation/guide_detail_screen.dart';
+import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
 import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/planting_detail_screen.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
@@ -197,16 +198,18 @@ void main() {
     await _teardown(tester);
   });
 
-  testWidgets('PD-01 "Grow this" is wired to the PD-02 sheet (#23)', (
-    tester,
-  ) async {
+  testWidgets('PD-01 "Grow this" opens the PD-02 sheet (#23)', (tester) async {
     final router = await _pumpApp(tester, onboardedProfile);
     await _go(tester, router, '/plants/kale');
 
-    final screen = tester.widget<PlantDetailScreen>(
-      find.byType(PlantDetailScreen),
+    expect(find.byType(GrowThisSheet), findsNothing);
+    await tester.tap(find.text('GROW THIS'));
+    await tester.pumpAndSettle();
+    expect(find.byType(GrowThisSheet), findsOneWidget);
+    expect(
+      tester.widget<GrowThisSheet>(find.byType(GrowThisSheet)).plant.plant.id,
+      'kale',
     );
-    expect(screen.onGrow, isNotNull);
     await _teardown(tester);
   });
 
