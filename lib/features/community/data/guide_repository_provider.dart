@@ -31,5 +31,14 @@ class UnconfiguredGuideRepository implements GuideRepository {
   Future<Set<String>> starredGuideIds() async => const {};
 
   @override
+  Future<Guide> fetchGuide(String id) => Future.error(_unavailable);
+
+  @override
+  Future<void> starGuide(String id) => Future.error(_unavailable);
+
+  @override
+  Future<void> unstarGuide(String id) => Future.error(_unavailable);
+
+  @override
   String coverUrl(String coverPath) => '';
 }

@@ -14,6 +14,9 @@ import 'guide_json.dart';
 /// Storage bucket of guide covers and step images (0001_init.sql).
 const guideImagesBucket = 'guide-images';
 
+/// Postgres `unique_violation`: the `guide_stars` primary key.
+const _uniqueViolation = '23505';
+
 /// [GuideRepository] over the `guide_feed` view and `guide_stars`.
 class SupabaseGuideRepository implements GuideRepository {
   /// [currentUserId] defaults to the signed-in Supabase user.
@@ -42,15 +45,51 @@ class SupabaseGuideRepository implements GuideRepository {
   }
 
   @override
+  Future<Guide> fetchGuide(String id) async {
+    final rows = await _send(
+      _client.from('guide_feed').select().eq('id', id).limit(1),
+    );
+    if (rows.isEmpty) throw GuideNotFoundException(id);
+    return guideFromJson(rows.first);
+  }
+
+  @override
+  Future<void> starGuide(String id) async {
+    final userId = _requireUserId();
+    try {
+      await _send(
+        _client.from('guide_stars').insert({'user_id': userId, 'guide_id': id}),
+      );
+    } on PostgrestException catch (e) {
+      // The row exists already (a star from another device): the guide is
+      // starred, which is what was asked for.
+      if (e.code != _uniqueViolation) rethrow;
+    }
+  }
+
+  @override
+  Future<void> unstarGuide(String id) async {
+    final userId = _requireUserId();
+    await _send(
+      _client
+          .from('guide_stars')
+          .delete()
+          .eq('user_id', userId)
+          .eq('guide_id', id),
+    );
+  }
+
+  @override
   String coverUrl(String coverPath) =>
       _client.storage.from(guideImagesBucket).getPublicUrl(coverPath);
+
+  String _requireUserId() =>
+      _currentUserId() ?? (throw const AuthRequiredException());
 
   /// Runs [request] once, with the app-wide timeout and without
   /// postgrest's automatic GET retries (plan/09 § Errors). A request that
   /// never got an answer becomes [NetworkException].
-  Future<PostgrestList> _send(
-    PostgrestBuilder<PostgrestList, PostgrestList, PostgrestList> request,
-  ) async {
+  Future<T> _send<T>(PostgrestBuilder<T, T, T> request) async {
     try {
       return await request.retry(
         enabled: false,

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/core/http.dart';
 import 'package:geaux_farm/features/community/data/supabase_guide_repository.dart';
 import 'package:geaux_farm/features/community/domain/guide_feed_query.dart';
+import 'package:geaux_farm/features/community/domain/guide_repository.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -193,6 +194,166 @@ void main() {
       expect(url.queryParameters['select'], 'guide_id');
       expect(url.queryParameters['user_id'], 'eq.user-1');
     });
+  });
+
+  group('fetchGuide', () {
+    test('reads one guide_feed row by id', () async {
+      final requests = <http.Request>[];
+      final client = mockSupabase((request) async {
+        requests.add(request);
+        return _json([guideRow(testGuide('g1', title: 'Kale bed'))], request);
+      });
+
+      final guide = await SupabaseGuideRepository(client).fetchGuide('g1');
+
+      expect(guide.id, 'g1');
+      expect(guide.title, 'Kale bed');
+      final url = requests.single.url;
+      expect(url.path, '/rest/v1/guide_feed');
+      expect(url.queryParameters['id'], 'eq.g1');
+      expect(url.queryParameters['limit'], '1');
+      expect(requests.single.method, 'GET');
+    });
+
+    test('no row (missing, hidden or a draft) is not found', () async {
+      final client = mockSupabase((request) async => _json([], request));
+
+      await expectLater(
+        SupabaseGuideRepository(client).fetchGuide('nope'),
+        throwsA(isA<GuideNotFoundException>()),
+      );
+    });
+
+    test('an unreachable server is a NetworkException', () async {
+      final client = mockSupabase(
+        (_) async => throw http.ClientException('offline'),
+      );
+
+      await expectLater(
+        SupabaseGuideRepository(client).fetchGuide('g1'),
+        throwsA(isA<NetworkException>()),
+      );
+    });
+  });
+
+  group('starGuide and unstarGuide', () {
+    ({SupabaseGuideRepository repo, List<http.Request> requests}) server({
+      String? userId = 'user-1',
+      int status = 201,
+      Object body = const <String, Object?>{},
+    }) {
+      final requests = <http.Request>[];
+      final client = mockSupabase((request) async {
+        requests.add(request);
+        return _json(body, request, status);
+      });
+      return (
+        repo: SupabaseGuideRepository(client, currentUserId: () => userId),
+        requests: requests,
+      );
+    }
+
+    test('star inserts one guide_stars row and nothing else', () async {
+      final s = server();
+
+      await s.repo.starGuide('g1');
+
+      final request = s.requests.single;
+      expect(request.method, 'POST');
+      expect(request.url.path, '/rest/v1/guide_stars');
+      // The body is the row alone: no star_count, no other table.
+      expect(jsonDecode(request.body), {'user_id': 'user-1', 'guide_id': 'g1'});
+    });
+
+    test('unstar deletes the row of that user and guide only', () async {
+      final s = server(status: 204, body: const []);
+
+      await s.repo.unstarGuide('g1');
+
+      final request = s.requests.single;
+      expect(request.method, 'DELETE');
+      expect(request.url.path, '/rest/v1/guide_stars');
+      expect(request.url.queryParameters, {
+        'user_id': 'eq.user-1',
+        'guide_id': 'eq.g1',
+      });
+      expect(request.body, isEmpty);
+    });
+
+    test('signed out: both throw AuthRequiredException, no request', () async {
+      final s = server(userId: null);
+
+      await expectLater(
+        s.repo.starGuide('g1'),
+        throwsA(isA<AuthRequiredException>()),
+      );
+      await expectLater(
+        s.repo.unstarGuide('g1'),
+        throwsA(isA<AuthRequiredException>()),
+      );
+      expect(s.requests, isEmpty);
+    });
+
+    test('starring a guide already starred is success', () async {
+      final s = server(
+        status: 409,
+        body: {'code': '23505', 'message': 'duplicate key', 'details': null},
+      );
+
+      await s.repo.starGuide('g1');
+
+      expect(s.requests, hasLength(1));
+    });
+
+    test('any other failure is thrown, not swallowed', () async {
+      final s = server(
+        status: 403,
+        body: {'code': '42501', 'message': 'row-level security'},
+      );
+
+      await expectLater(
+        s.repo.starGuide('g1'),
+        throwsA(isA<PostgrestException>()),
+      );
+      await expectLater(
+        s.repo.unstarGuide('g1'),
+        throwsA(isA<PostgrestException>()),
+      );
+    });
+
+    test(
+      'an unreachable server is a NetworkException, with no retry',
+      () async {
+        var calls = 0;
+        final client = mockSupabase((_) async {
+          calls++;
+          throw http.ClientException('offline');
+        });
+        final repo = SupabaseGuideRepository(client, currentUserId: () => 'u');
+
+        await expectLater(
+          repo.starGuide('g1'),
+          throwsA(isA<NetworkException>()),
+        );
+        expect(calls, 1);
+      },
+    );
+  });
+
+  test('no code under community/ updates or upserts a table', () {
+    // star_count is trigger-owned (plan/07 § Star): the only writes the
+    // client has are the guide_stars insert and delete.
+    final writes = RegExp(r'\.(update|upsert)\(');
+    final offenders = [
+      for (final file in Directory(
+        'lib/features/community',
+      ).listSync(recursive: true))
+        if (file is File &&
+            file.path.endsWith('.dart') &&
+            writes.hasMatch(file.readAsStringSync()))
+          file.path,
+    ];
+    expect(offenders, isEmpty);
   });
 
   test('coverUrl is the public guide-images URL', () {

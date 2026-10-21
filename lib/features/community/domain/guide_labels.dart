@@ -35,3 +35,16 @@ String guideDifficultyLabel(int difficulty) => switch (difficulty) {
   2 => 'Medium',
   _ => 'Hard',
 };
+
+/// "$35" for a guide's estimated cost; "—" when the author gave none.
+String guideCostLabel(int? usd) => usd == null ? '—' : '\$$usd';
+
+/// "~45 min", "~1 hour", "~1.5 hours": setup time rounded to the nearest
+/// half hour from an hour up; "—" when the author gave none.
+String guideSetupLabel(int? minutes) {
+  if (minutes == null) return '—';
+  if (minutes < 60) return '~$minutes min';
+  final halves = (minutes / 30).round();
+  final hours = halves.isEven ? '${halves ~/ 2}' : '${halves / 2}';
+  return '~$hours ${hours == '1' ? 'hour' : 'hours'}';
+}

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:geaux_farm/features/community/domain/guide.dart';
 import 'package:geaux_farm/features/community/domain/guide_feed_query.dart';
 import 'package:geaux_farm/features/community/domain/guide_repository.dart';
@@ -19,6 +21,11 @@ Guide testGuide(
   int? cost = 35,
   int stars7d = 0,
   String? coverPath,
+  int? setupMinutes,
+  List<GuideMaterial> materials = const [],
+  List<GuideStep> steps = const [],
+  List<String> plantIds = const [],
+  String? forkedFrom,
 }) => Guide(
   id: id,
   authorId: 'author-$author',
@@ -29,12 +36,42 @@ Guide testGuide(
   difficulty: difficulty,
   spaceTypes: spaceTypes,
   estCostUsd: cost,
+  setupMinutes: setupMinutes,
+  materials: materials,
+  steps: steps,
+  plantIds: plantIds,
+  forkedFrom: forkedFrom,
   tags: tags,
   starCount: stars,
   growCount: grows,
   remixCount: remixes,
   stars7d: stars7d,
   publishedAt: DateTime.utc(2026, 10, 1),
+);
+
+/// [guide] with another star count.
+Guide guideWithStars(Guide guide, int stars) => Guide(
+  id: guide.id,
+  authorId: guide.authorId,
+  authorUsername: guide.authorUsername,
+  authorDisplayName: guide.authorDisplayName,
+  title: guide.title,
+  summary: guide.summary,
+  coverPath: guide.coverPath,
+  difficulty: guide.difficulty,
+  spaceTypes: guide.spaceTypes,
+  estCostUsd: guide.estCostUsd,
+  setupMinutes: guide.setupMinutes,
+  materials: guide.materials,
+  steps: guide.steps,
+  plantIds: guide.plantIds,
+  tags: guide.tags,
+  forkedFrom: guide.forkedFrom,
+  starCount: stars,
+  growCount: guide.growCount,
+  remixCount: guide.remixCount,
+  stars7d: guide.stars7d,
+  publishedAt: guide.publishedAt,
 );
 
 /// `guide_feed` row JSON for [guide], as PostgREST returns it.
@@ -80,18 +117,40 @@ SupabaseClient mockSupabase(
 class FakeGuideRepository implements GuideRepository {
   FakeGuideRepository({
     this.pages,
-    this.starred = const {},
+    Set<String> starred = const {},
     this.failFetch = false,
-  });
+    this.guides = const {},
+  }) : starred = {...starred};
+
+  /// Guides [fetchGuide] answers with, by id; any other id is not found.
+  /// Their star counts move with [starGuide] and [unstarGuide], like the
+  /// trigger-owned count on the server.
+  final Map<String, Guide> guides;
 
   /// Rows for a query and offset; the default is an empty feed.
   final List<Guide> Function(GuideFeedQuery query, int offset)? pages;
+
+  /// The signed-in user's stars: changed by [starGuide] and [unstarGuide].
   final Set<String> starred;
 
   /// While true, [fetchFeed] throws.
   bool failFetch;
 
+  /// While set, [starredGuideIds] throws it after counting the call.
+  Object? starredError;
+
+  /// While set, [starGuide] and [unstarGuide] throw it after recording the
+  /// call.
+  Object? writeError;
+
+  /// Held open until completed, to observe the optimistic state.
+  Completer<void>? writeGate;
+
   final fetches = <(GuideFeedQuery, int)>[];
+  final guideFetches = <String>[];
+
+  /// `star:<id>` and `unstar:<id>`, in call order.
+  final writes = <String>[];
   var starredFetches = 0;
 
   @override
@@ -104,7 +163,36 @@ class FakeGuideRepository implements GuideRepository {
   @override
   Future<Set<String>> starredGuideIds() async {
     starredFetches++;
+    if (starredError != null) throw starredError!;
     return starred;
+  }
+
+  @override
+  Future<Guide> fetchGuide(String id) async {
+    guideFetches.add(id);
+    if (failFetch) throw Exception('offline');
+    final guide = guides[id] ?? (throw GuideNotFoundException(id));
+    return guideWithStars(guide, guide.starCount + (_starDelta[id] ?? 0));
+  }
+
+  final _starDelta = <String, int>{};
+
+  @override
+  Future<void> starGuide(String id) async {
+    await _write('star:$id');
+    if (starred.add(id)) _starDelta[id] = (_starDelta[id] ?? 0) + 1;
+  }
+
+  @override
+  Future<void> unstarGuide(String id) async {
+    await _write('unstar:$id');
+    if (starred.remove(id)) _starDelta[id] = (_starDelta[id] ?? 0) - 1;
+  }
+
+  Future<void> _write(String call) async {
+    writes.add(call);
+    await writeGate?.future;
+    if (writeError != null) throw writeError!;
   }
 
   @override

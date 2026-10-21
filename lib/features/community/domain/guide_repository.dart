@@ -15,6 +15,30 @@ abstract interface class GuideRepository {
   /// out.
   Future<Set<String>> starredGuideIds();
 
+  /// The published guide with [id]. Throws [GuideNotFoundException] when
+  /// there is none, or it is hidden or not published.
+  Future<Guide> fetchGuide(String id);
+
+  /// Inserts the signed-in user's `guide_stars` row for [id]. Already
+  /// starred is success. Throws `AuthRequiredException` (core/http.dart)
+  /// when signed out. The client never writes `star_count`: a trigger owns
+  /// it (plan/07 § Star).
+  Future<void> starGuide(String id);
+
+  /// Deletes the signed-in user's `guide_stars` row for [id]. Not starred is
+  /// success. Throws `AuthRequiredException` when signed out.
+  Future<void> unstarGuide(String id);
+
   /// The public URL of a cover stored at [coverPath].
   String coverUrl(String coverPath);
+}
+
+/// No published guide has the requested id.
+class GuideNotFoundException implements Exception {
+  const GuideNotFoundException(this.id);
+
+  final String id;
+
+  @override
+  String toString() => 'GuideNotFoundException($id)';
 }
