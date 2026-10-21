@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../home/application/first_plant_prompt_provider.dart';
 import '../data/onboarding_repository.dart';
+import '../data/profile_providers.dart';
 import '../domain/availability.dart';
 import '../domain/onboarding_draft.dart';
 import '../domain/space.dart';
@@ -87,6 +90,11 @@ List<(String, String, String)> summaryRows(OnboardingDraft d) {
   ];
 }
 
+/// How long Finish waits for the saved profile to reach the router before
+/// navigating anyway, so a profile stream that never publishes leaves the
+/// user on a working screen instead of a dead button (#183).
+const _routingStateTimeout = Duration(seconds: 5);
+
 /// OB-07 Profile summary: every answer on one screen, then Finish. No step
 /// dot.
 class ProfileSummaryScreen extends ConsumerStatefulWidget {
@@ -120,7 +128,33 @@ class _ProfileSummaryScreenState extends ConsumerState<ProfileSummaryScreen> {
       await ref.read(firstPlantPromptDismissedProvider.notifier).dismiss();
       if (!mounted) return;
     }
+    // The committed row reaches the router through the profile stream, a
+    // few turns after the transaction resolves. Navigating first hands the
+    // redirect a profile that still looks un-onboarded, which bounces the
+    // user back to OB-01 (#183).
+    await _awaitOnboardedProfile();
+    if (!mounted) return;
     context.go('/home');
+  }
+
+  /// Completes once [userProfileProvider] reports a finished onboarding,
+  /// or after [_routingStateTimeout].
+  Future<void> _awaitOnboardedProfile() async {
+    bool onboarded(AsyncValue<UserProfile> p) =>
+        p.hasValue && p.requireValue.onboardingCompletedAt != null;
+    if (onboarded(ref.read(userProfileProvider))) return;
+    final published = Completer<void>();
+    final subscription = ref.listenManual(userProfileProvider, (_, next) {
+      if (onboarded(next) && !published.isCompleted) published.complete();
+    });
+    try {
+      await published.future.timeout(_routingStateTimeout);
+    } on TimeoutException {
+      // Fall through: the write succeeded, so Home is still the right
+      // destination even if the stream has gone quiet.
+    } finally {
+      subscription.close();
+    }
   }
 
   @override
