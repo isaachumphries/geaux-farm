@@ -1,15 +1,14 @@
 // Validation for assets/plants/plants.json (plan/03 § Validation rules).
 //
-// `strictCatalog` stays false until the catalog is complete: #52 sets it to
-// true, which turns on the "credit/license not TBD" and "every seed id
-// present" checks.
+// `strictCatalog` is on now that the catalog is complete: it turns on the
+// "credit/license not TBD" and "every seed id present" checks.
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/features/catalog/domain/plant.dart';
 
-const bool strictCatalog = false;
+const bool strictCatalog = true;
 
 final _kebab = RegExp(r'^[a-z0-9]+(-[a-z0-9]+)*$');
 
@@ -255,13 +254,6 @@ void main() {
       expect(r['image']['license'], isNot('TBD'), reason: r['id'] as String);
     }
     expect(records.map((r) => r['id']), containsAll(_seedIds));
-  }, skip: strictCatalog ? false : 'strictCatalog is false until #52');
-
-  test('non-strict mode tolerates a short seed list', () {
-    expect(strictCatalog, isFalse);
-    expect(records.length, lessThan(_seedIds.length));
-    for (final r in records) {
-      expect(validateRecord(r), isEmpty);
-    }
-  });
+    expect(records, hasLength(_seedIds.length));
+  }, skip: strictCatalog ? false : 'strictCatalog is false');
 }
