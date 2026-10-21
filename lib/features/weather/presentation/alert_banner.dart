@@ -49,7 +49,7 @@ class AlertBanner extends StatelessWidget {
         AppColors.tilePeach,
       ),
       AlertBannerType.rain => (
-        Symbols.rainy_rounded,
+        Symbols.umbrella_rounded,
         AppColors.tileSkyLedge,
         AppColors.tileSky,
       ),
@@ -64,8 +64,12 @@ class AlertBanner extends StatelessWidget {
         AppColors.gold100,
       ),
     };
+    // The copy reads "Frost Thu: cover or ..."; the part up to the colon is
+    // the banner's bold title. Offline has no colon and shows as one line.
+    final colon = message.indexOf(': ');
     return GeauxAlertBanner(
-      message: message,
+      lead: colon < 0 ? null : message.substring(0, colon + 1),
+      message: colon < 0 ? message : message.substring(colon + 2),
       icon: icon,
       accent: accent,
       tint: tint,

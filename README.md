@@ -84,3 +84,24 @@ config or the template.
 | Demo account addresses and inbox logins | Team password manager |
 | Service-role key, database password | Supabase dashboard → Project Settings; team password manager |
 | Anon (publishable) key and project URL | `env.json` (gitignored) and CI secrets; template in `env.example.json` |
+
+## Garden weather alerts
+
+Home and Weather use the same typed `AlertBanner` adapter and shared
+`GeauxAlertBanner` visual container. Frost, heat, heavy rain, and high UV retain
+the exact plan/06 copy; offline weather says “Showing saved weather”.
+
+Alert evaluation reads only active outdoor plantings and today through two days
+ahead. Forecast/cache values stay in °F and inches even when Settings displays
+metric units. UV additionally requires an outdoor planting in the Sprouting
+stage and today's UV maximum.
+
+Frost notices run at 18:00 local on the preceding day, skip elapsed evenings,
+and replace the pending weather set after refresh or planting changes. Weather
+owns IDs 1000–1002, separate from care's future-slot epoch-minute IDs, with at
+most three pending notices. Scheduling follows the notification Settings toggle.
+There is no background forecast refresh.
+
+The rules, display-unit independence, planting filters, and replacement behavior
+are covered under `test/weather/`; screen placement and saved-weather age states
+are covered by `test/features/weather/weather_screen_test.dart`.
