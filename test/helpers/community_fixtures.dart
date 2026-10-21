@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:geaux_farm/features/community/domain/guide.dart';
 import 'package:geaux_farm/features/community/domain/guide_feed_query.dart';
 import 'package:geaux_farm/features/community/domain/guide_repository.dart';
+import 'package:geaux_farm/features/community/domain/guide_validation.dart';
 import 'package:geaux_farm/features/community/domain/report_reason.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -122,6 +123,8 @@ class FakeGuideRepository implements GuideRepository {
     Set<String> starred = const {},
     this.failFetch = false,
     this.guides = const {},
+    this.newGuideId = 'g-new',
+    this.writeError,
   }) : starred = {...starred};
 
   /// Guides [fetchGuide] answers with, by id; any other id is not found.
@@ -141,12 +144,19 @@ class FakeGuideRepository implements GuideRepository {
   /// While set, [starredGuideIds] throws it after counting the call.
   Object? starredError;
 
-  /// While set, [starGuide] and [unstarGuide] throw it after recording the
-  /// call.
+  /// While set, every write ([starGuide], [unstarGuide], [saveDraft],
+  /// [publishGuide], [deleteGuide]) throws it after recording the call.
   Object? writeError;
 
   /// Held open until completed, to observe the optimistic state.
   Completer<void>? writeGate;
+
+  /// The id an insert returns, standing in for the server-generated one.
+  final String newGuideId;
+
+  /// Every write, in order, as `(action, draft)`.
+  final writes = <(String, GuideDraft)>[];
+  final deleted = <String>[];
 
   final fetches = <(GuideFeedQuery, int)>[];
   final guideFetches = <String>[];
@@ -221,4 +231,25 @@ class FakeGuideRepository implements GuideRepository {
 
   @override
   String coverUrl(String coverPath) => 'http://supabase.test/$coverPath';
+
+  @override
+  Future<String> saveDraft(GuideDraft draft) => _write('saveDraft', draft);
+
+  @override
+  Future<String> publishGuide(GuideDraft draft) =>
+      _write('publishGuide', draft);
+
+  @override
+  Future<void> deleteGuide(String guideId) async {
+    final error = writeError;
+    if (error != null) throw error;
+    deleted.add(guideId);
+  }
+
+  Future<String> _write(String action, GuideDraft draft) async {
+    writes.add((action, draft));
+    final error = writeError;
+    if (error != null) throw error;
+    return draft.id ?? newGuideId;
+  }
 }
