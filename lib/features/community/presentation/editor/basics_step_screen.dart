@@ -8,6 +8,7 @@ import '../../../onboarding/domain/space.dart';
 import '../../application/guide_editor_provider.dart';
 import '../../domain/guide_labels.dart';
 import '../../domain/guide_validation.dart';
+import '../widgets/feed_chip.dart';
 import 'editor_widgets.dart';
 
 /// Lines the summary field is tall when empty, and the most it grows to.
@@ -216,9 +217,11 @@ class _BasicsStepScreenState extends ConsumerState<BasicsStepScreen> {
                   spacing: AppSpacing.sm,
                   children: [
                     for (final tag in guideTags)
-                      _TagChip(
+                      FeedChip(
                         label: guideTagLabel(tag),
                         selected: draft.tags.contains(tag),
+                        // The pill is 44 tall; plan/01 asks for a 48 tap area.
+                        minTapHeight: AppSpacing.minTouchTarget,
                         onTap: draft.tags.contains(tag) || !tagsFull
                             ? () => _toggleTag(tag)
                             : null,
@@ -261,69 +264,3 @@ List<String> _toggled(List<String> all, List<String> current, String value) => [
   for (final item in all)
     if (item == value ? !current.contains(item) : current.contains(item)) item,
 ];
-
-/// One tag pill: leaf-700 when picked, like CM-01's filter chips. Without an
-/// [onTap] it is dimmed and inert, because five tags are picked already.
-/// The pill is 44 tall; the tap area around it is the 48 plan/01 asks for.
-class _TagChip extends StatelessWidget {
-  const _TagChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback? onTap;
-
-  /// Horizontal padding inside a CM-01 chip.
-  static const double _paddingH = 14;
-  static const double _disabledOpacity = 0.5;
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = onTap != null;
-    return MergeSemantics(
-      child: Semantics(
-        button: true,
-        selected: selected,
-        enabled: enabled,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: AppSpacing.minTouchTarget,
-            ),
-            child: Center(
-              widthFactor: 1,
-              child: Opacity(
-                opacity: enabled ? 1 : _disabledOpacity,
-                child: LedgeCapsule(
-                  color: selected ? AppColors.leaf700 : AppColors.white,
-                  borderColor: selected
-                      ? AppColors.leaf700
-                      : AppColors.stone200,
-                  ledgeColor: selected
-                      ? AppColors.leafLedge
-                      : AppColors.stone200,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: _paddingH,
-                    vertical: AppSpacing.sm + 1,
-                  ),
-                  child: Text(
-                    label,
-                    style: AppText.bodySm.copyWith(
-                      color: selected ? AppColors.white : AppColors.soil900,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
