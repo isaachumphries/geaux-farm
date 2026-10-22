@@ -90,3 +90,17 @@ class GuideNotFoundException implements Exception {
   @override
   String toString() => 'GuideNotFoundException($id)';
 }
+
+/// The write was refused: RLS matched no row, which is what a hidden
+/// guide or another author's guide looks like from the client
+/// (`guides_update` is `author_id = auth.uid() and status <> 'hidden'`).
+class GuideWriteRejectedException implements Exception {
+  const GuideWriteRejectedException([
+    this.message = 'This guide can no longer be edited',
+  ]);
+
+  final String message;
+
+  @override
+  String toString() => 'GuideWriteRejectedException: $message';
+}

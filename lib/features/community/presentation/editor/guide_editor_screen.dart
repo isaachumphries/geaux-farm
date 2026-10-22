@@ -8,9 +8,8 @@ import '../../../../app/widgets/widgets.dart';
 import '../../../../core/http.dart';
 import '../../application/guide_editor_provider.dart';
 import '../../data/auth_providers.dart';
-import '../../data/supabase_guide_repository.dart'
-    show GuideWriteRejectedException;
-import '../../domain/guide_repository.dart' show GuideNotFoundException;
+import '../../domain/guide_repository.dart'
+    show GuideNotFoundException, GuideWriteRejectedException;
 import '../sign_in_sheet.dart';
 import 'basics_step_screen.dart';
 import 'editor_copy.dart';

@@ -10,8 +10,6 @@ import 'package:geaux_farm/core/http.dart';
 import 'package:geaux_farm/features/community/application/guide_editor_provider.dart';
 import 'package:geaux_farm/features/community/data/auth_providers.dart';
 import 'package:geaux_farm/features/community/data/guide_repository_provider.dart';
-import 'package:geaux_farm/features/community/data/supabase_guide_repository.dart'
-    show GuideWriteRejectedException;
 import 'package:geaux_farm/features/community/domain/guide.dart';
 import 'package:geaux_farm/features/community/domain/guide_repository.dart';
 import 'package:geaux_farm/features/community/domain/guide_validation.dart';
