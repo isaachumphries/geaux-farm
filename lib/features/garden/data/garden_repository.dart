@@ -75,6 +75,27 @@ class GardenRepository {
     await query.write(PlantingsTableCompanion(status: Value(status)));
   }
 
+  /// GD-01 "Start planting": a planned planting becomes active, planted
+  /// today. No care event is logged.
+  Future<void> startPlanting(String plantingId) async {
+    final t = now();
+    final query = _db.update(_db.plantingsTable)
+      ..where((p) => p.id.equals(plantingId));
+    await query.write(
+      PlantingsTableCompanion(
+        plantedOn: Value(DateTime(t.year, t.month, t.day)),
+        status: const Value(PlantingStatus.active),
+      ),
+    );
+  }
+
+  /// GD-02 "Mark harvested": logs one `harvest` event and moves the
+  /// planting to harvested, together or not at all.
+  Future<void> markHarvested(String plantingId) => _db.transaction(() async {
+    await logCare(plantingId, CareEventType.harvest);
+    await setStatus(plantingId, PlantingStatus.harvested);
+  });
+
   String _uuidV4() {
     final b = List<int>.generate(16, (_) => _random.nextInt(256));
     b[6] = (b[6] & 0x0f) | 0x40;
