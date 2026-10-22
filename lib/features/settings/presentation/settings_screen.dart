@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
+import 'widgets/about_card.dart';
 import 'widgets/account_tile.dart';
 import 'widgets/care_reminders_tile.dart';
 import 'widgets/units_tile.dart';
@@ -25,6 +26,9 @@ class SettingsScreen extends StatelessWidget {
           SizedBox(height: AppSpacing.xl),
           _SectionLabel('Account'),
           AccountTile(),
+          SizedBox(height: AppSpacing.xl),
+          _SectionLabel('About'),
+          AboutCard(),
         ],
       ),
     );
