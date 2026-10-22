@@ -4,6 +4,7 @@ import 'package:geaux_farm/core/http.dart';
 import 'package:geaux_farm/features/community/application/guide_editor_provider.dart';
 import 'package:geaux_farm/features/community/data/guide_repository_provider.dart';
 import 'package:geaux_farm/features/community/domain/guide.dart';
+import 'package:geaux_farm/features/community/domain/guide_repository.dart';
 import 'package:geaux_farm/features/community/domain/guide_validation.dart';
 
 import '../helpers/community_fixtures.dart';
@@ -22,7 +23,14 @@ GuideDraft _publishable(GuideDraft draft) => draft.copyWith(
 );
 
 ({ProviderContainer container, FakeGuideRepository repo}) _rig() {
-  final repo = FakeGuideRepository();
+  final repo = FakeGuideRepository(
+    drafts: {
+      'g1': (
+        draft: const GuideDraft(id: 'g1', title: 'Old title', difficulty: 1),
+        status: GuideStatus.published,
+      ),
+    },
+  );
   final container = ProviderContainer(
     overrides: [guideRepositoryProvider.overrideWithValue(repo)],
   );
@@ -41,12 +49,39 @@ void main() {
       expect(state.errors, isEmpty);
     });
 
-    test('an existing route id edits that guide', () {
+    test('an existing route id loads the author\'s guide', () async {
       final rig = _rig();
-      final state = rig.container.read(guideEditorProvider('g1'));
+      final notifier = rig.container.read(guideEditorProvider('g1').notifier);
 
+      expect(rig.container.read(guideEditorProvider('g1')).loading, isTrue);
+      await notifier.load();
+
+      final state = rig.container.read(guideEditorProvider('g1'));
+      expect(state.loading, isFalse);
       expect(state.draft.id, 'g1');
-      expect(state.draft.isSaved, isTrue);
+      expect(state.draft.title, 'Old title');
+      expect(state.status, GuideStatus.published);
+    });
+
+    test('a guide that cannot be read exposes the load error', () async {
+      final rig = _rig();
+      final notifier = rig.container.read(
+        guideEditorProvider('missing').notifier,
+      );
+      await notifier.load();
+
+      final state = rig.container.read(guideEditorProvider('missing'));
+      expect(state.loading, isFalse);
+      expect(state.loadError, isA<GuideNotFoundException>());
+    });
+
+    test('a published guide is never saved back to a draft', () async {
+      final rig = _rig();
+      final notifier = rig.container.read(guideEditorProvider('g1').notifier);
+      await notifier.load();
+
+      expect(await notifier.saveDraft(), isNull);
+      expect(rig.repo.draftWrites, isEmpty);
     });
   });
 
@@ -185,6 +220,7 @@ void main() {
       final rig = _rig();
       rig.repo.writeError = const NetworkException('offline');
       final notifier = rig.container.read(guideEditorProvider('g1').notifier);
+      await notifier.load();
       notifier.edit(_publishable);
 
       final id = await notifier.publish();
@@ -217,6 +253,7 @@ void main() {
       final rig = _rig();
       rig.repo.writeError = const NetworkException('offline');
       final notifier = rig.container.read(guideEditorProvider('g1').notifier);
+      await notifier.load();
       notifier.edit(_publishable);
       await notifier.publish();
 

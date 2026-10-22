@@ -49,6 +49,13 @@ abstract interface class GuideRepository {
   /// The public URL of a cover stored at [coverPath].
   String coverUrl(String coverPath);
 
+  /// The signed-in author's own guide [id] for the editor, read from
+  /// `guides` so drafts and hidden guides load too (`guides_read` lets an
+  /// author read every row they wrote). Throws [AuthRequiredException]
+  /// when signed out, without sending a request, and
+  /// [GuideNotFoundException] when the author has no guide [id].
+  Future<EditableGuide> fetchDraft(String id);
+
   /// Saves [draft] with `status = 'draft'` and returns its guide id: an
   /// insert when the draft has no id yet, otherwise an update in place.
   ///
@@ -65,6 +72,14 @@ abstract interface class GuideRepository {
   /// anyone else's.
   Future<void> deleteGuide(String guideId);
 }
+
+/// The `guides.status` values (0001_init.sql).
+enum GuideStatus { draft, published, hidden }
+
+/// An author's own guide as the editor opens it: the draft to edit and
+/// the row's current status. A published guide is edited in place, so the
+/// editor never offers to demote it back to a draft.
+typedef EditableGuide = ({GuideDraft draft, GuideStatus status});
 
 /// No published guide has the requested id.
 class GuideNotFoundException implements Exception {

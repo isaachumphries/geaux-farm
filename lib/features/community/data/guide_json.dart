@@ -1,4 +1,5 @@
 import '../domain/guide.dart';
+import '../domain/guide_repository.dart';
 import '../domain/guide_validation.dart';
 
 /// A `guide_feed` row as a [Guide]. Throws when a required column is
@@ -46,6 +47,47 @@ Guide guideFromJson(Map<String, dynamic> row) {
     remixCount: row['remix_count'] as int,
     stars7d: row['stars_7d'] as int,
     publishedAt: publishedAt == null ? null : DateTime.parse(publishedAt),
+  );
+}
+
+/// A `guides` row as the editor opens it. Throws when a required column is
+/// missing or mistyped, or `status` is not one of [GuideStatus].
+EditableGuide editableGuideFromJson(Map<String, dynamic> row) {
+  List<String> strings(String key) =>
+      (row[key] as List<dynamic>? ?? const []).cast<String>();
+  List<Map<String, dynamic>> maps(String key) =>
+      (row[key] as List<dynamic>? ?? const []).cast<Map<String, dynamic>>();
+  return (
+    draft: GuideDraft(
+      id: row['id'] as String,
+      title: row['title'] as String,
+      summary: row['summary'] as String,
+      coverPath: row['cover_path'] as String?,
+      difficulty: row['difficulty'] as int?,
+      spaceTypes: strings('space_types'),
+      estCostUsd: row['est_cost_usd'] as int?,
+      setupMinutes: row['setup_minutes'] as int?,
+      materials: [
+        for (final m in maps('materials'))
+          GuideMaterial(
+            name: m['name'] as String,
+            qty: m['qty'] as String,
+            estCostUsd: m['estCostUsd'] as int?,
+            url: m['url'] as String?,
+          ),
+      ],
+      steps: [
+        for (final s in maps('steps'))
+          GuideStep(
+            title: s['title'] as String,
+            body: s['body'] as String,
+            imagePath: s['imagePath'] as String?,
+          ),
+      ],
+      plantIds: strings('plant_ids'),
+      tags: strings('tags'),
+    ),
+    status: GuideStatus.values.byName(row['status'] as String),
   );
 }
 

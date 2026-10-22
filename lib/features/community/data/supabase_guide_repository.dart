@@ -140,6 +140,21 @@ class SupabaseGuideRepository implements GuideRepository {
       _client.storage.from(guideImagesBucket).getPublicUrl(coverPath);
 
   @override
+  Future<EditableGuide> fetchDraft(String id) async {
+    final userId = _requireUserId();
+    final rows = await _send(
+      _client
+          .from(_guidesTable)
+          .select()
+          .eq('id', id)
+          .eq('author_id', userId)
+          .limit(1),
+    );
+    if (rows.isEmpty) throw GuideNotFoundException(id);
+    return editableGuideFromJson(rows.first);
+  }
+
+  @override
   Future<String> saveDraft(GuideDraft draft) =>
       _write(draft, status: _draftStatus);
 
