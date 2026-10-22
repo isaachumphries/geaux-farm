@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
 import 'package:geaux_farm/core/http.dart';
+import 'package:geaux_farm/features/community/application/community_feed_provider.dart';
 import 'package:geaux_farm/features/community/application/growing_guides_provider.dart';
 import 'package:geaux_farm/features/community/data/auth_providers.dart';
 import 'package:geaux_farm/features/community/data/guide_repository_provider.dart';
+import 'package:geaux_farm/features/community/domain/guide_feed_query.dart';
 import 'package:geaux_farm/features/community/presentation/delete_guide.dart';
 import 'package:geaux_farm/features/community/presentation/guide_detail_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -88,6 +90,19 @@ void main() {
     final repo = FakeGuideRepository(guides: {'g1': guide});
     final router = await _pumpOwnGuide(tester, repo, 'g1', guide.authorId);
 
+    // The feed stays mounted under CM-02 in the app, so hold it open.
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(GuideDetailScreen)),
+    );
+    final feed = container.listen(
+      communityFeedProvider(const GuideFeedQuery()),
+      (_, _) {},
+    );
+    addTearDown(feed.close);
+    await tester.pumpAndSettle();
+    final fetchesBefore = repo.fetches.length;
+    expect(fetchesBefore, 1);
+
     await _tapDelete(tester);
     expect(find.text('Delete this guide?'), findsOneWidget);
     expect(repo.deleted, isEmpty);
@@ -96,6 +111,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repo.deleted, ['g1']);
+    // The feed under CM-02 must not keep listing the deleted guide.
+    expect(repo.fetches.length, greaterThan(fetchesBefore));
     expect(router.routerDelegate.currentConfiguration.uri.path, '/community');
     expect(find.text('feed'), findsOneWidget);
     expect(find.text('Guide deleted'), findsOneWidget);
