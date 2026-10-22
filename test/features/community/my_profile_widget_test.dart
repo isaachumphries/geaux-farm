@@ -165,7 +165,12 @@ void main() {
       await _pump(tester, _repo());
 
       expect(find.byType(GeauxEmptyState), findsOneWidget);
-      expect(find.text(myGuidesEmptyCopy), findsOneWidget);
+      expect(
+        find.text(
+          'No guides yet. Guides you write show up here, drafts included.',
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('a failed load shows Retry, which loads again', (tester) async {
@@ -208,7 +213,10 @@ void main() {
       await _showStarred(tester);
 
       expect(find.byType(GeauxEmptyState), findsOneWidget);
-      expect(find.text(starredEmptyCopy), findsOneWidget);
+      expect(
+        find.text('No starred guides yet. Star a guide to keep it here.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('opening CM-05 does not fetch the starred set again', (
