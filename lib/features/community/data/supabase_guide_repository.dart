@@ -189,6 +189,19 @@ class SupabaseGuideRepository implements GuideRepository {
       _write(draft, status: _publishedStatus);
 
   @override
+  Future<String> insertRemixDraft(Map<String, dynamic> payload) async {
+    final userId = _requireUserId();
+    // guides.id is server-generated, so the insert reads it back.
+    final rows = await _send(
+      _client
+          .from(_guidesTable)
+          .insert({...payload, 'author_id': userId})
+          .select('id'),
+    );
+    return rows.single['id'] as String;
+  }
+
+  @override
   Future<void> deleteGuide(String guideId) async {
     final userId = _requireUserId();
     // The author_id filter keeps a mistyped id from even reaching RLS.

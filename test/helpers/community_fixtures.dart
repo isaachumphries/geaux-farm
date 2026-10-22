@@ -155,7 +155,8 @@ class FakeGuideRepository implements GuideRepository {
   Object? starredError;
 
   /// While set, every write ([starGuide], [unstarGuide], [saveDraft],
-  /// [publishGuide], [deleteGuide]) throws it after recording the call.
+  /// [publishGuide], [insertRemixDraft], [deleteGuide]) throws it after
+  /// recording the call.
   Object? writeError;
 
   /// Held open until completed, to observe the optimistic state or a draft
@@ -277,6 +278,18 @@ class FakeGuideRepository implements GuideRepository {
   @override
   Future<String> publishGuide(GuideDraft draft) =>
       _writeDraft('publishGuide', draft);
+
+  /// Every [insertRemixDraft] payload, in call order.
+  final remixInserts = <Map<String, dynamic>>[];
+
+  @override
+  Future<String> insertRemixDraft(Map<String, dynamic> payload) async {
+    remixInserts.add(payload);
+    await writeGate?.future;
+    final error = writeError;
+    if (error != null) throw error;
+    return newGuideId;
+  }
 
   @override
   Future<void> deleteGuide(String guideId) async {
