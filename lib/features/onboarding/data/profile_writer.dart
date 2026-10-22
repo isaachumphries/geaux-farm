@@ -73,6 +73,14 @@ class ProfileWriter {
       const UserProfileTableCompanion(firstPlantPromptDismissed: Value(true)),
     );
   }
+
+  /// Sets only `units` on the profile row (id 1): `imperial` or `metric`.
+  /// Display only; stored readings stay in °F and inches (plan/06 § Units).
+  Future<void> setUnits(String units) {
+    assert(units == 'imperial' || units == 'metric', units);
+    return (_db.update(_db.userProfileTable)..where((t) => t.id.equals(1)))
+        .write(UserProfileTableCompanion(units: Value(units)));
+  }
 }
 
 final profileWriterProvider = Provider<ProfileWriter>(

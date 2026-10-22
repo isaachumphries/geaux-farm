@@ -20,7 +20,10 @@ enum SignInAction {
   grow('Sign in to grow guides', Symbols.potted_plant_rounded),
   remix('Sign in to remix guides', Symbols.content_copy_rounded),
   publish('Sign in to publish guides', Symbols.edit_rounded),
-  report('Sign in to report guides', Symbols.flag_rounded);
+  report('Sign in to report guides', Symbols.flag_rounded),
+
+  /// The Account row on ST-01 Settings: no community action is waiting.
+  account('Sign in', Symbols.person_rounded);
 
   const SignInAction(this.title, this.icon);
 
