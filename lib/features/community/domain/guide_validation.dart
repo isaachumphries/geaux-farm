@@ -135,9 +135,10 @@ class GuideDraft {
   );
 }
 
-/// Errors blocking "Save draft" (plan/07 § Editor): a title is enough,
-/// except on the first save, where the table constraints also need a
-/// 5–80 title and a difficulty.
+/// Errors blocking "Save draft" (plan/07 § Editor): a 5–80 title is enough.
+/// The `guides.title` check constraint applies to updates as well as
+/// inserts, so a saved draft needs it too. The first save also needs a
+/// difficulty, which the column requires on insert.
 ///
 /// An empty result means the save may go ahead.
 Map<String, GuideFieldError> validateSaveDraft(GuideDraft draft) {
@@ -146,9 +147,9 @@ Map<String, GuideFieldError> validateSaveDraft(GuideDraft draft) {
     errors[GuideField.title] = GuideFieldError.titleMissing;
     return errors;
   }
-  if (draft.isSaved) return errors;
   final title = _titleError(draft.title);
   if (title != null) errors[GuideField.title] = title;
+  if (draft.isSaved) return errors;
   final difficulty = _difficultyError(draft.difficulty);
   if (difficulty != null) errors[GuideField.difficulty] = difficulty;
   return errors;

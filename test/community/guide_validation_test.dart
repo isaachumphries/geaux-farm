@@ -43,11 +43,20 @@ GuideDraft valid({
 
 void main() {
   group('validateSaveDraft', () {
-    test('a title alone is enough once the row exists', () {
-      expect(
-        validateSaveDraft(const GuideDraft(id: 'g1', title: 'Hi')),
-        isEmpty,
-      );
+    test('once the row exists a 5-80 title is enough, with no difficulty', () {
+      expect(validateSaveDraft(GuideDraft(id: 'g1', title: 'a' * 5)), isEmpty);
+      expect(validateSaveDraft(GuideDraft(id: 'g1', title: 'a' * 80)), isEmpty);
+    });
+
+    // The guides.title check constraint applies to updates too: a later
+    // save with a short title is refused by the database (23514).
+    test('a saved draft still needs the title length: 4 fails, 81 fails', () {
+      expect(validateSaveDraft(GuideDraft(id: 'g1', title: 'a' * 4)), {
+        GuideField.title: GuideFieldError.titleTooShort,
+      });
+      expect(validateSaveDraft(GuideDraft(id: 'g1', title: 'a' * 81)), {
+        GuideField.title: GuideFieldError.titleTooLong,
+      });
     });
 
     test('no title is blocked, saved or not', () {
@@ -65,7 +74,7 @@ void main() {
       });
     });
 
-    group('the first save also needs a 5-80 title and a difficulty', () {
+    group('the first save also needs a difficulty and a 5-80 title', () {
       test('5 characters passes, 4 fails', () {
         expect(
           validateSaveDraft(
