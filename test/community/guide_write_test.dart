@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/core/http.dart';
 import 'package:geaux_farm/features/community/data/supabase_guide_repository.dart';
 import 'package:geaux_farm/features/community/domain/guide.dart';
+import 'package:geaux_farm/features/community/domain/guide_repository.dart';
 import 'package:geaux_farm/features/community/domain/guide_validation.dart';
 import 'package:http/http.dart' as http;
 
@@ -59,6 +60,28 @@ GuideDraft _draft({String? id, String summary = 'A made-up guide.'}) =>
       materials: const [GuideMaterial(name: 'Bucket', qty: '1')],
       steps: const [GuideStep(title: 'Drill holes', body: 'Six of them.')],
     );
+
+/// A `guides` row as PostgREST returns it, with this [status].
+Map<String, Object?> _guidesRow({String status = 'draft'}) => {
+  'id': 'g1',
+  'author_id': 'u1',
+  'title': 'Bucket tomatoes',
+  'summary': '',
+  'cover_path': null,
+  'difficulty': 2,
+  'space_types': ['balcony'],
+  'est_cost_usd': 12,
+  'setup_minutes': null,
+  'materials': [
+    {'name': 'Bucket', 'qty': '1', 'estCostUsd': 5, 'url': null},
+  ],
+  'steps': [
+    {'title': 'Drill holes', 'body': 'Six.', 'imagePath': null},
+  ],
+  'plant_ids': ['tomato'],
+  'tags': ['budget'],
+  'status': status,
+};
 
 void main() {
   late _Recorder recorder;
@@ -153,6 +176,10 @@ void main() {
           repo.deleteGuide('g1'),
           throwsA(isA<AuthRequiredException>()),
         );
+        await expectLater(
+          repo.fetchDraft('g1'),
+          throwsA(isA<AuthRequiredException>()),
+        );
         expect(recorder.requests, isEmpty);
       },
     );
@@ -183,6 +210,55 @@ void main() {
       expect(request.url.path, '/rest/v1/guides');
       expect(request.url.query, contains('id=eq.g1'));
       expect(request.url.query, contains('author_id=eq.u1'));
+    });
+
+    test('a delete that removes no row is rejected', () async {
+      // RLS answers 200 with no rows for a guide that is not the user's.
+      recorder.rows = [];
+
+      await expectLater(
+        _repo(recorder).deleteGuide('g1'),
+        throwsA(isA<GuideWriteRejectedException>()),
+      );
+    });
+  });
+
+  group('open for editing', () {
+    test('reads the author\'s own row from guides, draft included', () async {
+      recorder.rows = [_guidesRow()];
+
+      final guide = await _repo(recorder).fetchDraft('g1');
+
+      final request = recorder.requests.single;
+      expect(request.method, 'GET');
+      expect(request.url.path, '/rest/v1/guides');
+      expect(request.url.query, contains('id=eq.g1'));
+      expect(request.url.query, contains('author_id=eq.u1'));
+      expect(guide.status, GuideStatus.draft);
+      expect(guide.draft.id, 'g1');
+      expect(guide.draft.summary, '');
+      expect(guide.draft.estCostUsd, 12);
+      expect(guide.draft.materials.single.estCostUsd, 5);
+      expect(guide.draft.steps.single.title, 'Drill holes');
+      expect(guide.draft.plantIds, ['tomato']);
+      expect(guide.draft.tags, ['budget']);
+    });
+
+    test('a published row opens as published, not as a draft', () async {
+      recorder.rows = [_guidesRow(status: 'published')];
+
+      final guide = await _repo(recorder).fetchDraft('g1');
+
+      expect(guide.status, GuideStatus.published);
+    });
+
+    test('another author\'s guide is not found', () async {
+      recorder.rows = [];
+
+      await expectLater(
+        _repo(recorder).fetchDraft('g1'),
+        throwsA(isA<GuideNotFoundException>()),
+      );
     });
   });
 }

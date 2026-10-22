@@ -6,6 +6,7 @@ import 'package:geaux_farm/app/router.dart';
 import 'package:geaux_farm/app/widgets/widgets.dart';
 import 'package:geaux_farm/features/care/presentation/care_screen.dart';
 import 'package:geaux_farm/features/community/presentation/community_feed_screen.dart';
+import 'package:geaux_farm/features/community/presentation/editor/guide_editor_screen.dart';
 import 'package:geaux_farm/features/community/presentation/guide_detail_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
 import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
@@ -150,7 +151,6 @@ void main() {
     const placeholders = {
       '/settings': 'Settings',
       '/settings/edit/space': 'OB-07 Edit step',
-      '/community/editor/new': 'CM-03 Editor',
       '/community/me': 'CM-05 My profile',
     };
     for (final MapEntry(key: path, value: title) in placeholders.entries) {
@@ -187,6 +187,7 @@ void main() {
       '/care': CareScreen,
       '/community': CommunityFeedScreen,
       '/community/guide/g1': GuideDetailScreen,
+      '/community/editor/new': GuideEditorScreen,
     };
     for (final MapEntry(key: path, value: type) in screens.entries) {
       await _go(tester, router, path);

@@ -123,6 +123,7 @@ class FakeGuideRepository implements GuideRepository {
     Set<String> starred = const {},
     this.failFetch = false,
     this.guides = const {},
+    this.drafts = const {},
     this.newGuideId = 'g-new',
     this.writeError,
   }) : starred = {...starred};
@@ -131,6 +132,10 @@ class FakeGuideRepository implements GuideRepository {
   /// Their star counts move with [starGuide] and [unstarGuide], like the
   /// trigger-owned count on the server.
   final Map<String, Guide> guides;
+
+  /// The author's own guides [fetchDraft] answers with, by id; any other
+  /// id is not found.
+  final Map<String, EditableGuide> drafts;
 
   /// Rows for a query and offset; the default is an empty feed.
   final List<Guide> Function(GuideFeedQuery query, int offset)? pages;
@@ -148,7 +153,8 @@ class FakeGuideRepository implements GuideRepository {
   /// [publishGuide], [deleteGuide]) throws it after recording the call.
   Object? writeError;
 
-  /// Held open until completed, to observe the optimistic state.
+  /// Held open until completed, to observe the optimistic state or a draft
+  /// write in flight.
   Completer<void>? writeGate;
 
   /// The id an insert returns, standing in for the server-generated one.
@@ -233,6 +239,15 @@ class FakeGuideRepository implements GuideRepository {
   String coverUrl(String coverPath) => 'http://supabase.test/$coverPath';
 
   @override
+  Future<EditableGuide> fetchDraft(String id) async {
+    draftFetches.add(id);
+    if (failFetch) throw Exception('offline');
+    return drafts[id] ?? (throw GuideNotFoundException(id));
+  }
+
+  final draftFetches = <String>[];
+
+  @override
   Future<String> saveDraft(GuideDraft draft) => _writeDraft('saveDraft', draft);
 
   @override
@@ -248,6 +263,7 @@ class FakeGuideRepository implements GuideRepository {
 
   Future<String> _writeDraft(String action, GuideDraft draft) async {
     draftWrites.add((action, draft));
+    await writeGate?.future;
     final error = writeError;
     if (error != null) throw error;
     return draft.id ?? newGuideId;

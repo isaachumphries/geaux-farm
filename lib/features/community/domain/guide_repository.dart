@@ -49,6 +49,13 @@ abstract interface class GuideRepository {
   /// The public URL of a cover stored at [coverPath].
   String coverUrl(String coverPath);
 
+  /// The signed-in author's own guide [id] for the editor, read from
+  /// `guides` so drafts and hidden guides load too (`guides_read` lets an
+  /// author read every row they wrote). Throws [AuthRequiredException]
+  /// when signed out, without sending a request, and
+  /// [GuideNotFoundException] when the author has no guide [id].
+  Future<EditableGuide> fetchDraft(String id);
+
   /// Saves [draft] with `status = 'draft'` and returns its guide id: an
   /// insert when the draft has no id yet, otherwise an update in place.
   ///
@@ -66,7 +73,16 @@ abstract interface class GuideRepository {
   Future<void> deleteGuide(String guideId);
 }
 
-/// No published guide has the requested id.
+/// The `guides.status` values (0001_init.sql).
+enum GuideStatus { draft, published, hidden }
+
+/// An author's own guide as the editor opens it: the draft to edit and
+/// the row's current status. A published guide is edited in place, so the
+/// editor never offers to demote it back to a draft.
+typedef EditableGuide = ({GuideDraft draft, GuideStatus status});
+
+/// No guide the caller can read has the requested id: [fetchGuide] sees
+/// published guides, [fetchDraft] the caller's own guides of any status.
 class GuideNotFoundException implements Exception {
   const GuideNotFoundException(this.id);
 
@@ -74,4 +90,18 @@ class GuideNotFoundException implements Exception {
 
   @override
   String toString() => 'GuideNotFoundException($id)';
+}
+
+/// The write was refused: RLS matched no row, which is what a hidden
+/// guide or another author's guide looks like from the client
+/// (`guides_update` is `author_id = auth.uid() and status <> 'hidden'`).
+class GuideWriteRejectedException implements Exception {
+  const GuideWriteRejectedException([
+    this.message = 'This guide can no longer be edited',
+  ]);
+
+  final String message;
+
+  @override
+  String toString() => 'GuideWriteRejectedException: $message';
 }

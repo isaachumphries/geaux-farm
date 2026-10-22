@@ -1,0 +1,250 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../app/theme.dart';
+import '../../../../app/widgets/widgets.dart';
+import '../../../onboarding/domain/space.dart';
+import '../../application/guide_editor_provider.dart';
+import '../../domain/guide_labels.dart';
+import '../../domain/guide_validation.dart';
+import '../widgets/feed_chip.dart';
+import 'editor_widgets.dart';
+
+/// Lines the summary field is tall when empty, and the most it grows to.
+const _summaryMinLines = 3;
+const _summaryMaxLines = 6;
+
+/// CM-03a: title, summary, cover, difficulty, space types, cost, setup
+/// time and tags. Every change goes straight into the editor's draft, so
+/// leaving the step and coming back shows what was typed.
+///
+/// A body widget: the host owns the app bar and the Back/Next bar.
+class BasicsStepScreen extends ConsumerStatefulWidget {
+  const BasicsStepScreen({super.key, required this.guideId});
+
+  final String guideId;
+
+  @override
+  ConsumerState<BasicsStepScreen> createState() => _BasicsStepScreenState();
+}
+
+class _BasicsStepScreenState extends ConsumerState<BasicsStepScreen> {
+  late final TextEditingController _title;
+  late final TextEditingController _summary;
+  late final TextEditingController _cost;
+  late final TextEditingController _setup;
+
+  GuideEditorNotifier get _editor =>
+      ref.read(guideEditorProvider(widget.guideId).notifier);
+
+  @override
+  void initState() {
+    super.initState();
+    // The draft outlives this screen: each visit starts from it.
+    final draft = ref.read(guideEditorProvider(widget.guideId)).draft;
+    _title = TextEditingController(text: draft.title);
+    _summary = TextEditingController(text: draft.summary);
+    _cost = TextEditingController(text: draft.estCostUsd?.toString());
+    _setup = TextEditingController(text: draft.setupMinutes?.toString());
+  }
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _summary.dispose();
+    _cost.dispose();
+    _setup.dispose();
+    super.dispose();
+  }
+
+  void _setTitle(String value) =>
+      _editor.edit((draft) => draft.copyWith(title: value));
+
+  void _setSummary(String value) =>
+      _editor.edit((draft) => draft.copyWith(summary: value));
+
+  void _setCost(String value) {
+    final usd = int.tryParse(value);
+    _editor.edit(
+      (draft) => draft.copyWith(estCostUsd: usd, clearEstCostUsd: usd == null),
+    );
+  }
+
+  void _setSetup(String value) {
+    final minutes = int.tryParse(value);
+    _editor.edit(
+      (draft) => draft.copyWith(
+        setupMinutes: minutes,
+        clearSetupMinutes: minutes == null,
+      ),
+    );
+  }
+
+  void _toggleSpace(SpaceType type) => _editor.edit(
+    (draft) => draft.copyWith(
+      spaceTypes: _toggled(
+        [for (final space in SpaceType.values) space.name],
+        draft.spaceTypes,
+        type.name,
+      ),
+    ),
+  );
+
+  void _toggleTag(String tag) => _editor.edit(
+    (draft) => draft.copyWith(tags: _toggled(guideTags, draft.tags, tag)),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(guideEditorProvider(widget.guideId));
+    final draft = state.draft;
+    final errors = state.errors;
+    final tagsFull = draft.tags.length >= guideTagsMax;
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Basics', style: AppText.h1.copyWith(color: AppColors.soil900)),
+          const SizedBox(height: AppSpacing.lg),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: AppSpacing.xl,
+            children: [
+              EditorField(
+                label: 'Title',
+                labelsChild: true,
+                error: errors[GuideField.title],
+                child: GeauxTextField(
+                  key: const ValueKey('guide-title'),
+                  controller: _title,
+                  maxLength: guideTitleMaxLength,
+                  textCapitalization: TextCapitalization.sentences,
+                  textInputAction: TextInputAction.next,
+                  hasError: errors.containsKey(GuideField.title),
+                  onChanged: _setTitle,
+                ),
+              ),
+              EditorField(
+                label: 'Summary',
+                labelsChild: true,
+                error: errors[GuideField.summary],
+                child: GeauxTextField(
+                  key: const ValueKey('guide-summary'),
+                  controller: _summary,
+                  maxLength: guideSummaryMaxLength,
+                  minLines: _summaryMinLines,
+                  maxLines: _summaryMaxLines,
+                  textCapitalization: TextCapitalization.sentences,
+                  hasError: errors.containsKey(GuideField.summary),
+                  onChanged: _setSummary,
+                ),
+              ),
+              const EditorField(
+                label: 'Cover',
+                child: EditorImageSlot(caption: 'Add cover photo'),
+              ),
+              EditorField(
+                label: 'Difficulty',
+                error: errors[GuideField.difficulty],
+                child: GeauxSegmentedChoice<int?>(
+                  options: [
+                    for (
+                      var level = guideDifficultyMin;
+                      level <= guideDifficultyMax;
+                      level++
+                    )
+                      (level, guideDifficultyLabel(level)),
+                  ],
+                  selected: draft.difficulty,
+                  onSelected: (level) =>
+                      _editor.edit((d) => d.copyWith(difficulty: level)),
+                ),
+              ),
+              EditorField(
+                label: 'Space',
+                error: errors[GuideField.spaceTypes],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.sm,
+                  children: [
+                    for (final type in SpaceType.values)
+                      GeauxSelectCard(
+                        title: guideSpaceTypeLabel(type),
+                        multiSelect: true,
+                        selected: draft.spaceTypes.contains(type.name),
+                        onTap: () => _toggleSpace(type),
+                      ),
+                  ],
+                ),
+              ),
+              EditorField(
+                label: 'Est. cost (USD)',
+                labelsChild: true,
+                error: errors[GuideField.estCostUsd],
+                child: GeauxTextField(
+                  key: const ValueKey('guide-cost'),
+                  controller: _cost,
+                  hintText: 'Optional',
+                  maxLength: editorNumberMaxDigits,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textInputAction: TextInputAction.next,
+                  hasError: errors.containsKey(GuideField.estCostUsd),
+                  onChanged: _setCost,
+                ),
+              ),
+              EditorField(
+                label: 'Setup time (minutes)',
+                labelsChild: true,
+                error: errors[GuideField.setupMinutes],
+                child: GeauxTextField(
+                  key: const ValueKey('guide-setup'),
+                  controller: _setup,
+                  hintText: 'Optional',
+                  maxLength: editorNumberMaxDigits,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  hasError: errors.containsKey(GuideField.setupMinutes),
+                  onChanged: _setSetup,
+                ),
+              ),
+              EditorField(
+                label: 'Tags',
+                hint:
+                    'Optional. Pick up to $guideTagsMax. '
+                    '${draft.tags.length} of $guideTagsMax picked.',
+                error: errors[GuideField.tags],
+                child: Wrap(
+                  spacing: AppSpacing.sm,
+                  children: [
+                    for (final tag in guideTags)
+                      FeedChip(
+                        label: guideTagLabel(tag),
+                        selected: draft.tags.contains(tag),
+                        // The pill is 44 tall; plan/01 asks for a 48 tap area.
+                        minTapHeight: AppSpacing.minTouchTarget,
+                        onTap: draft.tags.contains(tag) || !tagsFull
+                            ? () => _toggleTag(tag)
+                            : null,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
+      ),
+    );
+  }
+}
+
+/// [current] with [value] added or removed, in the order of [all]. A value
+/// outside [all] drops out, which is how an author clears one a saved
+/// guide holds that the pickers no longer offer.
+List<String> _toggled(List<String> all, List<String> current, String value) => [
+  for (final item in all)
+    if (item == value ? !current.contains(item) : current.contains(item)) item,
+];

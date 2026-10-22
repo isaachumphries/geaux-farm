@@ -26,20 +26,6 @@ const _guidesTable = 'guides';
 const _draftStatus = 'draft';
 const _publishedStatus = 'published';
 
-/// The write was refused: RLS matched no row, which is what a hidden
-/// guide or another author's guide looks like from the client
-/// (`guides_update` is `author_id = auth.uid() and status <> 'hidden'`).
-class GuideWriteRejectedException implements Exception {
-  const GuideWriteRejectedException([
-    this.message = 'This guide can no longer be edited',
-  ]);
-
-  final String message;
-
-  @override
-  String toString() => 'GuideWriteRejectedException: $message';
-}
-
 /// [GuideRepository] over the `guide_feed` view and `guide_stars`.
 class SupabaseGuideRepository implements GuideRepository {
   /// [currentUserId] defaults to the signed-in Supabase user.
@@ -140,6 +126,21 @@ class SupabaseGuideRepository implements GuideRepository {
       _client.storage.from(guideImagesBucket).getPublicUrl(coverPath);
 
   @override
+  Future<EditableGuide> fetchDraft(String id) async {
+    final userId = _requireUserId();
+    final rows = await _send(
+      _client
+          .from(_guidesTable)
+          .select()
+          .eq('id', id)
+          .eq('author_id', userId)
+          .limit(1),
+    );
+    if (rows.isEmpty) throw GuideNotFoundException(id);
+    return editableGuideFromJson(rows.first);
+  }
+
+  @override
   Future<String> saveDraft(GuideDraft draft) =>
       _write(draft, status: _draftStatus);
 
@@ -151,7 +152,7 @@ class SupabaseGuideRepository implements GuideRepository {
   Future<void> deleteGuide(String guideId) async {
     final userId = _requireUserId();
     // The author_id filter keeps a mistyped id from even reaching RLS.
-    await _send(
+    final rows = await _send(
       _client
           .from(_guidesTable)
           .delete()
@@ -159,6 +160,12 @@ class SupabaseGuideRepository implements GuideRepository {
           .eq('author_id', userId)
           .select('id'),
     );
+    if (rows.isEmpty) {
+      // RLS matched no row: not this author's guide, or already gone.
+      throw const GuideWriteRejectedException(
+        'This guide can no longer be deleted',
+      );
+    }
   }
 
   /// Inserts a new row or updates the existing one, and returns its id.

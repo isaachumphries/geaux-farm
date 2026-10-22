@@ -106,6 +106,9 @@ class GuideDraft {
   /// an insert or an update.
   bool get isSaved => id != null;
 
+  /// A copy with the given fields replaced. A null argument keeps the old
+  /// value, so the optional [estCostUsd] and [setupMinutes] are cleared
+  /// with their `clear` flags, which win over a value.
   GuideDraft copyWith({
     String? id,
     String? title,
@@ -119,6 +122,8 @@ class GuideDraft {
     List<GuideStep>? steps,
     List<String>? plantIds,
     List<String>? tags,
+    bool clearEstCostUsd = false,
+    bool clearSetupMinutes = false,
   }) => GuideDraft(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -126,8 +131,8 @@ class GuideDraft {
     coverPath: coverPath ?? this.coverPath,
     difficulty: difficulty ?? this.difficulty,
     spaceTypes: spaceTypes ?? this.spaceTypes,
-    estCostUsd: estCostUsd ?? this.estCostUsd,
-    setupMinutes: setupMinutes ?? this.setupMinutes,
+    estCostUsd: clearEstCostUsd ? null : estCostUsd ?? this.estCostUsd,
+    setupMinutes: clearSetupMinutes ? null : setupMinutes ?? this.setupMinutes,
     materials: materials ?? this.materials,
     steps: steps ?? this.steps,
     plantIds: plantIds ?? this.plantIds,
@@ -135,9 +140,10 @@ class GuideDraft {
   );
 }
 
-/// Errors blocking "Save draft" (plan/07 § Editor): a title is enough,
-/// except on the first save, where the table constraints also need a
-/// 5–80 title and a difficulty.
+/// Errors blocking "Save draft" (plan/07 § Editor): a 5–80 title is enough.
+/// The `guides.title` check constraint applies to updates as well as
+/// inserts, so a saved draft needs it too. The first save also needs a
+/// difficulty, which the column requires on insert.
 ///
 /// An empty result means the save may go ahead.
 Map<String, GuideFieldError> validateSaveDraft(GuideDraft draft) {
@@ -146,9 +152,9 @@ Map<String, GuideFieldError> validateSaveDraft(GuideDraft draft) {
     errors[GuideField.title] = GuideFieldError.titleMissing;
     return errors;
   }
-  if (draft.isSaved) return errors;
   final title = _titleError(draft.title);
   if (title != null) errors[GuideField.title] = title;
+  if (draft.isSaved) return errors;
   final difficulty = _difficultyError(draft.difficulty);
   if (difficulty != null) errors[GuideField.difficulty] = difficulty;
   return errors;

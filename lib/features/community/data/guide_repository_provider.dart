@@ -52,6 +52,9 @@ class UnconfiguredGuideRepository implements GuideRepository {
   String coverUrl(String coverPath) => '';
 
   @override
+  Future<EditableGuide> fetchDraft(String id) => Future.error(_unavailable);
+
+  @override
   Future<String> saveDraft(GuideDraft draft) => Future.error(_unavailable);
 
   @override
