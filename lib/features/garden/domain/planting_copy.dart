@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 import '../../care/domain/care_event.dart';
+import '../../care/domain/stage.dart';
 import '../../catalog/domain/plant.dart';
 import '../../onboarding/domain/space.dart';
 import 'growth.dart';
@@ -28,7 +29,7 @@ String whereLabel(SpaceType? space, GrowSetup setup) => space == null
     : '${spaceLabel(space)} · ${growSetupLabel(setup)}';
 
 /// "Growing · Day 18"; "Planted today" on day 0.
-String stageLine(GrowthStage stage, DateTime plantedOn, DateTime today) {
+String stageLine(PlantingStage stage, DateTime plantedOn, DateTime today) {
   final day = daysFrom(plantedOn, today);
   if (day <= 0) return 'Planted today';
   return '${stage.label} · Day $day';
@@ -55,52 +56,6 @@ String? maturityLine(Plant p, Planting pl) {
   };
 }
 
-/// What kind of plant it is, as a friendly noun ("veggie", "herb").
-String categoryNoun(PlantCategory c) => switch (c) {
-  PlantCategory.vegetable => 'veggie',
-  PlantCategory.herb => 'herb',
-  PlantCategory.fruit => 'fruit',
-  PlantCategory.flower => 'flower',
-  PlantCategory.shrub => 'shrub',
-  PlantCategory.houseplant => 'houseplant',
-};
-
-/// A short note for the planting's detail screen that changes with the
-/// plant's category and where it is in its life: what to watch for now.
-String stageNote(Plant p, GrowthStage stage) {
-  final name = p.commonName;
-  return switch (stage) {
-    GrowthStage.sprouting => switch (p.category) {
-      PlantCategory.herb || PlantCategory.vegetable =>
-        'Seedlings are tender. Keep the soil evenly moist, not soggy.',
-      _ => 'Keep the soil lightly moist while $name gets going.',
-    },
-    GrowthStage.growing => switch (p.category) {
-      PlantCategory.vegetable =>
-        'Steady water and sun now mean a bigger harvest later.',
-      PlantCategory.herb =>
-        'Pinch the tips often. It keeps $name bushy and full.',
-      PlantCategory.fruit =>
-        'Watch for flowers. Fruit follows, so keep watering steady.',
-      PlantCategory.flower =>
-        'Buds are on the way. Feed lightly and give it full light.',
-      PlantCategory.shrub =>
-        'Roots are spreading. Deep, less frequent watering helps.',
-      PlantCategory.houseplant =>
-        'Turn the pot now and then so it grows evenly.',
-    },
-    GrowthStage.readyToHarvest => switch (p.category) {
-      PlantCategory.herb => 'Snip what you need. More grows back.',
-      PlantCategory.fruit => 'Pick fruit as it ripens to keep more coming.',
-      _ => '$name is ready. Harvest often to keep it producing.',
-    },
-    GrowthStage.blooming =>
-      'In bloom! Remove spent flowers to keep new ones coming.',
-    GrowthStage.established =>
-      '$name has settled in. It needs less fuss from here.',
-  };
-}
-
 /// Care-log wording for one event.
 String careEventLabel(CareEvent e) => switch (e.type) {
   CareEventType.water => 'Watered',
@@ -111,13 +66,20 @@ String careEventLabel(CareEvent e) => switch (e.type) {
   CareEventType.note => e.note == null ? 'Note' : '“${e.note}”',
 };
 
-/// "Today · 6:12 AM" for [at] on [today], otherwise "Sun, Oct 4".
+/// "Today · 6:12 AM" for [at] on [today], otherwise "Sun, Oct 4 · 8:00 AM"
+/// (plan/05 GD-02: each log row shows its date and time).
 String careLogDate(DateTime at, DateTime today) {
-  if (calendarDay(at) == calendarDay(today)) {
-    return 'Today · ${DateFormat('h:mm a', 'en_US').format(at)}';
-  }
-  return DateFormat('EEE, MMM d', 'en_US').format(at);
+  final time = DateFormat('h:mm a', 'en_US').format(at);
+  if (calendarDay(at) == calendarDay(today)) return 'Today · $time';
+  return '${DateFormat('EEE, MMM d', 'en_US').format(at)} · $time';
 }
+
+/// A planted date in the care log, which has no time of day: "Today" or
+/// "Sun, Oct 4".
+String plantedLogDate(DateTime plantedOn, DateTime today) =>
+    calendarDay(plantedOn) == calendarDay(today)
+    ? 'Today'
+    : DateFormat('EEE, MMM d', 'en_US').format(plantedOn);
 
 /// Water chip text for a due day: "Water now" when overdue, "Water today",
 /// "Water tomorrow", or "Water Sat" within the week.
@@ -129,26 +91,13 @@ String waterChipLabel(DateTime due, DateTime today) {
   return 'Water ${DateFormat('EEE', 'en_US').format(due)}';
 }
 
-/// GD-02 header chip: "Next water Sat", "Next water today", or "Water
-/// now" when overdue.
-String nextWaterLabel(DateTime due, DateTime today) {
-  final days = daysFrom(today, due);
-  if (days < 0) return 'Water now';
-  if (days == 0) return 'Next water today';
-  if (days == 1) return 'Next water tomorrow';
-  return 'Next water ${DateFormat('EEE', 'en_US').format(due)}';
-}
-
-/// When an upcoming care job is due: "Overdue since Mon, Oct 5", "Due
-/// today", "Due tomorrow", or "Due Sat, Oct 10".
-String dueLabel(DateTime due, DateTime today) {
-  final days = daysFrom(today, due);
-  final date = DateFormat('EEE, MMM d', 'en_US').format(due);
-  if (days < 0) return 'Overdue since $date';
-  if (days == 0) return 'Due today';
-  if (days == 1) return 'Due tomorrow';
-  return 'Due $date';
-}
+/// GD-02 next-water chip (#30): "Next water: Thu, Oct 8 · 8:00 AM", the
+/// day and start of the free-time slot the watering goes in. [clock] is the
+/// slot's start already in the device's time format, or "Outside your free
+/// times".
+String nextWaterLabel(DateTime slotStart, String clock) =>
+    'Next water: ${DateFormat('EEE, MMM d', 'en_US').format(slotStart)} · '
+    '$clock';
 
 /// "Every 14 days" for a catalog task.
 String everyLabel(int days) => switch (days) {

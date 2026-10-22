@@ -18,7 +18,11 @@ import 'package:geaux_farm/features/onboarding/domain/space.dart';
 import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
+import 'package:geaux_farm/features/weather/data/forecast_client.dart';
+import 'package:geaux_farm/features/weather/data/weather_provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 import '../helpers/file_asset_bundle.dart';
 import '../helpers/fixed_climate.dart';
@@ -115,6 +119,24 @@ Future<void> seedPlanting(
       ),
     );
 
+/// A `guide_projects` row, as "Grow this" on a guide (#49) would add it.
+Future<void> seedProject(
+  AppDatabase db, {
+  String id = 'gp1',
+  String title = 'Balcony salad box',
+}) => db
+    .into(db.guideProjectsTable)
+    .insert(
+      GuideProjectsTableCompanion.insert(
+        id: id,
+        guideId: 'g1',
+        title: title,
+        materialsJson: '[]',
+        stepsJson: '[]',
+        createdAt: DateTime(2026, 10, 1),
+      ),
+    );
+
 Future<void> seedCare(
   AppDatabase db,
   String plantingId,
@@ -136,14 +158,19 @@ Future<void> seedCare(
 
 /// Overrides that feed the garden providers from [db], the bundled
 /// catalog, and the Baton Rouge climate, with the clock fixed at [now].
+/// The forecast fetch always fails, so the care rules use their no-rain
+/// estimate and no test reaches the network.
 List<Override> gardenOverrides(AppDatabase db, {DateTime? now}) => [
   appDatabaseProvider.overrideWithValue(db),
   assetBundleProvider.overrideWithValue(FileAssetBundle()),
   climateProvider.overrideWith(FixedClimate.new),
   clockProvider.overrideWithValue(() => now ?? gardenNow),
+  forecastClientProvider.overrideWithValue(
+    OpenMeteoForecastClient(MockClient((_) async => http.Response('', 500))),
+  ),
 ];
 
-/// Pumps GD-01, GD-02, and a launcher for the PD-02 sheet in a small
+/// Pumps GD-01, GD-02, a GD-03 stub, and a launcher for the PD-02 sheet in a small
 /// router, over [db]. HM-02 and RC-01 are stubs that only name their
 /// routes.
 ///
@@ -187,6 +214,14 @@ Future<GoRouter> pumpGarden(
             path: 'planting/:id',
             builder: (context, state) =>
                 PlantingDetailScreen(plantingId: state.pathParameters['id']!),
+          ),
+          GoRoute(
+            path: 'project/:id',
+            builder: (context, state) => Scaffold(
+              body: Center(
+                child: Text('GD-03 stub ${state.pathParameters['id']}'),
+              ),
+            ),
           ),
         ],
       ),

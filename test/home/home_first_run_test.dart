@@ -21,7 +21,7 @@ import 'package:geaux_farm/features/community/presentation/widgets/guide_card.da
 import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
 import 'package:geaux_farm/features/garden/application/garden_provider.dart';
 import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
-import 'package:geaux_farm/features/garden/domain/growth.dart';
+import 'package:geaux_farm/features/care/domain/stage.dart';
 import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
 import 'package:geaux_farm/features/garden/presentation/widgets/planting_card.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
@@ -90,7 +90,7 @@ PlantingView _plantedView(List<ScoredPlant> recs) {
     planting: planting,
     plant: plant,
     space: defaultSpace,
-    growth: growthOf(planting, plant, _wednesdayMorning),
+    growth: stageOf(planting, plant, _wednesdayMorning),
   );
 }
 

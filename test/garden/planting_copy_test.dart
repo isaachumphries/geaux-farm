@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/features/care/domain/care_event.dart';
+import 'package:geaux_farm/features/care/domain/stage.dart';
 import 'package:geaux_farm/features/catalog/domain/plant.dart';
-import 'package:geaux_farm/features/garden/domain/growth.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/garden/domain/planting_copy.dart';
 import 'package:geaux_farm/features/onboarding/domain/space.dart';
@@ -60,20 +60,6 @@ void main() {
       expect(whereLabel(null, GrowSetup.indoor), 'Indoors');
     });
 
-    test('plant category nouns', () {
-      expect(
-        {for (final c in PlantCategory.values) c: categoryNoun(c)},
-        {
-          PlantCategory.vegetable: 'veggie',
-          PlantCategory.herb: 'herb',
-          PlantCategory.fruit: 'fruit',
-          PlantCategory.flower: 'flower',
-          PlantCategory.shrub: 'shrub',
-          PlantCategory.houseplant: 'houseplant',
-        },
-      );
-    });
-
     test('catalog task intervals', () {
       expect(everyLabel(1), 'Every day');
       expect(everyLabel(7), 'Every week');
@@ -85,23 +71,23 @@ void main() {
 
   group('stageLine', () {
     test('day 0 reads Planted today', () {
-      expect(stageLine(GrowthStage.growing, _today, _today), 'Planted today');
+      expect(stageLine(PlantingStage.growing, _today, _today), 'Planted today');
     });
 
     test('later days read stage and day count', () {
       expect(
-        stageLine(GrowthStage.growing, DateTime(2026, 9, 19), _today),
+        stageLine(PlantingStage.growing, DateTime(2026, 9, 19), _today),
         'Growing · Day 18',
       );
       expect(
-        stageLine(GrowthStage.readyToHarvest, DateTime(2026, 8, 1), _today),
+        stageLine(PlantingStage.readyToHarvest, DateTime(2026, 8, 1), _today),
         'Ready to harvest · Day 67',
       );
     });
 
     test('a planted date after today reads Planted today', () {
       expect(
-        stageLine(GrowthStage.growing, DateTime(2026, 10, 9), _today),
+        stageLine(PlantingStage.growing, DateTime(2026, 10, 9), _today),
         'Planted today',
       );
     });
@@ -151,54 +137,6 @@ void main() {
     });
   });
 
-  group('stageNote', () {
-    test('every stage and category has a note', () {
-      for (final stage in GrowthStage.values) {
-        for (final c in PlantCategory.values) {
-          final plant = _kale({'category': c.json});
-          expect(stageNote(plant, stage), isNotEmpty, reason: '$stage $c');
-        }
-      }
-    });
-
-    test('notes that name the plant use its common name', () {
-      final herb = _kale({'category': 'herb', 'commonName': 'Sweet Basil'});
-      expect(stageNote(herb, GrowthStage.growing), contains('Sweet Basil'));
-      expect(
-        stageNote(_kale({'commonName': 'Kale'}), GrowthStage.readyToHarvest),
-        startsWith('Kale is ready'),
-      );
-      expect(
-        stageNote(_kale({'commonName': 'Azalea'}), GrowthStage.established),
-        startsWith('Azalea has settled in'),
-      );
-      expect(
-        stageNote(
-          _kale({'category': 'flower', 'commonName': 'Zinnia'}),
-          GrowthStage.sprouting,
-        ),
-        contains('Zinnia'),
-      );
-    });
-
-    test('the note changes with the category within a stage', () {
-      String note(String category, GrowthStage s) =>
-          stageNote(_kale({'category': category}), s);
-      expect(
-        note('herb', GrowthStage.readyToHarvest),
-        isNot(note('fruit', GrowthStage.readyToHarvest)),
-      );
-      expect(
-        note('vegetable', GrowthStage.growing),
-        isNot(note('houseplant', GrowthStage.growing)),
-      );
-      expect(
-        note('vegetable', GrowthStage.sprouting),
-        isNot(note('shrub', GrowthStage.sprouting)),
-      );
-    });
-  });
-
   group('care log', () {
     test('event wording', () {
       expect(careEventLabel(_event(CareEventType.water)), 'Watered');
@@ -219,7 +157,7 @@ void main() {
       );
     });
 
-    test('today shows the time, other days the weekday and date', () {
+    test('every row shows its date and time (#30)', () {
       expect(
         careLogDate(DateTime(2026, 10, 7, 6, 12), _today),
         'Today · 6:12 AM',
@@ -228,7 +166,15 @@ void main() {
         careLogDate(DateTime(2026, 10, 7, 18, 5), _today),
         'Today · 6:05 PM',
       );
-      expect(careLogDate(DateTime(2026, 10, 4, 8), _today), 'Sun, Oct 4');
+      expect(
+        careLogDate(DateTime(2026, 10, 4, 8), _today),
+        'Sun, Oct 4 · 8:00 AM',
+      );
+    });
+
+    test('a planted date has no time of day', () {
+      expect(plantedLogDate(_today, _today), 'Today');
+      expect(plantedLogDate(DateTime(2026, 10, 4), _today), 'Sun, Oct 4');
     });
   });
 
@@ -244,21 +190,15 @@ void main() {
       expect(waterChipLabel(saturday, _today), 'Water Sat');
     });
 
-    test('next water chip (GD-02)', () {
-      expect(nextWaterLabel(yesterday, _today), 'Water now');
-      expect(nextWaterLabel(_today, _today), 'Next water today');
-      expect(nextWaterLabel(tomorrow, _today), 'Next water tomorrow');
-      expect(nextWaterLabel(saturday, _today), 'Next water Sat');
-    });
-
-    test('upcoming task due line', () {
+    test('next water chip (GD-02): the slot day and its start', () {
       expect(
-        dueLabel(DateTime(2026, 10, 5), _today),
-        'Overdue since Mon, Oct 5',
+        nextWaterLabel(DateTime(2026, 10, 8, 8), '8:00 AM'),
+        'Next water: Thu, Oct 8 · 8:00 AM',
       );
-      expect(dueLabel(_today, _today), 'Due today');
-      expect(dueLabel(tomorrow, _today), 'Due tomorrow');
-      expect(dueLabel(saturday, _today), 'Due Sat, Oct 10');
+      expect(
+        nextWaterLabel(DateTime(2026, 10, 10, 8), 'Outside your free times'),
+        'Next water: Sat, Oct 10 · Outside your free times',
+      );
     });
 
     test('a time of day on either date does not change the day count', () {

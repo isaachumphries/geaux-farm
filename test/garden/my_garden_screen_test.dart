@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geaux_farm/core/db/app_database.dart';
 import 'package:geaux_farm/features/garden/application/garden_provider.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
+import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/planting_detail_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/widgets/planting_card.dart';
 import 'package:geaux_farm/features/onboarding/domain/space.dart';
@@ -21,7 +23,10 @@ void main() {
       await pumpGarden(tester, db);
 
       expect(find.text('My Garden'), findsOneWidget);
-      expect(find.text('Your garden is empty'), findsOneWidget);
+      expect(
+        find.text('Your garden is empty — pick a first plant'),
+        findsOneWidget,
+      );
       expect(find.byType(PlantingCard), findsNothing);
     });
 
@@ -52,10 +57,11 @@ void main() {
   });
 
   group('GD-01 sections', () {
-    Future<void> seedMixed(WidgetTester tester) async {
+    Future<AppDatabase> seedMixed(WidgetTester tester) async {
       final db = openGardenDb();
       await tester.runAsync(() async {
         await seedSpace(db);
+        await seedProfile(db);
         await seedPlanting(
           db,
           id: 'a1',
@@ -93,6 +99,7 @@ void main() {
         );
       });
       await pumpGarden(tester, db);
+      return db;
     }
 
     testWidgets('groups plantings Active, Planned, Harvested with counts', (
@@ -227,13 +234,74 @@ void main() {
       expect(find.textContaining('Active ·'), findsNothing);
     });
 
+    testWidgets('Start planting plants a planned planting today (#30)', (
+      tester,
+    ) async {
+      final db = await seedMixed(tester);
+      expect(find.text('START PLANTING'), findsOneWidget);
+
+      await tester.tap(find.text('START PLANTING'));
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await settleDrift(tester);
+
+      final row = (await tester.runAsync(
+        () => (db.select(
+          db.plantingsTable,
+        )..where((t) => t.id.equals('pl'))).getSingle(),
+      ))!;
+      expect(row.status, PlantingStatus.active);
+      expect(row.plantedOn, DateTime(2026, 10, 7));
+      final events = (await tester.runAsync(
+        () => db.select(db.careEventsTable).get(),
+      ))!;
+      expect(events, isEmpty);
+      // The card moved to Active, and Planned is gone.
+      expect(find.text('Planned'), findsNothing);
+      expect(find.text('START PLANTING'), findsNothing);
+      expect(find.text('3'), findsOneWidget); // Active count badge
+    });
+
+    testWidgets('Projects lists guide projects and opens GD-03 (#30)', (
+      tester,
+    ) async {
+      final db = openGardenDb();
+      await tester.runAsync(() async {
+        await seedSpace(db);
+        await seedProfile(db);
+        await seedPlanting(db, plantedOn: gardenNow);
+        await seedProject(db);
+      });
+      final router = await pumpGarden(tester, db);
+
+      double y(String text) => tester.getTopLeft(find.text(text).first).dy;
+      expect(find.text('Projects'), findsOneWidget);
+      expect(y('Active'), lessThan(y('Projects')));
+      await tester.tap(find.text('Balcony salad box'));
+      await tester.pumpAndSettle();
+      expect(locationOf(router).path, '/garden/project/gp1');
+      expect(find.text('GD-03 stub gp1'), findsOneWidget);
+    });
+
+    testWidgets('a garden with only a project is not empty (#30)', (
+      tester,
+    ) async {
+      final db = openGardenDb();
+      await tester.runAsync(() async {
+        await seedSpace(db);
+        await seedProject(db);
+      });
+      await pumpGarden(tester, db);
+      expect(find.text(gardenEmptyCopy), findsNothing);
+      expect(find.text('Balcony salad box'), findsOneWidget);
+    });
+
     testWidgets('a new planting appears without reopening the screen', (
       tester,
     ) async {
       final db = openGardenDb();
       await tester.runAsync(() => seedSpace(db));
       await pumpGarden(tester, db);
-      expect(find.text('Your garden is empty'), findsOneWidget);
+      expect(find.text(gardenEmptyCopy), findsOneWidget);
 
       await tester.runAsync(
         () => seedPlanting(db, nickname: 'Late Kale', plantedOn: gardenNow),
@@ -241,7 +309,7 @@ void main() {
       await settleDrift(tester);
 
       expect(find.text('Late Kale'), findsOneWidget);
-      expect(find.text('Your garden is empty'), findsNothing);
+      expect(find.text(gardenEmptyCopy), findsNothing);
     });
   });
 
