@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
 import 'package:geaux_farm/app/widgets/widgets.dart';
+import 'package:geaux_farm/features/community/application/community_feed_provider.dart';
+import 'package:geaux_farm/features/community/application/guide_detail_provider.dart';
 import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
 import 'package:geaux_farm/features/catalog/domain/plant.dart';
 import 'package:geaux_farm/features/community/application/guide_editor_provider.dart';
 import 'package:geaux_farm/features/community/data/auth_providers.dart';
 import 'package:geaux_farm/features/community/data/guide_repository_provider.dart';
 import 'package:geaux_farm/features/community/domain/guide.dart';
+import 'package:geaux_farm/features/community/domain/guide_feed_query.dart';
 import 'package:geaux_farm/features/community/domain/guide_repository.dart';
 import 'package:geaux_farm/features/community/domain/guide_validation.dart';
 import 'package:geaux_farm/features/community/presentation/editor/editor_copy.dart';
@@ -297,6 +300,38 @@ void main() {
       // The next new guide starts blank, not as an edit of this one.
       expect(_state(h).draft.title, isEmpty);
       expect(_state(h).draft.id, isNull);
+    });
+
+    testWidgets('publishing refreshes the feed and CM-02 under the editor', (
+      tester,
+    ) async {
+      final repo = FakeGuideRepository(
+        guides: {'g1': testGuide('g1')},
+        drafts: {
+          'g1': (
+            draft: _complete.copyWith(id: 'g1'),
+            status: GuideStatus.draft,
+          ),
+        },
+      );
+      final h = await _pumpPreview(tester, repo, id: 'g1');
+      // The feed and CM-02 stay mounted under the editor.
+      h.container.listen(
+        communityFeedProvider(const GuideFeedQuery()),
+        (_, _) {},
+      );
+      h.container.listen(guideDetailProvider('g1'), (_, _) {});
+      await tester.pumpAndSettle();
+      final feedFetches = repo.fetches.length;
+      final guideFetches = repo.guideFetches.length;
+      expect(feedFetches, 1);
+      expect(guideFetches, 1);
+
+      await _tap(tester, find.text('PUBLISH'));
+
+      expect(repo.draftWrites.single.$1, 'publishGuide');
+      expect(repo.fetches.length, greaterThan(feedFetches));
+      expect(repo.guideFetches.length, greaterThan(guideFetches));
     });
 
     testWidgets('Save draft keeps the guide and says so', (tester) async {
