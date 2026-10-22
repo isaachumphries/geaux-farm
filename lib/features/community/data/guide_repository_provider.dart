@@ -6,6 +6,7 @@ import '../../../core/http.dart';
 import '../domain/guide.dart';
 import '../domain/guide_feed_query.dart';
 import '../domain/guide_repository.dart';
+import '../domain/guide_validation.dart';
 import '../domain/report_reason.dart';
 import 'supabase_guide_repository.dart';
 
@@ -49,4 +50,13 @@ class UnconfiguredGuideRepository implements GuideRepository {
 
   @override
   String coverUrl(String coverPath) => '';
+
+  @override
+  Future<String> saveDraft(GuideDraft draft) => Future.error(_unavailable);
+
+  @override
+  Future<String> publishGuide(GuideDraft draft) => Future.error(_unavailable);
+
+  @override
+  Future<void> deleteGuide(String guideId) => Future.error(_unavailable);
 }
