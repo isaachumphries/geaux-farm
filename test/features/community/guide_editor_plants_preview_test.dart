@@ -201,6 +201,24 @@ void main() {
       await _tap(tester, find.byKey(ValueKey('plant-${_id('Marigold')}')));
       expect(_state(h).draft.plantIds, contains(_id('Marigold')));
     });
+
+    testWidgets('a plant that cannot be picked is still read out by name', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      final h = await _pumpPlants(tester, FakeGuideRepository());
+      _edit(h, GuideDraft(plantIds: _names.take(10).map(_id).toList()));
+      await tester.pump();
+
+      await tester.enterText(find.byType(TextField), 'Marigold');
+      await tester.pump();
+
+      final node = tester.getSemantics(
+        find.byKey(ValueKey('plant-${_id('Marigold')}')),
+      );
+      expect(node.label, contains('Marigold'));
+      handle.dispose();
+    });
   });
 
   group('CM-03e preview', () {

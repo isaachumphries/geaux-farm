@@ -195,13 +195,12 @@ class _PlantResult extends StatelessWidget {
       onTap: onTap,
     );
     if (enabled) return card;
+    // Not excluded from semantics: a screen reader still names the plant.
     return Semantics(
       enabled: false,
-      child: ExcludeSemantics(
-        child: Opacity(
-          opacity: _disabledOpacity,
-          child: IgnorePointer(child: card),
-        ),
+      child: Opacity(
+        opacity: _disabledOpacity,
+        child: IgnorePointer(child: card),
       ),
     );
   }
