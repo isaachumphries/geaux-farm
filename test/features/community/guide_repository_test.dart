@@ -340,20 +340,32 @@ void main() {
     );
   });
 
-  test('no code under community/ updates or upserts a table', () {
-    // star_count is trigger-owned (plan/07 § Star): the only writes the
-    // client has are the guide_stars insert and delete.
+  test('the only update under community/ is the author editing a guide', () {
+    // star_count is trigger-owned (plan/07 § Star): stars are only the
+    // guide_stars insert and delete. The one update is the guide editor's
+    // save of its own row (#50), whose payload never carries a counter
+    // (guide_write_test.dart).
     final writes = RegExp(r'\.(update|upsert)\(');
-    final offenders = [
+    final found = <String, int>{
       for (final file in Directory(
         'lib/features/community',
       ).listSync(recursive: true))
-        if (file is File &&
-            file.path.endsWith('.dart') &&
-            writes.hasMatch(file.readAsStringSync()))
-          file.path,
-    ];
-    expect(offenders, isEmpty);
+        if (file is File && file.path.endsWith('.dart'))
+          if (writes.allMatches(file.readAsStringSync()).length case final n
+              when n > 0)
+            file.path: n,
+    };
+    expect(found, {
+      'lib/features/community/data/supabase_guide_repository.dart': 1,
+    });
+    final repository = File(
+      'lib/features/community/data/supabase_guide_repository.dart',
+    ).readAsStringSync();
+    expect(repository, isNot(contains('.upsert(')));
+    expect(
+      repository,
+      contains('.from(_guidesTable)\n          .update(guideDraftPayload('),
+    );
   });
 
   test('coverUrl is the public guide-images URL', () {
