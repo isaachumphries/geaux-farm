@@ -273,13 +273,36 @@ void main() {
       expect(second.read().draft.title, isEmpty);
 
       gate.complete();
-      await saving;
+      // The write itself succeeded, so the caller still gets its id.
+      expect(await saving, 'g-new');
 
       final state = second.read();
       expect(state.draft.id, isNull);
       expect(state.draft.title, isEmpty);
       expect(state.saving, isFalse);
       expect(state.status, isNull);
+    });
+
+    test('a write that fails after the editor closed ends quietly', () async {
+      final rig = _rig(keepAlive: false);
+      final gate = rig.repo.writeGate = Completer<void>();
+      rig.repo.writeError = const NetworkException('offline');
+      final editor = rig.container.listen(
+        guideEditorProvider(newGuideRouteId),
+        (_, _) {},
+      );
+      final notifier = rig.container.read(
+        guideEditorProvider(newGuideRouteId).notifier,
+      );
+      notifier.edit(_publishable);
+      final publishing = notifier.publish();
+      await Future<void>.delayed(Duration.zero);
+
+      editor.close();
+      await rig.container.pump();
+      gate.complete();
+
+      expect(await publishing, isNull);
     });
   });
 
