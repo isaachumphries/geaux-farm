@@ -81,7 +81,7 @@ void main() {
         final id = await notifier.saveDraft();
 
         expect(id, isNull);
-        expect(rig.repo.writes, isEmpty);
+        expect(rig.repo.draftWrites, isEmpty);
         final state = rig.container.read(guideEditorProvider(newGuideRouteId));
         expect(state.errors[GuideField.title], GuideFieldError.titleTooShort);
         expect(
@@ -108,9 +108,12 @@ void main() {
         );
 
         await notifier.saveDraft();
-        expect(rig.repo.writes.map((w) => w.$1), ['saveDraft', 'saveDraft']);
+        expect(rig.repo.draftWrites.map((w) => w.$1), [
+          'saveDraft',
+          'saveDraft',
+        ]);
         // The second call carries the id, so the repository updates.
-        expect(rig.repo.writes.last.$2.id, 'g-new');
+        expect(rig.repo.draftWrites.last.$2.id, 'g-new');
       },
     );
 
@@ -149,7 +152,7 @@ void main() {
         final id = await notifier.publish();
 
         expect(id, isNull);
-        expect(rig.repo.writes, isEmpty);
+        expect(rig.repo.draftWrites, isEmpty);
         final errors = rig.container
             .read(guideEditorProvider(newGuideRouteId))
             .errors;
@@ -173,7 +176,7 @@ void main() {
       notifier.edit(_publishable);
 
       expect(await notifier.publish(), 'g-new');
-      expect(rig.repo.writes.single.$1, 'publishGuide');
+      expect(rig.repo.draftWrites.single.$1, 'publishGuide');
     });
   });
 

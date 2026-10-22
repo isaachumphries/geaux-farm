@@ -154,8 +154,8 @@ class FakeGuideRepository implements GuideRepository {
   /// The id an insert returns, standing in for the server-generated one.
   final String newGuideId;
 
-  /// Every write, in order, as `(action, draft)`.
-  final writes = <(String, GuideDraft)>[];
+  /// Every draft write, in order, as `(action, draft)`.
+  final draftWrites = <(String, GuideDraft)>[];
   final deleted = <String>[];
 
   final fetches = <(GuideFeedQuery, int)>[];
@@ -233,11 +233,11 @@ class FakeGuideRepository implements GuideRepository {
   String coverUrl(String coverPath) => 'http://supabase.test/$coverPath';
 
   @override
-  Future<String> saveDraft(GuideDraft draft) => _write('saveDraft', draft);
+  Future<String> saveDraft(GuideDraft draft) => _writeDraft('saveDraft', draft);
 
   @override
   Future<String> publishGuide(GuideDraft draft) =>
-      _write('publishGuide', draft);
+      _writeDraft('publishGuide', draft);
 
   @override
   Future<void> deleteGuide(String guideId) async {
@@ -246,8 +246,8 @@ class FakeGuideRepository implements GuideRepository {
     deleted.add(guideId);
   }
 
-  Future<String> _write(String action, GuideDraft draft) async {
-    writes.add((action, draft));
+  Future<String> _writeDraft(String action, GuideDraft draft) async {
+    draftWrites.add((action, draft));
     final error = writeError;
     if (error != null) throw error;
     return draft.id ?? newGuideId;
