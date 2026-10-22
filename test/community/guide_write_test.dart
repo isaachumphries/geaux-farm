@@ -61,6 +61,28 @@ GuideDraft _draft({String? id, String summary = 'A made-up guide.'}) =>
       steps: const [GuideStep(title: 'Drill holes', body: 'Six of them.')],
     );
 
+/// A `guides` row as PostgREST returns it, with this [status].
+Map<String, Object?> _guidesRow({String status = 'draft'}) => {
+  'id': 'g1',
+  'author_id': 'u1',
+  'title': 'Bucket tomatoes',
+  'summary': '',
+  'cover_path': null,
+  'difficulty': 2,
+  'space_types': ['balcony'],
+  'est_cost_usd': 12,
+  'setup_minutes': null,
+  'materials': [
+    {'name': 'Bucket', 'qty': '1', 'estCostUsd': 5, 'url': null},
+  ],
+  'steps': [
+    {'title': 'Drill holes', 'body': 'Six.', 'imagePath': null},
+  ],
+  'plant_ids': ['tomato'],
+  'tags': ['budget'],
+  'status': status,
+};
+
 void main() {
   late _Recorder recorder;
 
@@ -203,28 +225,7 @@ void main() {
 
   group('open for editing', () {
     test('reads the author\'s own row from guides, draft included', () async {
-      recorder.rows = [
-        {
-          'id': 'g1',
-          'author_id': 'u1',
-          'title': 'Bucket tomatoes',
-          'summary': '',
-          'cover_path': null,
-          'difficulty': 2,
-          'space_types': ['balcony'],
-          'est_cost_usd': 12,
-          'setup_minutes': null,
-          'materials': [
-            {'name': 'Bucket', 'qty': '1', 'estCostUsd': 5, 'url': null},
-          ],
-          'steps': [
-            {'title': 'Drill holes', 'body': 'Six.', 'imagePath': null},
-          ],
-          'plant_ids': ['tomato'],
-          'tags': ['budget'],
-          'status': 'draft',
-        },
-      ];
+      recorder.rows = [_guidesRow()];
 
       final guide = await _repo(recorder).fetchDraft('g1');
 
@@ -241,6 +242,14 @@ void main() {
       expect(guide.draft.steps.single.title, 'Drill holes');
       expect(guide.draft.plantIds, ['tomato']);
       expect(guide.draft.tags, ['budget']);
+    });
+
+    test('a published row opens as published, not as a draft', () async {
+      recorder.rows = [_guidesRow(status: 'published')];
+
+      final guide = await _repo(recorder).fetchDraft('g1');
+
+      expect(guide.status, GuideStatus.published);
     });
 
     test('another author\'s guide is not found', () async {
