@@ -124,6 +124,7 @@ class FakeGuideRepository implements GuideRepository {
     this.failFetch = false,
     this.guides = const {},
     this.drafts = const {},
+    this.mine = const [],
     this.newGuideId = 'g-new',
     this.writeError,
   }) : starred = {...starred};
@@ -136,6 +137,10 @@ class FakeGuideRepository implements GuideRepository {
   /// The author's own guides [fetchDraft] answers with, by id; any other
   /// id is not found.
   final Map<String, EditableGuide> drafts;
+
+  /// The signed-in author's own guides [fetchMyGuides] answers with, in
+  /// the order given (the server's newest-update-first order).
+  final List<OwnGuide> mine;
 
   /// Rows for a query and offset; the default is an empty feed.
   final List<Guide> Function(GuideFeedQuery query, int offset)? pages;
@@ -190,6 +195,25 @@ class FakeGuideRepository implements GuideRepository {
     if (starredError != null) throw starredError!;
     return starred;
   }
+
+  @override
+  Future<List<Guide>> fetchGuidesByIds(List<String> ids) async {
+    idFetches.add(ids);
+    if (failFetch) throw Exception('offline');
+    return [for (final id in ids) ?guides[id]];
+  }
+
+  /// Every [fetchGuidesByIds] call's ids, in order.
+  final idFetches = <List<String>>[];
+
+  @override
+  Future<List<OwnGuide>> fetchMyGuides() async {
+    myGuidesFetches++;
+    if (failFetch) throw Exception('offline');
+    return mine;
+  }
+
+  var myGuidesFetches = 0;
 
   @override
   Future<Guide> fetchGuide(String id) async {

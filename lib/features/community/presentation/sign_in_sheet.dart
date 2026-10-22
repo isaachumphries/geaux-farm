@@ -22,7 +22,8 @@ enum SignInAction {
   publish('Sign in to publish guides', Symbols.edit_rounded),
   report('Sign in to report guides', Symbols.flag_rounded),
 
-  /// The Account row on ST-01 Settings: no community action is waiting.
+  /// The Account row on ST-01 Settings, or opening CM-05 My profile: no
+  /// community action is waiting.
   account('Sign in', Symbols.person_rounded);
 
   const SignInAction(this.title, this.icon);
