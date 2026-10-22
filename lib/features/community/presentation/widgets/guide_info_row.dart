@@ -10,9 +10,25 @@ const double _tileSize = 36;
 
 /// CM-02's cost, setup time and difficulty as three equal cards.
 class GuideInfoRow extends StatelessWidget {
-  const GuideInfoRow({super.key, required this.guide});
+  GuideInfoRow({super.key, required Guide guide})
+    : cost = guideCostLabel(guide.estCostUsd),
+      setup = guideSetupLabel(guide.setupMinutes),
+      difficulty = guideDifficultyLabel(guide.difficulty);
 
-  final Guide guide;
+  /// The cards for a guide still being written, whose difficulty may not
+  /// be picked yet ([difficulty] null reads as "—").
+  GuideInfoRow.draft({
+    super.key,
+    required int? estCostUsd,
+    required int? setupMinutes,
+    required int? difficulty,
+  }) : cost = guideCostLabel(estCostUsd),
+       setup = guideSetupLabel(setupMinutes),
+       difficulty = difficulty == null ? '—' : guideDifficultyLabel(difficulty);
+
+  final String cost;
+  final String setup;
+  final String difficulty;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +43,7 @@ class GuideInfoRow extends StatelessWidget {
               tile: AppColors.leaf100,
               ink: AppColors.leaf700,
               caption: 'Cost',
-              value: guideCostLabel(guide.estCostUsd),
+              value: cost,
             ),
           ),
           Expanded(
@@ -36,7 +52,7 @@ class GuideInfoRow extends StatelessWidget {
               tile: AppColors.tileSky,
               ink: AppColors.tileSkyLedge,
               caption: 'Setup',
-              value: guideSetupLabel(guide.setupMinutes),
+              value: setup,
             ),
           ),
           Expanded(
@@ -45,7 +61,7 @@ class GuideInfoRow extends StatelessWidget {
               tile: AppColors.gold100,
               ink: AppColors.goldLedge,
               caption: 'Difficulty',
-              value: guideDifficultyLabel(guide.difficulty),
+              value: difficulty,
             ),
           ),
         ],
