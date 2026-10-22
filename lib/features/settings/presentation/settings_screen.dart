@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
 import 'widgets/care_reminders_tile.dart';
+import 'widgets/units_tile.dart';
 
-/// ST-01 Settings. Only the Care reminders row is built here. The other
-/// Figma rows (Units, Account, Weather alerts, About) belong to their own
-/// tickets.
+/// ST-01 Settings, in the plan/01 row order: Units, notifications (Care
+/// reminders), account, about. The onboarding-answer rows and Weather
+/// alerts are not built yet.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -20,6 +21,8 @@ class SettingsScreen extends StatelessWidget {
             'Preferences'.toUpperCase(),
             style: AppText.overline.copyWith(color: AppColors.soil600),
           ),
+          const SizedBox(height: AppSpacing.sm),
+          const UnitsTile(),
           const SizedBox(height: AppSpacing.sm),
           const CareRemindersTile(),
         ],
