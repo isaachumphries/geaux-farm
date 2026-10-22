@@ -24,8 +24,11 @@ const _uniqueViolation = '23505';
 const _guidesTable = 'guides';
 
 /// The author's `profiles` row embedded in a `guides` read, for the
-/// username a card shows (`guide_feed` joins it in the view).
-const _authorEmbed = 'author:profiles(username, display_name)';
+/// username a card shows (`guide_feed` joins it in the view). Named by its
+/// foreign key: guide_stars, guide_grows and guide_reports also link guides
+/// to profiles, and PostgREST refuses an ambiguous embed (PGRST201).
+const _authorEmbed =
+    'author:profiles!guides_author_id_fkey(username, display_name)';
 
 const _draftStatus = 'draft';
 const _publishedStatus = 'published';

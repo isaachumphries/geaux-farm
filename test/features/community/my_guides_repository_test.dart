@@ -141,7 +141,9 @@ void main() {
       expect(mine.first.guide.authorUsername, 'alice-name');
       expect(
         s.requests.single.queryParameters['select'],
-        contains('author:profiles'),
+        // guide_stars, guide_grows and guide_reports also link guides to
+        // profiles, so a bare profiles embed is ambiguous (PGRST201).
+        contains('author:profiles!guides_author_id_fkey('),
       );
     });
 
