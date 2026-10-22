@@ -16,6 +16,22 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
+## Home dashboard
+
+Home keeps the first-plant prompt (or its collapsed “pick later” state) until
+the local garden has a planting. The active dashboard then shows garden alerts,
+today's care grouped by the same slot labels as Care, the garden snapshot, the
+first ten in-season recommendations in plan/04 order, and the first Trending
+guide when available. Already-growing plants remain eligible for that carousel.
+
+Plant cards open plant detail, the snapshot opens My Garden, and the guide opens
+guide detail. Weather and Settings are available from the header. Pull-to-refresh
+fetches weather once and reloads the dashboard sections. Without a connection,
+the garden and care schedule still read from Drift; failed weather refreshes
+retain cached weather and show “Showing saved weather” once it is over three
+hours old. An empty cache shows the weather-unavailable notice without hiding
+the local care schedule.
+
 ## Community authentication
 
 The email-OTP flow uses the Supabase SDK's persisted session, then loads the
