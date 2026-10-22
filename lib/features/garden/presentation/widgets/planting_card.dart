@@ -6,10 +6,10 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../../app/theme.dart';
 import '../../../../app/widgets/widgets.dart';
+import '../../../care/domain/stage.dart';
 import '../../../catalog/presentation/plant_art.dart';
 import '../../../recommendations/application/clock_provider.dart';
 import '../../application/garden_provider.dart';
-import '../../domain/growth.dart';
 import '../../domain/planting.dart';
 import '../../domain/planting_copy.dart';
 
@@ -24,7 +24,7 @@ class PlantingCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final today = ref.watch(todayProvider);
-    final water = ref.watch(nextWaterProvider(view.id));
+    final water = ref.watch(nextWaterProvider(view.id)).value;
     final pl = view.planting;
     final stage = view.growth;
     final planted = pl.plantedOn;
@@ -45,6 +45,13 @@ class PlantingCard extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppText.cardTitle.copyWith(color: AppColors.soil900),
                 ),
+                if (pl.nickname != view.plant.commonName)
+                  Text(
+                    view.plant.commonName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.bodySm.copyWith(color: AppColors.soil900),
+                  ),
                 Text(
                   whereLabel(view.space?.type, pl.setup),
                   style: AppText.bodySm.copyWith(color: AppColors.soil600),
@@ -61,7 +68,14 @@ class PlantingCard extends ConsumerWidget {
                   ),
                 if (water != null && pl.status == PlantingStatus.active) ...[
                   const SizedBox(height: AppSpacing.xs),
-                  WaterChip(label: waterChipLabel(water.due, today)),
+                  WaterChip(
+                    // Overdue says "Water now"; otherwise the day of the
+                    // free-time slot the watering goes in, as on CR-01.
+                    label: waterChipLabel(
+                      water.due.isBefore(today) ? water.due : water.slot.start,
+                      today,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -82,23 +96,23 @@ class PlantingCard extends ConsumerWidget {
 class StageText extends StatelessWidget {
   const StageText({super.key, required this.stage, required this.text});
 
-  final GrowthStage stage;
+  final PlantingStage stage;
   final String text;
 
-  static Color colorFor(GrowthStage s) => switch (s) {
-    GrowthStage.sprouting => AppColors.good,
-    GrowthStage.growing => AppColors.leaf700,
-    GrowthStage.readyToHarvest => AppColors.heat,
-    GrowthStage.blooming => AppColors.tileSkyLedge,
-    GrowthStage.established => AppColors.leaf700,
+  static Color colorFor(PlantingStage s) => switch (s) {
+    PlantingStage.sprouting => AppColors.good,
+    PlantingStage.growing => AppColors.leaf700,
+    PlantingStage.readyToHarvest => AppColors.heat,
+    PlantingStage.blooming => AppColors.tileSkyLedge,
+    PlantingStage.established => AppColors.leaf700,
   };
 
-  static IconData iconFor(GrowthStage s) => switch (s) {
-    GrowthStage.sprouting => Symbols.psychiatry_rounded,
-    GrowthStage.growing => Symbols.trending_up_rounded,
-    GrowthStage.readyToHarvest => Symbols.shopping_basket_rounded,
-    GrowthStage.blooming => Symbols.local_florist_rounded,
-    GrowthStage.established => Symbols.verified_rounded,
+  static IconData iconFor(PlantingStage s) => switch (s) {
+    PlantingStage.sprouting => Symbols.psychiatry_rounded,
+    PlantingStage.growing => Symbols.trending_up_rounded,
+    PlantingStage.readyToHarvest => Symbols.shopping_basket_rounded,
+    PlantingStage.blooming => Symbols.local_florist_rounded,
+    PlantingStage.established => Symbols.verified_rounded,
   };
 
   @override
