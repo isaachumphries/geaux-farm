@@ -15,6 +15,28 @@ final careEventsProvider = StreamProvider<List<CareEvent>>(
   (ref) => ref.watch(careScheduleRepositoryProvider).watchCareEvents(),
 );
 
+/// The forecast keyed by local day, as the care rules read it. Shared by the
+/// care list and GD-02's next-water chip so both see the same weather.
+///
+/// Weather is memory-only and may be unavailable. If it fails, this is
+/// empty, so [waterDue] falls back to its no-rain estimate.
+final careForecastDaysProvider =
+    FutureProvider.autoDispose<Map<DateTime, WeatherDay>>((ref) async {
+      final profile = await ref.watch(userProfileProvider.future);
+      try {
+        final weather = await ref.watch(
+          weatherProvider(forecastLocation(profile.lat, profile.lon)).future,
+        );
+        return {
+          for (final d in weather.snapshot.days)
+            dayOf(DateTime.parse(d.date)): d,
+        };
+      } catch (_) {
+        // Keep the schedule usable offline; see the doc comment above.
+        return const {};
+      }
+    });
+
 /// The care list: this week's tasks plus overdue ones, each placed in free
 /// time. Rebuilds when an input stream emits or the local day changes.
 ///
@@ -30,21 +52,9 @@ final careScheduleProvider =
       final events = await ref.watch(careEventsProvider.future);
       final profile = await ref.watch(userProfileProvider.future);
       final plants = await ref.watch(catalogProvider.future);
+      final days = await ref.watch(careForecastDaysProvider.future);
       final today = ref.watch(todayProvider);
       final now = ref.read(clockProvider)();
-
-      var days = const <DateTime, WeatherDay>{};
-      try {
-        final weather = await ref.watch(
-          weatherProvider(forecastLocation(profile.lat, profile.lon)).future,
-        );
-        days = {
-          for (final d in weather.snapshot.days)
-            dayOf(DateTime.parse(d.date)): d,
-        };
-      } catch (_) {
-        // Keep the schedule usable offline; see the doc comment above.
-      }
 
       return buildCareSchedule(
         today: today,
