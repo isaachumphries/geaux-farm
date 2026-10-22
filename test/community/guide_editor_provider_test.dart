@@ -227,6 +227,26 @@ void main() {
     });
   });
 
+  group('a second write while one is out', () {
+    test('publish twice without waiting writes once', () async {
+      final rig = _rig();
+      final gate = rig.repo.writeGate = Completer<void>();
+      final notifier = rig.container.read(
+        guideEditorProvider(newGuideRouteId).notifier,
+      );
+      notifier.edit(_publishable);
+
+      final first = notifier.publish();
+      final second = notifier.publish();
+      await Future<void>.delayed(Duration.zero);
+      gate.complete();
+
+      expect(await first, 'g-new');
+      expect(await second, isNull);
+      expect(rig.repo.draftWrites, hasLength(1));
+    });
+  });
+
   group('leaving the editor', () {
     test('a save still in flight cannot name the next new guide', () async {
       final rig = _rig(keepAlive: false);

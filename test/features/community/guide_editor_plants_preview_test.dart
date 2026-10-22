@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -332,6 +334,39 @@ void main() {
       expect(repo.draftWrites.single.$1, 'publishGuide');
       expect(repo.fetches.length, greaterThan(feedFetches));
       expect(repo.guideFetches.length, greaterThan(guideFetches));
+    });
+
+    testWidgets('a second tap while the first publish is out writes once', (
+      tester,
+    ) async {
+      final repo = FakeGuideRepository();
+      final gate = repo.writeGate = Completer<void>();
+      final h = await _pumpPreview(tester, repo);
+      _edit(h, _complete);
+      await tester.pump();
+      final publish = find.text('PUBLISH');
+      await tester.ensureVisible(publish);
+      await tester.pump();
+
+      // Two quick taps: the sign-in check has not finished for either, so
+      // the button is not disabled yet and only the notifier says no.
+      await tester.tap(publish);
+      await tester.tap(publish);
+      await tester.pump();
+      await tester.pump();
+      expect(repo.draftWrites, hasLength(1));
+
+      // Once the write is out both buttons are off.
+      expect(_button(tester, 'Publish').onPressed, isNull);
+      expect(_button(tester, 'Save draft').onPressed, isNull);
+      await tester.tap(publish, warnIfMissed: false);
+      await tester.pump();
+      expect(repo.draftWrites, hasLength(1));
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(repo.draftWrites, hasLength(1));
+      expect(find.text('guide g-new'), findsOneWidget);
     });
 
     testWidgets('Save draft keeps the guide and says so', (tester) async {
