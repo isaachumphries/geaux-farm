@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/app/theme.dart';
 import 'package:geaux_farm/app/widgets/widgets.dart';
+import 'package:geaux_farm/core/http.dart';
 import 'package:geaux_farm/features/community/application/community_feed_provider.dart';
 import 'package:geaux_farm/features/community/application/guide_detail_provider.dart';
 import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
@@ -12,6 +13,7 @@ import 'package:geaux_farm/features/catalog/domain/plant.dart';
 import 'package:geaux_farm/features/community/application/guide_editor_provider.dart';
 import 'package:geaux_farm/features/community/data/auth_providers.dart';
 import 'package:geaux_farm/features/community/data/guide_repository_provider.dart';
+import 'package:geaux_farm/features/community/domain/auth_user.dart';
 import 'package:geaux_farm/features/community/domain/guide.dart';
 import 'package:geaux_farm/features/community/domain/guide_feed_query.dart';
 import 'package:geaux_farm/features/community/domain/guide_repository.dart';
@@ -64,6 +66,15 @@ const _complete = GuideDraft(
   steps: [GuideStep(title: 'Fill the pots', body: 'Potting mix to the rim.')],
   plantIds: ['p2'],
 );
+
+/// An auth stream that still says signed in after the client lost its
+/// session: the window in which a write is refused as signed out.
+class _StaleSessionAuth extends FakeAuthRepository {
+  _StaleSessionAuth() : super(user: signedInUser);
+
+  @override
+  AuthUser? get currentUser => null;
+}
 
 typedef _Harness = ({ProviderContainer container, List<EditorStep> edits});
 
@@ -367,6 +378,23 @@ void main() {
       await tester.pumpAndSettle();
       expect(repo.draftWrites, hasLength(1));
       expect(find.text('guide g-new'), findsOneWidget);
+    });
+
+    testWidgets('a write refused as signed out opens CM-04', (tester) async {
+      final repo = FakeGuideRepository()
+        ..writeError = const AuthRequiredException();
+      final h = await _pumpPreview(tester, repo, auth: _StaleSessionAuth());
+      _edit(h, _complete);
+      await tester.pump();
+
+      await _tap(tester, find.text('PUBLISH'));
+
+      // The user was signed in as far as the app knew; the server said no.
+      expect(repo.draftWrites, hasLength(1));
+      expect(find.byType(SignInSheet), findsOneWidget);
+      expect(find.text('Sign in to publish guides'), findsOneWidget);
+      // Their draft is still there.
+      expect(_state(h).draft.title, 'Balcony salsa garden');
     });
 
     testWidgets('Save draft keeps the guide and says so', (tester) async {
