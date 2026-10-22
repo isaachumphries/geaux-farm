@@ -149,7 +149,6 @@ void main() {
     const placeholders = {
       '/settings': 'Settings',
       '/settings/edit/space': 'OB-07 Edit step',
-      '/garden/project/g1': 'GD-03 Guide project',
       '/community/editor/new': 'CM-03 Editor',
       '/community/me': 'CM-05 My profile',
     };
