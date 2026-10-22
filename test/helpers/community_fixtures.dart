@@ -153,7 +153,8 @@ class FakeGuideRepository implements GuideRepository {
   /// [publishGuide], [deleteGuide]) throws it after recording the call.
   Object? writeError;
 
-  /// Held open until completed, to observe the optimistic state.
+  /// Held open until completed, to observe the optimistic state or a draft
+  /// write in flight.
   Completer<void>? writeGate;
 
   /// The id an insert returns, standing in for the server-generated one.
@@ -262,6 +263,7 @@ class FakeGuideRepository implements GuideRepository {
 
   Future<String> _writeDraft(String action, GuideDraft draft) async {
     draftWrites.add((action, draft));
+    await writeGate?.future;
     final error = writeError;
     if (error != null) throw error;
     return draft.id ?? newGuideId;

@@ -27,9 +27,9 @@ final _stepLabels = [for (final step in EditorStep.values) step.label];
 /// [guideEditorProvider], so a step that is left and opened again starts
 /// from what was typed.
 ///
-/// Each visit is a new editing session: opening the editor drops whatever
-/// an earlier visit to the same guide left in the provider, so a new guide
-/// starts empty and an existing one is read again.
+/// Each visit is a new editing session: the provider is disposed when the
+/// editor closes, so a new guide starts empty and an existing one is read
+/// again.
 class GuideEditorScreen extends ConsumerStatefulWidget {
   const GuideEditorScreen({super.key, required this.guideId});
 
@@ -50,9 +50,6 @@ class _GuideEditorScreenState extends ConsumerState<GuideEditorScreen> {
   @override
   void initState() {
     super.initState();
-    final editor = guideEditorProvider(widget.guideId);
-    // A write in flight owns the state it will land in: leave that alone.
-    if (ref.exists(editor) && !ref.read(editor).saving) ref.invalidate(editor);
     WidgetsBinding.instance.addPostFrameCallback((_) => _requireSignIn());
   }
 

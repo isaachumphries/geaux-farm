@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/core/http.dart';
@@ -22,7 +24,12 @@ GuideDraft _publishable(GuideDraft draft) => draft.copyWith(
   steps: const [GuideStep(title: 'Drill holes', body: 'Six.')],
 );
 
-({ProviderContainer container, FakeGuideRepository repo}) _rig() {
+/// The editors of the routes the tests open stay alive between reads, as
+/// they do under the editor screen; pass `keepAlive: false` to watch one
+/// being left.
+({ProviderContainer container, FakeGuideRepository repo}) _rig({
+  bool keepAlive = true,
+}) {
   final repo = FakeGuideRepository(
     drafts: {
       'g1': (
@@ -35,6 +42,11 @@ GuideDraft _publishable(GuideDraft draft) => draft.copyWith(
     overrides: [guideRepositoryProvider.overrideWithValue(repo)],
   );
   addTearDown(container.dispose);
+  if (keepAlive) {
+    for (final id in [newGuideRouteId, 'g1', 'missing']) {
+      container.listen(guideEditorProvider(id), (_, _) {});
+    }
+  }
   return (container: container, repo: repo);
 }
 
@@ -212,6 +224,42 @@ void main() {
 
       expect(await notifier.publish(), 'g-new');
       expect(rig.repo.draftWrites.single.$1, 'publishGuide');
+    });
+  });
+
+  group('leaving the editor', () {
+    test('a save still in flight cannot name the next new guide', () async {
+      final rig = _rig(keepAlive: false);
+      final gate = rig.repo.writeGate = Completer<void>();
+      final first = rig.container.listen(
+        guideEditorProvider(newGuideRouteId),
+        (_, _) {},
+      );
+      final notifier = rig.container.read(
+        guideEditorProvider(newGuideRouteId).notifier,
+      );
+      notifier.edit(_publishable);
+      final saving = notifier.saveDraft();
+      await Future<void>.delayed(Duration.zero);
+      expect(rig.repo.draftWrites, hasLength(1));
+
+      // The author leaves, then opens a new guide while the save is out.
+      first.close();
+      await rig.container.pump();
+      final second = rig.container.listen(
+        guideEditorProvider(newGuideRouteId),
+        (_, _) {},
+      );
+      expect(second.read().draft.title, isEmpty);
+
+      gate.complete();
+      await saving;
+
+      final state = second.read();
+      expect(state.draft.id, isNull);
+      expect(state.draft.title, isEmpty);
+      expect(state.saving, isFalse);
+      expect(state.status, isNull);
     });
   });
 

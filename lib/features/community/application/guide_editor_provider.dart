@@ -69,8 +69,12 @@ class GuideEditorState {
 /// the id `new` (plan/09 § Routes) and holds no draft id until the first
 /// save returns one; any other id is the author's own guide, read from
 /// `guides` when the editor opens.
-final guideEditorProvider =
-    NotifierProvider.family<GuideEditorNotifier, GuideEditorState, String>(
+///
+/// Each visit to the editor is its own notifier: it is disposed when the
+/// editor closes, so a new guide starts empty and an existing one is read
+/// again. A write still in flight when that happens lands on nothing.
+final guideEditorProvider = NotifierProvider.autoDispose
+    .family<GuideEditorNotifier, GuideEditorState, String>(
       GuideEditorNotifier.new,
     );
 
@@ -159,6 +163,9 @@ class GuideEditorNotifier extends Notifier<GuideEditorState> {
     );
     try {
       final id = await send(ref.read(guideRepositoryProvider), draft);
+      // The editor was left while the write was out: the guide is written,
+      // and there is no state left to record it in.
+      if (!ref.mounted) return id;
       // The first save gets the server-generated id, so later saves update.
       state = state.copyWith(
         draft: state.draft.copyWith(id: id),
@@ -167,6 +174,7 @@ class GuideEditorNotifier extends Notifier<GuideEditorState> {
       );
       return id;
     } on Object catch (error) {
+      if (!ref.mounted) return null;
       state = state.copyWith(saving: false, writeError: error);
       return null;
     }

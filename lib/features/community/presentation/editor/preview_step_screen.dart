@@ -75,9 +75,6 @@ class PreviewStepScreen extends ConsumerWidget {
         container.invalidate(communityFeedProvider);
         container.invalidate(guideDetailProvider(id));
         if (context.mounted) context.go('/community/guide/$id');
-        // The editor's draft is published: a later New guide starts blank
-        // instead of updating this one.
-        container.invalidate(guideEditorProvider(guideId));
       },
     );
   }
