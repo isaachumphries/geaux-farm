@@ -292,6 +292,21 @@ void main() {
       );
     });
 
+    testWidgets('the picker offers only today−365 through today', (
+      tester,
+    ) async {
+      await _openSheet(tester);
+
+      await tester.tap(find.text('Today, Oct 7'));
+      await tester.pumpAndSettle();
+
+      final picker = tester.widget<DatePickerDialog>(
+        find.byType(DatePickerDialog),
+      );
+      expect(picker.firstDate, DateTime(2025, 10, 7));
+      expect(picker.lastDate, DateTime(2026, 10, 7));
+    });
+
     testWidgets('a day after today cannot be picked', (tester) async {
       await _openSheet(tester);
 
