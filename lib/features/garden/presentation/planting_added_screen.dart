@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -37,8 +36,9 @@ class _PlantingAddedScreenState extends ConsumerState<PlantingAddedScreen> {
       } else {
         await service.markPermissionAsked();
       }
-    } on MissingPluginException {
-      // No notification plugin on this platform: record the answer only.
+    } on Exception {
+      // No notification plugin on this platform, or the OS request failed:
+      // record the answer only, so PD-03 never asks again.
       await service.markPermissionAsked();
     } finally {
       // The answer is the user's way out of PD-03, even if saving it failed.
