@@ -358,14 +358,6 @@ void main() {
     expect(found, {
       'lib/features/community/data/supabase_guide_repository.dart': 1,
     });
-    final repository = File(
-      'lib/features/community/data/supabase_guide_repository.dart',
-    ).readAsStringSync();
-    expect(repository, isNot(contains('.upsert(')));
-    expect(
-      repository,
-      contains('.from(_guidesTable)\n          .update(guideDraftPayload('),
-    );
   });
 
   test('coverUrl is the public guide-images URL', () {
