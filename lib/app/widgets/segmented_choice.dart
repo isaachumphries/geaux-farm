@@ -16,6 +16,11 @@ class GeauxSegmentedChoice<T> extends StatelessWidget {
   final T selected;
   final ValueChanged<T> onSelected;
 
+  static const double _minLabelHeight =
+      AppSpacing.minTouchTarget -
+      2 * AppSpacing.md -
+      (AppBorders.ledge - AppBorders.width);
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -41,16 +46,24 @@ class GeauxSegmentedChoice<T> extends StatelessWidget {
                 ledgeColor: options[i].$1 == selected
                     ? AppColors.leaf500
                     : AppColors.stone200,
-                child: Text(
-                  options[i].$2,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.bodySm.copyWith(
-                    color: options[i].$1 == selected
-                        ? AppColors.leaf700
-                        : AppColors.soil900,
-                    fontWeight: FontWeight.w800,
+                // Pads the label row so the whole chip, ledge included,
+                // is at least the 48 px touch target (plan/01).
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: _minLabelHeight),
+                  child: Align(
+                    heightFactor: 1,
+                    child: Text(
+                      options[i].$2,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.bodySm.copyWith(
+                        color: options[i].$1 == selected
+                            ? AppColors.leaf700
+                            : AppColors.soil900,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                 ),
               ),
