@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
 import '../application/community_feed_provider.dart';
 import '../application/guide_detail_provider.dart';
-import '../application/guide_editor_provider.dart';
 import '../application/starred_guides_provider.dart';
 import '../data/guide_repository_provider.dart';
 
@@ -22,6 +21,9 @@ Future<void> deleteOwnGuide(
   // Taken before any await: the page behind this call is gone once the
   // route changes, the root messenger is not.
   final messenger = ScaffoldMessenger.of(context);
+  // Not `ref`: it dies with this page, but the cached lists must refresh
+  // even when the user left while the request was in flight.
+  final container = ProviderScope.containerOf(context);
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
@@ -67,20 +69,18 @@ Future<void> deleteOwnGuide(
   if (confirmed != true || !context.mounted) return;
 
   try {
-    await ref.read(guideRepositoryProvider).deleteGuide(guideId);
+    await container.read(guideRepositoryProvider).deleteGuide(guideId);
   } catch (_) {
     messenger.showSnackBar(
       const SnackBar(content: Text("Couldn't delete the guide. Try again.")),
     );
     return;
   }
-  if (!context.mounted) return;
-
-  ref
+  container
     ..invalidate(communityFeedProvider)
     ..invalidate(starredGuideIdsProvider)
-    ..invalidate(guideDetailProvider(guideId))
-    ..invalidate(guideEditorProvider(guideId));
+    ..invalidate(guideDetailProvider(guideId));
+  if (!context.mounted) return;
   context.go('/community');
   messenger.showSnackBar(const SnackBar(content: Text('Guide deleted')));
 }

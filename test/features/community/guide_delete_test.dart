@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -81,6 +83,19 @@ Future<void> _tapDelete(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// A repository whose delete waits until [release] completes.
+class _SlowDeleteRepository extends FakeGuideRepository {
+  _SlowDeleteRepository({super.guides});
+
+  final release = Completer<void>();
+
+  @override
+  Future<void> deleteGuide(String guideId) async {
+    await release.future;
+    return super.deleteGuide(guideId);
+  }
+}
+
 void main() {
   final guide = testGuide('g1');
 
@@ -153,6 +168,35 @@ void main() {
       router.routerDelegate.currentConfiguration.uri.path,
       '/community/guide/g1',
     );
+    await unmount(tester);
+  });
+
+  testWidgets('a delete that finishes after CM-02 closed still refreshes the '
+      'feed', (tester) async {
+    final repo = _SlowDeleteRepository(guides: {'g1': guide});
+    final router = await _pumpOwnGuide(tester, repo, 'g1', guide.authorId);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(GuideDetailScreen)),
+    );
+    final feed = container.listen(
+      communityFeedProvider(const GuideFeedQuery()),
+      (_, _) {},
+    );
+    addTearDown(feed.close);
+    await tester.pumpAndSettle();
+    final fetchesBefore = repo.fetches.length;
+
+    await _tapDelete(tester);
+    await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+    await tester.pump();
+    // The user leaves while the request is in flight.
+    router.go('/community');
+    await tester.pumpAndSettle();
+    repo.release.complete();
+    await tester.pumpAndSettle();
+
+    expect(repo.deleted, ['g1']);
+    expect(repo.fetches.length, greaterThan(fetchesBefore));
     await unmount(tester);
   });
 }
