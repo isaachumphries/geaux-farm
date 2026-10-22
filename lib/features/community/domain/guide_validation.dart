@@ -106,6 +106,9 @@ class GuideDraft {
   /// an insert or an update.
   bool get isSaved => id != null;
 
+  /// A copy with the given fields replaced. A null argument keeps the old
+  /// value, so the optional [coverPath], [estCostUsd] and [setupMinutes]
+  /// are cleared with their `clear` flags, which win over a value.
   GuideDraft copyWith({
     String? id,
     String? title,
@@ -119,15 +122,18 @@ class GuideDraft {
     List<GuideStep>? steps,
     List<String>? plantIds,
     List<String>? tags,
+    bool clearCoverPath = false,
+    bool clearEstCostUsd = false,
+    bool clearSetupMinutes = false,
   }) => GuideDraft(
     id: id ?? this.id,
     title: title ?? this.title,
     summary: summary ?? this.summary,
-    coverPath: coverPath ?? this.coverPath,
+    coverPath: clearCoverPath ? null : coverPath ?? this.coverPath,
     difficulty: difficulty ?? this.difficulty,
     spaceTypes: spaceTypes ?? this.spaceTypes,
-    estCostUsd: estCostUsd ?? this.estCostUsd,
-    setupMinutes: setupMinutes ?? this.setupMinutes,
+    estCostUsd: clearEstCostUsd ? null : estCostUsd ?? this.estCostUsd,
+    setupMinutes: clearSetupMinutes ? null : setupMinutes ?? this.setupMinutes,
     materials: materials ?? this.materials,
     steps: steps ?? this.steps,
     plantIds: plantIds ?? this.plantIds,

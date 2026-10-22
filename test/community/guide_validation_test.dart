@@ -381,5 +381,22 @@ void main() {
       expect(next.tags, ['budget']);
       expect(next.id, draft.id);
     });
+
+    test('copyWith can clear the optional numbers and the cover', () {
+      final draft = valid(
+        estCostUsd: 40,
+        setupMinutes: 90,
+      ).copyWith(coverPath: 'g1/cover.jpg');
+      final cleared = draft.copyWith(
+        clearEstCostUsd: true,
+        clearSetupMinutes: true,
+        clearCoverPath: true,
+      );
+      expect(cleared.estCostUsd, isNull);
+      expect(cleared.setupMinutes, isNull);
+      expect(cleared.coverPath, isNull);
+      expect(cleared.title, draft.title);
+      expect(cleared.id, draft.id);
+    });
   });
 }

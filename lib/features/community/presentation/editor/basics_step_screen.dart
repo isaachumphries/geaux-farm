@@ -67,14 +67,17 @@ class _BasicsStepScreenState extends ConsumerState<BasicsStepScreen> {
   void _setCost(String value) {
     final usd = int.tryParse(value);
     _editor.edit(
-      (draft) => _withNumbers(draft, cost: usd, minutes: draft.setupMinutes),
+      (draft) => draft.copyWith(estCostUsd: usd, clearEstCostUsd: usd == null),
     );
   }
 
   void _setSetup(String value) {
     final minutes = int.tryParse(value);
     _editor.edit(
-      (draft) => _withNumbers(draft, cost: draft.estCostUsd, minutes: minutes),
+      (draft) => draft.copyWith(
+        setupMinutes: minutes,
+        clearSetupMinutes: minutes == null,
+      ),
     );
   }
 
@@ -237,25 +240,6 @@ class _BasicsStepScreenState extends ConsumerState<BasicsStepScreen> {
     );
   }
 }
-
-/// [draft] with its two optional numbers replaced. [GuideDraft.copyWith]
-/// keeps the old value for a null argument, so it cannot clear a number
-/// the author deleted; this rebuilds the draft instead.
-GuideDraft _withNumbers(GuideDraft draft, {int? cost, int? minutes}) =>
-    GuideDraft(
-      id: draft.id,
-      title: draft.title,
-      summary: draft.summary,
-      coverPath: draft.coverPath,
-      difficulty: draft.difficulty,
-      spaceTypes: draft.spaceTypes,
-      estCostUsd: cost,
-      setupMinutes: minutes,
-      materials: draft.materials,
-      steps: draft.steps,
-      plantIds: draft.plantIds,
-      tags: draft.tags,
-    );
 
 /// [current] with [value] added or removed, in the order of [all]. A value
 /// outside [all] drops out, which is how an author clears one a saved
