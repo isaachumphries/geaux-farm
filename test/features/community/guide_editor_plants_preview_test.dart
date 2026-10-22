@@ -143,6 +143,12 @@ void _edit(_Harness h, GuideDraft draft) => h.container
     .read(guideEditorProvider(newGuideRouteId).notifier)
     .edit((_) => draft);
 
+/// The Preview button labelled [label] ("Save draft" or "Publish").
+GeauxButton _button(WidgetTester tester, String label) =>
+    tester.widget<GeauxButton>(
+      find.byWidgetPredicate((w) => w is GeauxButton && w.label == label),
+    );
+
 Future<void> _tap(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
   await tester.pump();
@@ -298,12 +304,15 @@ void main() {
       final h = await _pumpPreview(tester, repo);
 
       // Nothing to save until there is a title.
-      await tester.tap(find.text('SAVE DRAFT'));
-      await tester.pumpAndSettle();
+      expect(_button(tester, 'Save draft').onPressed, isNull);
+      _edit(h, const GuideDraft(title: '  ', difficulty: 2));
+      await tester.pump();
+      expect(_button(tester, 'Save draft').onPressed, isNull);
       expect(repo.draftWrites, isEmpty);
 
       _edit(h, const GuideDraft(title: 'Balcony salsa', difficulty: 2));
       await tester.pump();
+      expect(_button(tester, 'Save draft').onPressed, isNotNull);
       await _tap(tester, find.text('SAVE DRAFT'));
 
       expect(repo.draftWrites.map((w) => w.$1), ['saveDraft']);
