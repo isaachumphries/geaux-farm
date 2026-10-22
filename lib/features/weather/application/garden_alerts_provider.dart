@@ -85,6 +85,9 @@ final weatherAlertsSyncProvider = Provider<void>((ref) {
     } on MissingPluginException {
       // No notification plugin on this platform. There is nothing to schedule.
     } catch (error, stack) {
+      // Disposal cancels a profile read that has not emitted yet. This sync
+      // no longer owns work; errors from a live scheduler still get reported.
+      if (!ref.mounted) return;
       FlutterError.reportError(
         FlutterErrorDetails(
           exception: error,
