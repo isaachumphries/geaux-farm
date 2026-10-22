@@ -154,4 +154,30 @@ void main() {
 
     expect(find.text('100%'), findsNWidgets(6));
   });
+
+  group('worked example fixtures (plan/04)', () {
+    int total(String id) => scorePlant(
+      loadReferencePlants()[id]!,
+      workedExample,
+      GrowSetup.outdoor,
+      workedExampleDate,
+    ).score;
+
+    test('english-lavender bars are 80/50/100/100/30/50 and total 74', () {
+      expect(_rowsFor('english-lavender').map((r) => r.percent), [
+        80,
+        50,
+        100,
+        100,
+        30,
+        50,
+      ]);
+      expect(total('english-lavender'), 74);
+    });
+
+    test('sweet-basil earns all six bars in full and totals 100', () {
+      expect(_rowsFor('sweet-basil').map((r) => r.percent), everyElement(100));
+      expect(total('sweet-basil'), 100);
+    });
+  });
 }

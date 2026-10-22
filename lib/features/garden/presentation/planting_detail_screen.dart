@@ -1,26 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../care/domain/care_event.dart';
+import '../../care/domain/care_schedule.dart';
+import '../../care/domain/schedule_math.dart';
+import '../../care/domain/slot.dart';
+import '../../care/presentation/care_screen.dart';
+import '../../care/presentation/widgets/task_row.dart';
 import '../../catalog/domain/plant.dart';
 import '../../catalog/presentation/plant_art.dart';
 import '../../home/domain/home_copy.dart';
 import '../../recommendations/application/clock_provider.dart';
 import '../application/garden_provider.dart';
-import '../data/garden_repository.dart';
+import '../application/planting_actions.dart';
 import '../domain/growth.dart';
 import '../domain/planting.dart';
 import '../domain/planting_copy.dart';
 import 'grow_this_sheet.dart';
 import 'widgets/planting_card.dart';
 
-/// GD-02 Planting detail. The header, quick actions, care guide, and
-/// stage note follow the plant's category and maturity kind, so a herb,
-/// a tomato, and a lavender each get their own screen.
+/// GD-02 Planting detail (#30), top to bottom: header with stage and ring,
+/// next-water chip, action row, upcoming tasks, care log, Mark harvested,
+/// Remove. Stage, due dates, and slots come from the shared care rules
+/// (CARE-01, CARE-02), so they match CR-01.
 class PlantingDetailScreen extends ConsumerWidget {
   const PlantingDetailScreen({super.key, required this.plantingId});
 
@@ -87,16 +94,19 @@ class _Missing extends StatelessWidget {
   }
 }
 
-/// Quick actions offered for a plant: water and skip when it has a water
-/// need, one button per catalog task kind, harvest for plants grown for a
-/// harvest, and a note. Order follows the GD-02 frame.
-List<CareEventType> quickActionsFor(Plant p) {
+/// The GD-02 action row: water and skip when the plant has a water need,
+/// one button per catalog task kind, harvest only once [progress] reaches 1
+/// (#30), and a note. Order follows the GD-02 frame.
+List<CareEventType> quickActionsFor(Plant p, {required double progress}) {
   final kinds = {for (final t in p.care.tasks) t.type};
+  final harvests =
+      p.maturityKind == MaturityKind.harvest ||
+      kinds.contains(TaskType.harvest);
   return [
     if (p.water != null) ...[CareEventType.water, CareEventType.skipWater],
     if (kinds.contains(TaskType.fertilize)) CareEventType.fertilize,
     if (kinds.contains(TaskType.prune)) CareEventType.prune,
-    if (p.maturityKind == MaturityKind.harvest) CareEventType.harvest,
+    if (harvests && progress >= 1) CareEventType.harvest,
     CareEventType.note,
   ];
 }
@@ -142,38 +152,45 @@ List<CareEventType> quickActionsFor(Plant p) {
   ),
 };
 
-String _taskTitle(CareDue t, String nickname) => switch (t.type) {
-  CareEventType.water || CareEventType.skipWater => 'Water $nickname',
-  CareEventType.fertilize => 'Fertilize $nickname',
-  CareEventType.prune => 'Prune $nickname',
-  CareEventType.harvest => 'Harvest $nickname',
-  CareEventType.note => t.note ?? 'Check on $nickname',
-};
-
 class _Detail extends ConsumerWidget {
   const _Detail({required this.view});
 
   final PlantingView view;
+
+  /// Runs [write], then confirms it with [done] or reports a failure. The
+  /// screen stays put; the chip, ring, stage, and log follow the write.
+  Future<void> _run(
+    BuildContext context,
+    Future<void> Function() write,
+    String done,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await write();
+      messenger.showSnackBar(SnackBar(content: Text('Logged: $done')));
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Couldn't save that. Try again.")),
+      );
+    }
+  }
 
   Future<void> _log(
     BuildContext context,
     WidgetRef ref,
     CareEventType type, {
     String? note,
-  }) async {
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      await ref
-          .read(gardenRepositoryProvider)
-          .logCare(view.id, type, note: note);
-      messenger.showSnackBar(
-        SnackBar(content: Text('Logged: ${_doneLabel(type)}')),
-      );
-    } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text("Couldn't save that. Try again.")),
-      );
-    }
+  }) {
+    final actions = ref.read(plantingActionsProvider);
+    return _run(
+      context,
+      () => switch (type) {
+        CareEventType.water => actions.water(view.id),
+        CareEventType.skipWater => actions.skip(view.id),
+        _ => actions.logTask(view.id, type, note: note),
+      },
+      _doneLabel(type),
+    );
   }
 
   Future<void> _addNote(BuildContext context, WidgetRef ref) async {
@@ -182,16 +199,11 @@ class _Detail extends ConsumerWidget {
       builder: (_) => const _NoteDialog(),
     );
     if (note == null || note.trim().isEmpty || !context.mounted) return;
-    await _log(context, ref, CareEventType.note, note: note);
-  }
-
-  Future<void> _setStatus(
-    BuildContext context,
-    WidgetRef ref,
-    PlantingStatus status,
-  ) async {
-    await ref.read(gardenRepositoryProvider).setStatus(view.id, status);
-    if (context.mounted) context.go('/garden');
+    await _run(
+      context,
+      () => ref.read(plantingActionsProvider).addNote(view.id, note),
+      _doneLabel(CareEventType.note),
+    );
   }
 
   Future<void> _confirmRemove(BuildContext context, WidgetRef ref) async {
@@ -212,9 +224,9 @@ class _Detail extends ConsumerWidget {
         ],
       ),
     );
-    if (ok == true && context.mounted) {
-      await _setStatus(context, ref, PlantingStatus.removed);
-    }
+    if (ok != true || !context.mounted) return;
+    await ref.read(plantingActionsProvider).remove(view.id);
+    if (context.mounted) context.go('/garden');
   }
 
   @override
@@ -245,22 +257,12 @@ class _Detail extends ConsumerWidget {
           padding: inset,
           child: _Header(view: view),
         ),
-        if (view.growth case final stage? when active) ...[
-          const SizedBox(height: AppSpacing.md),
-          Padding(
-            padding: inset,
-            child: _StageNote(
-              category: p.category,
-              text: stageNote(p, stage.stage),
-            ),
-          ),
-        ],
         if (active) ...[
           const SizedBox(height: AppSpacing.lg),
           Padding(
             padding: inset,
             child: _QuickActions(
-              actions: quickActionsFor(p),
+              actions: quickActionsFor(p, progress: view.growth?.progress ?? 0),
               onAction: (t) => t == CareEventType.note
                   ? _addNote(context, ref)
                   : _log(context, ref, t),
@@ -279,29 +281,16 @@ class _Detail extends ConsumerWidget {
                 AppSpacing.screenPadding,
                 AppSpacing.md,
               ),
-              child: _TaskRow(
+              child: _UpcomingTask(
                 task: t,
-                nickname: pl.nickname,
                 onDone: () => _log(
                   context,
                   ref,
-                  t.type,
-                  note: t.type == CareEventType.note ? t.note : null,
+                  _eventTypeOf(t.kind),
+                  note: t.kind == CareTaskKind.other ? t.note : null,
                 ),
               ),
             ),
-        ],
-        if (p.care.tasks.isNotEmpty || p.tips.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xl),
-          Padding(
-            padding: inset,
-            child: _Heading('Caring for your ${categoryNoun(p.category)}'),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Padding(
-            padding: inset,
-            child: _CareGuide(plant: p),
-          ),
         ],
         const SizedBox(height: AppSpacing.xl),
         Padding(
@@ -330,8 +319,11 @@ class _Detail extends ConsumerWidget {
             child: GeauxButton(
               label: 'Mark harvested',
               variant: GeauxButtonVariant.secondary,
-              onPressed: () =>
-                  _setStatus(context, ref, PlantingStatus.harvested),
+              onPressed: () => _run(
+                context,
+                () => ref.read(plantingActionsProvider).markHarvested(view.id),
+                _doneLabel(CareEventType.harvest),
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -347,6 +339,14 @@ class _Detail extends ConsumerWidget {
     );
   }
 }
+
+CareEventType _eventTypeOf(CareTaskKind kind) => switch (kind) {
+  CareTaskKind.water => CareEventType.water,
+  CareTaskKind.fertilize => CareEventType.fertilize,
+  CareTaskKind.prune => CareEventType.prune,
+  CareTaskKind.harvest => CareEventType.harvest,
+  CareTaskKind.other => CareEventType.note,
+};
 
 String _doneLabel(CareEventType t) => switch (t) {
   CareEventType.water => 'watered',
@@ -365,7 +365,7 @@ class _Header extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final today = ref.watch(todayProvider);
-    final water = ref.watch(nextWaterProvider(view.id));
+    final water = ref.watch(nextWaterProvider(view.id)).value;
     final p = view.plant;
     final pl = view.planting;
     final stage = view.growth;
@@ -452,7 +452,14 @@ class _Header extends ConsumerWidget {
                         text: stageLine(stage.stage, planted, today),
                       ),
                     if (water != null && active)
-                      WaterChip(label: nextWaterLabel(water.due, today)),
+                      WaterChip(
+                        label: nextWaterLabel(
+                          water.slot.start,
+                          water.slot.outsideFreeTimes
+                              ? outsideFreeTimesCopy
+                              : formatClock(context, water.slot.start),
+                        ),
+                      ),
                   ],
                 ),
                 if (maturity != null) ...[
@@ -466,45 +473,6 @@ class _Header extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _StageNote extends StatelessWidget {
-  const _StageNote({required this.category, required this.text});
-
-  final PlantCategory category;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = plantArtStyle(category);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: style.tint,
-        borderRadius: BorderRadius.circular(AppRadii.card),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Symbols.tips_and_updates_rounded,
-              size: AppIconSize.lg,
-              color: style.ink,
-              fill: 1,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                text,
-                style: AppText.bodySm.copyWith(color: AppColors.soil900),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -604,165 +572,45 @@ class _Heading extends StatelessWidget {
   }
 }
 
-class _TaskRow extends ConsumerWidget {
-  const _TaskRow({
-    required this.task,
-    required this.nickname,
-    required this.onDone,
-  });
+/// One upcoming task from the care list: its slot as a CR-01 header
+/// ("Thu, Oct 8 · 8:00 AM", "Overdue", or outside free times) over the
+/// shared [TaskRow].
+class _UpcomingTask extends ConsumerWidget {
+  const _UpcomingTask({required this.task, required this.onDone});
 
-  final CareDue task;
-  final String nickname;
+  final ScheduledCareTask task;
   final VoidCallback onDone;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final today = ref.watch(todayProvider);
-    final overdue = task.due.isBefore(today);
-    final s = _actionStyle(task.type);
-    return GeauxCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: s.tint,
-              borderRadius: BorderRadius.circular(AppRadii.chip + 4),
-            ),
-            child: Icon(s.icon, size: AppIconSize.lg, color: s.ink, fill: 1),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _taskTitle(task, nickname),
-                  style: AppText.body.copyWith(
-                    color: AppColors.soil900,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                Text(
-                  dueLabel(task.due, today),
-                  style: AppText.bodySm.copyWith(
-                    color: overdue ? AppColors.heat : AppColors.soil600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            tooltip: 'Mark done',
-            onPressed: onDone,
-            icon: const Icon(
-              Symbols.check_circle_rounded,
-              size: 32,
-              color: AppColors.stone200,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CareGuide extends StatelessWidget {
-  const _CareGuide({required this.plant});
-
-  final Plant plant;
-
-  static ({IconData icon, String title}) _taskStyle(TaskType t) => switch (t) {
-    TaskType.fertilize => (icon: Symbols.compost_rounded, title: 'Feed'),
-    TaskType.prune => (icon: Symbols.content_cut_rounded, title: 'Prune'),
-    TaskType.harvest => (
-      icon: Symbols.shopping_basket_rounded,
-      title: 'Harvest',
-    ),
-    TaskType.other => (icon: Symbols.checklist_rounded, title: 'Check'),
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final water = plant.water;
-    return GeauxCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (water != null)
-            _GuideLine(
-              icon: Symbols.water_drop_rounded,
-              color: AppColors.frost,
-              title: 'Water',
-              detail:
-                  '${everyLabel(water.everyDaysOutdoor)} outdoors, '
-                  '${everyLabel(water.everyDaysIndoor).toLowerCase()} '
-                  'indoors',
-            ),
-          for (final t in plant.care.tasks)
-            _GuideLine(
-              icon: _taskStyle(t.type).icon,
-              color: AppColors.leaf700,
-              title: '${_taskStyle(t.type).title} · ${everyLabel(t.everyDays)}',
-              detail: t.note,
-            ),
-          for (final tip in plant.tips)
-            _GuideLine(
-              icon: Symbols.lightbulb_rounded,
-              color: AppColors.goldLedge,
-              title: 'Tip',
-              detail: tip,
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GuideLine extends StatelessWidget {
-  const _GuideLine({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.detail,
-  });
-
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String detail;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs + 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: AppIconSize.md, color: color, fill: 1),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppText.bodySm.copyWith(
-                    color: AppColors.soil900,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                Text(
-                  detail,
-                  style: AppText.bodySm.copyWith(color: AppColors.soil600),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    final slot = task.slot;
+    final day = DateFormat('EEE, MMM d', 'en_US').format(slot.start);
+    final when = slot.outsideFreeTimes
+        ? '$day · $outsideFreeTimesCopy'
+        : '$day · ${formatClock(context, slot.start)}';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CareGroupHeader(
+          icon: task.overdue ? Symbols.error_rounded : Symbols.schedule_rounded,
+          label: task.overdue ? 'Overdue · $when' : when,
+          color: task.overdue ? AppColors.heat : AppColors.soil600,
+          fill: task.overdue ? 1 : 0,
+        ),
+        TaskRow(
+          type: taskRowTypeOf(task.kind),
+          state: task.overdue
+              ? TaskRowState.overdue
+              : task.rainSkip
+              ? TaskRowState.rainSkip
+              : TaskRowState.due,
+          plantName: task.nickname,
+          note: task.note,
+          overdueDays: daysBetween(task.due, today),
+          onDone: onDone,
+        ),
+      ],
     );
   }
 }
@@ -793,7 +641,7 @@ class _CareLog extends ConsumerWidget {
           text: space == null
               ? 'Planted'
               : 'Planted on the ${spaceNoun(space.type)}',
-          when: careLogDate(planted, today),
+          when: plantedLogDate(planted, today),
         ),
     ];
     return GeauxCard(

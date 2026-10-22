@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -12,13 +13,15 @@ import 'package:geaux_farm/features/care/application/care_schedule_provider.dart
 import 'package:geaux_farm/features/care/domain/care_schedule.dart';
 import 'package:geaux_farm/features/care/domain/slot.dart';
 import 'package:geaux_farm/features/care/presentation/widgets/task_row.dart';
+import 'package:geaux_farm/features/catalog/data/catalog_provider.dart';
 import 'package:geaux_farm/features/climate/data/climate_provider.dart';
 import 'package:geaux_farm/features/community/application/community_feed_provider.dart';
+import 'package:geaux_farm/features/community/data/guide_repository_provider.dart';
 import 'package:geaux_farm/features/community/presentation/widgets/guide_card.dart';
 import 'package:geaux_farm/features/climate/domain/climate_profile.dart';
 import 'package:geaux_farm/features/garden/application/garden_provider.dart';
 import 'package:geaux_farm/features/garden/data/plantings_provider.dart';
-import 'package:geaux_farm/features/garden/domain/growth.dart';
+import 'package:geaux_farm/features/care/domain/stage.dart';
 import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
 import 'package:geaux_farm/features/garden/presentation/widgets/planting_card.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
@@ -33,12 +36,14 @@ import 'package:geaux_farm/features/onboarding/domain/user_profile.dart';
 import 'package:geaux_farm/features/recommendations/application/clock_provider.dart';
 import 'package:geaux_farm/features/recommendations/application/recommendations_provider.dart';
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
+import 'package:geaux_farm/features/recommendations/domain/sort_recommendations.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/plant_card.dart';
 import 'package:geaux_farm/features/weather/application/garden_alerts_provider.dart';
 import 'package:geaux_farm/features/weather/data/forecast_client.dart';
 import 'package:geaux_farm/features/weather/domain/garden_alerts.dart';
 import 'package:geaux_farm/features/weather/presentation/alert_banner.dart';
 import 'package:geaux_farm/features/weather/data/weather_provider.dart';
+import 'package:geaux_farm/features/weather/data/weather_repository.dart';
 import 'package:geaux_farm/features/weather/presentation/weather_mini.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -48,6 +53,8 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../helpers/community_fixtures.dart';
 import '../helpers/fixed_climate.dart';
 import '../helpers/in_memory_database.dart';
+import '../garden/garden_harness.dart' show seedPlanting, seedSpace;
+import '../helpers/persisted_app_harness.dart' show settleDrift;
 import '../recommendations/fixtures/scored.dart';
 
 /// [n] distinct recommendations, best first.
@@ -83,7 +90,7 @@ PlantingView _plantedView(List<ScoredPlant> recs) {
     planting: planting,
     plant: plant,
     space: defaultSpace,
-    growth: growthOf(planting, plant, _wednesdayMorning),
+    growth: stageOf(planting, plant, _wednesdayMorning),
   );
 }
 
@@ -156,6 +163,8 @@ Future<ProviderContainer> _pump(
   Stream<UserProfile>? profile,
   List<Planting>? plantings,
   List<PlantingView>? garden,
+  bool localGarden = false,
+  Future<void> Function(ProviderContainer)? prepare,
   List<Override> extra = const [],
 }) async {
   tester.view.physicalSize = size;
@@ -184,11 +193,13 @@ Future<ProviderContainer> _pump(
         plantingsProvider.overrideWith((ref) => Stream.value(plantings)),
       // gardenProvider also awaits the bundled catalog, which needs more than
       // the two pumps below; override the resolved views instead.
-      if (garden != null) gardenProvider.overrideWith((ref) async => garden),
+      if (!localGarden)
+        gardenProvider.overrideWith((ref) async => garden ?? const []),
       inMemoryDatabaseOverride(),
       ...extra,
     ],
   );
+  if (prepare != null) await tester.runAsync(() => prepare(container));
   final router = GoRouter(
     initialLocation: '/home',
     routes: [
@@ -204,6 +215,9 @@ Future<ProviderContainer> _pump(
       ),
       GoRoute(path: '/settings', builder: (_, _) => const Text('ST-01 stub')),
       GoRoute(path: '/care', builder: (_, _) => const Text('CR-01 stub')),
+      GoRoute(path: '/garden', builder: (_, _) => const Text('GD-01 stub')),
+      GoRoute(path: '/weather', builder: (_, _) => const Text('WX-01 stub')),
+      GoRoute(path: '/community', builder: (_, _) => const Text('CM-01 stub')),
       GoRoute(
         path: '/community/guide/:id',
         builder: (_, state) =>
@@ -474,6 +488,27 @@ void main() {
       await _unmount(tester, c);
     });
 
+    testWidgets('Care list opens CR-01 even with no tasks', (tester) async {
+      final c = await pumpActive(tester);
+      await tester.tap(find.text('CARE LIST'));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('CR-01 stub'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('Top guide See all opens the community feed', (tester) async {
+      final c = await pumpActive(tester, topGuide: 'g1');
+      final section = find
+          .ancestor(of: find.byType(GuideCard), matching: find.byType(Column))
+          .first;
+      await tester.tap(
+        find.descendant(of: section, matching: find.text('SEE ALL')),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('CM-01 stub'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
     testWidgets('no tasks today: the empty line, other sections stay', (
       tester,
     ) async {
@@ -502,13 +537,13 @@ void main() {
     testWidgets('In season now: the first 10 in-season plants, in order', (
       tester,
     ) async {
-      // _recs(25): even indexes are in season; plant-0 is already planted.
+      // _recs(25): even indexes are in season; include planted plant-0.
       final c = await pumpActive(tester);
       final shown = tester
           .widgetList<PlantCard>(find.byType(PlantCard))
           .map((card) => card.plant.plant.id)
           .toList();
-      expect(shown, [for (var i = 2; i <= 20; i += 2) 'plant-$i']);
+      expect(shown, [for (var i = 0; i < 20; i += 2) 'plant-$i']);
       await _unmount(tester, c);
     });
 
@@ -522,6 +557,196 @@ void main() {
       final c = await pumpActive(tester, recs: recs);
       expect(find.text('In season now'), findsNothing);
       expect(find.byType(PlantCard), findsNothing);
+      await _unmount(tester, c);
+    });
+
+    testWidgets(
+      'twelve seasonal plants retain plan/04 ties and the first ten',
+      (tester) async {
+        final ranked = sortRecommendations([
+          for (var i = 11; i >= 0; i--)
+            scored(
+              kaleWith({
+                'id': 'seasonal-$i',
+                'commonName': 'Seasonal ${i.toString().padLeft(2, '0')}',
+                'difficulty': i < 6 ? 1 : 2,
+              }),
+              score: i < 3 ? 100 : 90,
+            ),
+          scored(kaleWith({'id': 'not-seasonal'}), inSeason: false),
+        ]);
+        final c = await pumpActive(tester, recs: ranked);
+        expect(
+          tester
+              .widgetList<PlantCard>(find.byType(PlantCard))
+              .map((card) => card.plant.plant.id),
+          [for (var i = 0; i < 10; i++) 'seasonal-$i'],
+        );
+        await _unmount(tester, c);
+      },
+    );
+
+    testWidgets('active carousel opens PD-01, not the grow sheet', (
+      tester,
+    ) async {
+      final c = await pumpActive(tester);
+      await tester.tap(find.byType(PlantCard).first);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('PD-01 stub: plant-0'), findsOneWidget);
+      expect(find.byType(GrowThisSheet), findsNothing);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('snapshot opens My Garden', (tester) async {
+      final c = await pumpActive(tester);
+      await tester.tap(find.byType(PlantingCard));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('GD-01 stub'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('first real Trending row is shown and opens CM-02', (
+      tester,
+    ) async {
+      final recs = _recs(3);
+      final repository = FakeGuideRepository(
+        pages: (query, offset) => [
+          testGuide('trending-first', title: 'First trending', stars7d: 20),
+          testGuide('trending-second', title: 'Second trending', stars7d: 10),
+        ],
+      );
+      final c = await _pump(
+        tester,
+        recs: recs,
+        garden: [_plantedView(recs)],
+        size: const Size(390, 3000),
+        extra: [
+          careScheduleProvider.overrideWith((ref) async => []),
+          gardenAlertsProvider.overrideWith((ref) async => []),
+          guideRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      await tester.pump();
+      expect(repository.fetches.single, (topGuideThisWeekQuery, 0));
+      expect(find.text('First trending'), findsOneWidget);
+      expect(find.text('Second trending'), findsNothing);
+      await tester.tap(find.byType(GuideCard));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('CM-02 stub: trending-first'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('weather failure keeps Today and the garden visible', (
+      tester,
+    ) async {
+      final recs = _recs(3);
+      final c = await _pump(
+        tester,
+        recs: recs,
+        garden: [_plantedView(recs)],
+        forecast: _FakeForecast()..fail = true,
+        extra: _hm02(tasks: [_careTask('Kale', DateTime(2026, 10, 7, 18))]),
+      );
+      expect(find.text(WeatherMini.errorCopy), findsOneWidget);
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('Water Kale'), findsOneWidget);
+      expect(find.text('Your garden'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('offline restores local tasks, snapshot and saved weather', (
+      tester,
+    ) async {
+      final plant = kaleWith({});
+      final c = await _pump(
+        tester,
+        recs: [scored(plant)],
+        localGarden: true,
+        forecast: _FakeForecast()..fail = true,
+        size: const Size(360, 1400),
+        prepare: (c) async {
+          final db = c.read(appDatabaseProvider);
+          await seedSpace(db, id: defaultSpace.id);
+          await seedPlanting(
+            db,
+            spaceId: defaultSpace.id,
+            nickname: 'Local Kale',
+            plantedOn: DateTime(2026, 9, 16),
+          );
+          final savedAt = DateTime(2026, 10, 13, 12);
+          await c
+              .read(weatherRepositoryProvider)
+              .saveForecast(
+                OpenMeteoForecastClient.parseForecast(
+                  jsonDecode(_forecastJson) as Map<String, dynamic>,
+                  fetchedAt: savedAt,
+                ),
+                savedAt,
+              );
+        },
+        extra: [
+          catalogProvider.overrideWith((ref) async => [plant]),
+          gardenAlertsProvider.overrideWith((ref) async => []),
+          topGuideThisWeekProvider.overrideWithValue(const AsyncData(null)),
+        ],
+      );
+      await settleDrift(tester);
+      expect(find.text('Fertilize Local Kale'), findsOneWidget);
+      expect(find.text('Local Kale'), findsOneWidget);
+      expect(find.byType(PlantingCard), findsOneWidget);
+      expect(find.text('90°'), findsOneWidget);
+      expect(find.text(AlertBanner.offlineCopy), findsOneWidget);
+      expect(find.text('Updated 5 h ago'), findsOneWidget);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('refresh fetches weather once and reloads every section', (
+      tester,
+    ) async {
+      final forecast = _FakeForecast();
+      var gardens = 0;
+      var tasks = 0;
+      var recommendations = 0;
+      var alerts = 0;
+      final recs = _recs(3);
+      final repository = FakeGuideRepository(
+        pages: (_, _) => [testGuide('g', title: 'Reloaded guide')],
+      );
+      final c = await _pump(
+        tester,
+        forecast: forecast,
+        localGarden: true,
+        extra: [
+          gardenProvider.overrideWith((ref) async {
+            gardens++;
+            return [_plantedView(recs)];
+          }),
+          careScheduleProvider.overrideWith((ref) async {
+            tasks++;
+            return [_careTask('Kale $tasks', DateTime(2026, 10, 7, 18))];
+          }),
+          recommendationsProvider.overrideWith((ref) async {
+            recommendations++;
+            return recs;
+          }),
+          gardenAlertsProvider.overrideWith((ref) async {
+            alerts++;
+            return [];
+          }),
+          guideRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      await tester.pump();
+      expect(forecast.requests, hasLength(1));
+      expect(find.text('Water Kale 1'), findsOneWidget);
+      await tester.fling(find.byType(ListView), const Offset(0, 400), 1000);
+      for (var i = 0; i < 15; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(forecast.requests, hasLength(2));
+      expect([gardens, tasks, recommendations, alerts], [2, 2, 2, 2]);
+      expect(repository.fetches, hasLength(2));
+      expect(find.text('Water Kale 2'), findsOneWidget);
       await _unmount(tester, c);
     });
 
@@ -572,13 +797,12 @@ void main() {
     expect(find.text('Pick your first plant'), findsNothing);
     expect(find.byType(PlantingCard), findsOneWidget);
 
-    // The banner goes away with the prompt ('THIS SEASON' is its label), and
-    // the carousel drops the plant that is already growing.
+    // HM-02 drops the season banner, not already-growing recommendations.
     expect(find.text('THIS SEASON'), findsNothing);
     final shown = tester
         .widgetList<PlantCard>(find.byType(PlantCard))
         .map((card) => card.plant.plant.id);
-    expect(shown, isNot(contains(recs.first.plant.id)));
+    expect(shown, contains(recs.first.plant.id));
 
     await _unmount(tester, c);
   });
@@ -679,6 +903,14 @@ void main() {
       expect(find.text('RETRY'), findsOneWidget);
       expect(find.textContaining('°'), findsNothing);
       expect(tester.takeException(), isNull);
+      await _unmount(tester, c);
+    });
+
+    testWidgets('WeatherMini opens WX-01', (tester) async {
+      final c = await _pump(tester, recs: _recs(3));
+      await tester.tap(find.byType(WeatherMini));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('WX-01 stub'), findsOneWidget);
       await _unmount(tester, c);
     });
   });

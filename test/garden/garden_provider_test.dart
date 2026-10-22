@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/core/db/app_database.dart';
+import 'package:geaux_farm/features/care/application/care_schedule_provider.dart';
 import 'package:geaux_farm/features/care/domain/care_event.dart';
+import 'package:geaux_farm/features/care/domain/care_schedule.dart';
+import 'package:geaux_farm/features/care/domain/stage.dart';
 import 'package:geaux_farm/features/garden/application/garden_provider.dart';
-import 'package:geaux_farm/features/garden/domain/growth.dart';
 import 'package:geaux_farm/features/garden/domain/planting.dart';
 import 'package:geaux_farm/features/onboarding/domain/space.dart';
 
@@ -45,7 +47,7 @@ void main() {
       expect(v.id, 'p1');
       expect(v.plant.commonName, 'Kale');
       expect(v.space?.type, SpaceType.balcony);
-      expect(v.growth?.stage, GrowthStage.growing);
+      expect(v.growth?.stage, PlantingStage.growing);
       expect(v.growth?.progress, closeTo(20 / 50, 1e-9));
     });
 
@@ -106,6 +108,7 @@ void main() {
 
   group('per-planting care', () {
     setUp(() async {
+      await seedProfile(db);
       await seedPlanting(db, id: 'p1', plantedOn: DateTime(2026, 10, 1));
       await seedPlanting(db, id: 'p2', plantedOn: DateTime(2026, 10, 1));
     });
@@ -116,8 +119,15 @@ void main() {
       await view('p2');
       await container.read(careLogProvider.future);
       container.listen(plantingEventsProvider('p1'), (_, _) {});
+      container.listen(careScheduleProvider, (_, _) {});
       container.listen(plantingTasksProvider('p1'), (_, _) {});
       container.listen(nextWaterProvider('p1'), (_, _) {});
+      await container.read(careScheduleProvider.future);
+    }
+
+    Future<NextWater?> nextWater(String id) {
+      container.listen(nextWaterProvider(id), (_, _) {});
+      return container.read(nextWaterProvider(id).future);
     }
 
     test('events are newest first and belong to one planting', () async {
@@ -151,9 +161,9 @@ void main() {
       expect(e.photoPath, isNull);
     });
 
-    test('tasks are empty until the garden has loaded', () {
+    test('tasks are empty until the care list has loaded', () {
       expect(container.read(plantingTasksProvider('p1')), isEmpty);
-      expect(container.read(nextWaterProvider('p1')), isNull);
+      expect(container.read(nextWaterProvider('p1')).value, isNull);
     });
 
     test(
@@ -162,26 +172,63 @@ void main() {
         await seedCare(db, 'p1', CareEventType.water, DateTime(2026, 10, 6, 8));
         await load();
         // Indoor kale waters every 3 days: Oct 6 + 3.
-        expect(
-          container.read(nextWaterProvider('p1'))?.due,
-          DateTime(2026, 10, 9),
-        );
+        expect((await nextWater('p1'))?.due, DateTime(2026, 10, 9));
         // p2 has no water logged, so its first water was due on planting day.
-        container.listen(nextWaterProvider('p2'), (_, _) {});
-        container.listen(plantingTasksProvider('p2'), (_, _) {});
-        container.listen(plantingEventsProvider('p2'), (_, _) {});
-        await pumpEventQueue();
-        expect(
-          container.read(nextWaterProvider('p2'))?.due,
-          DateTime(2026, 10, 1),
-        );
+        expect((await nextWater('p2'))?.due, DateTime(2026, 10, 1));
       },
     );
 
-    test('tasks come from the planting and its events', () async {
+    test('tasks are this planting\'s rows of the care list (CR-01)', () async {
       await load();
       final tasks = container.read(plantingTasksProvider('p1'));
-      expect(tasks.map((t) => t.type), [CareEventType.water]);
+      expect(tasks.map((t) => t.kind), [CareTaskKind.water]);
+      final schedule = await container.read(careScheduleProvider.future);
+      expect(tasks, [
+        for (final t in schedule)
+          if (t.plantingId == 'p1') t,
+      ]);
+    });
+
+    test('next water is the same day and slot CR-01 shows (#30)', () async {
+      await seedCare(db, 'p1', CareEventType.water, DateTime(2026, 10, 6, 8));
+      await load();
+      final water = (await container.read(careScheduleProvider.future))
+          .singleWhere(
+            (t) => t.plantingId == 'p1' && t.kind == CareTaskKind.water,
+          );
+      final next = (await nextWater('p1'))!;
+      expect(next.due, water.due);
+      expect(next.slot, water.slot);
+      // Due Fri Oct 9; the latest free block on or before it is Wed 18:00.
+      expect(next.slot.start, DateTime(2026, 10, 7, 18));
+    });
+
+    test('next water past this week still has a day (#30)', () async {
+      await seedPlanting(
+        db,
+        id: 'zz',
+        plantId: 'zz-plant',
+        nickname: 'ZZ',
+        plantedOn: DateTime(2026, 9, 1),
+      );
+      await seedCare(db, 'zz', CareEventType.water, DateTime(2026, 10, 6, 8));
+      await view('zz');
+      await container.read(careLogProvider.future);
+      // Indoor ZZ plant waters every 21 days: Oct 6 + 21, outside CR-01's
+      // seven days, so only the chip knows it.
+      expect((await nextWater('zz'))?.due, DateTime(2026, 10, 27));
+      expect(container.read(plantingTasksProvider('zz')), isEmpty);
+    });
+
+    test('no next water for a planting that is not active', () async {
+      await seedPlanting(
+        db,
+        id: 'h',
+        plantedOn: DateTime(2026, 8, 1),
+        status: PlantingStatus.harvested,
+      );
+      await view('h');
+      expect(await nextWater('h'), isNull);
     });
   });
 }

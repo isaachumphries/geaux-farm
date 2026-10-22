@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../../app/theme.dart';
+import '../../../../app/widgets/widgets.dart';
 import '../../../care/application/care_schedule_provider.dart';
 import '../../../care/domain/slot.dart';
 import '../../../care/presentation/care_screen.dart';
@@ -28,6 +29,7 @@ class HomeAlerts extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const SizedBox(height: AppSpacing.md),
         for (final a in alerts) ...[
           AlertBanner.alert(a),
           const SizedBox(height: AppSpacing.md),
@@ -53,7 +55,21 @@ class TodaySection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Today', style: AppText.h2.copyWith(color: AppColors.soil900)),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Today',
+                style: AppText.h2.copyWith(color: AppColors.soil900),
+              ),
+            ),
+            GeauxButton(
+              label: 'Care list',
+              variant: GeauxButtonVariant.text,
+              onPressed: () => context.go('/care'),
+            ),
+          ],
+        ),
         const SizedBox(height: AppSpacing.md),
         if (groups == null && schedule.isLoading)
           const Padding(
@@ -96,21 +112,40 @@ class TodaySection extends ConsumerWidget {
 }
 
 /// HM-02 "Top guide this week": the first Trending guide as a [GuideCard].
-/// Hidden while loading, on error, and when Trending is empty.
+/// Shows a section loader while pending; hidden on error or empty Trending.
 class TopGuideSection extends ConsumerWidget {
   const TopGuideSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final guide = ref.watch(topGuideThisWeekProvider).value;
-    if (guide == null) return const SizedBox.shrink();
+    final trending = ref.watch(topGuideThisWeekProvider);
+    final guide = trending.value;
+    if (guide == null) {
+      if (trending.isLoading) {
+        return const Center(
+          child: CircularProgressIndicator(color: AppColors.leaf500),
+        );
+      }
+      return const SizedBox.shrink();
+    }
     final cover = guide.coverPath;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Top guide this week',
-          style: AppText.h2.copyWith(color: AppColors.soil900),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Top guide this week',
+                style: AppText.h2.copyWith(color: AppColors.soil900),
+              ),
+            ),
+            GeauxButton(
+              label: 'See all',
+              variant: GeauxButtonVariant.text,
+              onPressed: () => context.go('/community'),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.md),
         GuideCard(

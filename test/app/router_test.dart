@@ -7,6 +7,7 @@ import 'package:geaux_farm/app/widgets/widgets.dart';
 import 'package:geaux_farm/features/care/presentation/care_screen.dart';
 import 'package:geaux_farm/features/community/presentation/community_feed_screen.dart';
 import 'package:geaux_farm/features/community/presentation/guide_detail_screen.dart';
+import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
 import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/planting_detail_screen.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
@@ -196,16 +197,32 @@ void main() {
     await _teardown(tester);
   });
 
-  testWidgets('PD-01 "Grow this" is wired to the PD-02 sheet (#23)', (
-    tester,
-  ) async {
+  testWidgets('PD-01 "Grow this" opens the PD-02 sheet (#23)', (tester) async {
     final router = await _pumpApp(tester, onboardedProfile);
     await _go(tester, router, '/plants/kale');
 
-    final screen = tester.widget<PlantDetailScreen>(
-      find.byType(PlantDetailScreen),
+    expect(find.byType(GrowThisSheet), findsNothing);
+    await tester.tap(find.text('GROW THIS'));
+    await tester.pumpAndSettle();
+    expect(find.byType(GrowThisSheet), findsOneWidget);
+    expect(
+      tester.widget<GrowThisSheet>(find.byType(GrowThisSheet)).plant.plant.id,
+      'kale',
     );
-    expect(screen.onGrow, isNotNull);
+    expect(find.text('Grow Kale'), findsOneWidget);
+    expect(find.text('Where will it grow?'), findsOneWidget);
+    expect(find.text('Outdoors'), findsOneWidget);
+    expect(find.text('Indoors'), findsOneWidget);
+    expect(find.text('Greenhouse'), findsOneWidget);
+    await tester.tap(find.text('Indoors'));
+    await tester.pumpAndSettle();
+    expect(find.text('ADD TO MY GARDEN'), findsOneWidget);
+    // Dismiss the actual modal and return to the same detail, not a stand-in.
+    Navigator.of(tester.element(find.byType(GrowThisSheet))).pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(GrowThisSheet), findsNothing);
+    expect(find.text('Kale'), findsOneWidget);
+    expect(_location(router).path, '/plants/kale');
     await _teardown(tester);
   });
 

@@ -16,6 +16,22 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
+## Home dashboard
+
+Home keeps the first-plant prompt (or its collapsed “pick later” state) until
+the local garden has a planting. The active dashboard then shows garden alerts,
+today's care grouped by the same slot labels as Care, the garden snapshot, the
+first ten in-season recommendations in plan/04 order, and the first Trending
+guide when available. Already-growing plants remain eligible for that carousel.
+
+Plant cards open plant detail, the snapshot opens My Garden, and the guide opens
+guide detail. Weather and Settings are available from the header. Pull-to-refresh
+fetches weather once and reloads the dashboard sections. Without a connection,
+the garden and care schedule still read from Drift; failed weather refreshes
+retain cached weather and show “Showing saved weather” once it is over three
+hours old. An empty cache shows the weather-unavailable notice without hiding
+the local care schedule.
+
 ## Community authentication
 
 The email-OTP flow uses the Supabase SDK's persisted session, then loads the
@@ -84,3 +100,32 @@ config or the template.
 | Demo account addresses and inbox logins | Team password manager |
 | Service-role key, database password | Supabase dashboard → Project Settings; team password manager |
 | Anon (publishable) key and project URL | `env.json` (gitignored) and CI secrets; template in `env.example.json` |
+
+## Plant detail
+
+PD-01 shows the six compatibility factors, care and first-start growth
+window, all season tags, monthly planting windows, and tips in catalog order.
+The bottom **Grow this** action stays visible while scrolling and opens the
+real PD-02 setup sheet. The image credit includes its license; tapping it
+opens the catalog record's source URL when one is present.
+
+## Garden weather alerts
+
+Home and Weather use the same typed `AlertBanner` adapter and shared
+`GeauxAlertBanner` visual container. Frost, heat, heavy rain, and high UV retain
+the exact plan/06 copy; offline weather says “Showing saved weather”.
+
+Alert evaluation reads only active outdoor plantings and today through two days
+ahead. Forecast/cache values stay in °F and inches even when Settings displays
+metric units. UV additionally requires an outdoor planting in the Sprouting
+stage and today's UV maximum.
+
+Frost notices run at 18:00 local on the preceding day, skip elapsed evenings,
+and replace the pending weather set after refresh or planting changes. Weather
+owns IDs 1000–1002, separate from care's future-slot epoch-minute IDs, with at
+most three pending notices. Scheduling follows the notification Settings toggle.
+There is no background forecast refresh.
+
+The rules, display-unit independence, planting filters, and replacement behavior
+are covered under `test/weather/`; screen placement and saved-weather age states
+are covered by `test/features/weather/weather_screen_test.dart`.
