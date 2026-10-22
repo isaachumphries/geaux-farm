@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
+import 'widgets/account_tile.dart';
 import 'widgets/care_reminders_tile.dart';
 import 'widgets/units_tile.dart';
 
@@ -16,16 +17,36 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        children: [
-          Text(
-            'Preferences'.toUpperCase(),
-            style: AppText.overline.copyWith(color: AppColors.soil600),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          const UnitsTile(),
-          const SizedBox(height: AppSpacing.sm),
-          const CareRemindersTile(),
+        children: const [
+          _SectionLabel('Preferences'),
+          UnitsTile(),
+          SizedBox(height: AppSpacing.sm),
+          CareRemindersTile(),
+          SizedBox(height: AppSpacing.xl),
+          _SectionLabel('Account'),
+          AccountTile(),
         ],
+      ),
+    );
+  }
+}
+
+/// The uppercase caps line over each ST-01 group.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Semantics(
+        header: true,
+        child: Text(
+          text.toUpperCase(),
+          style: AppText.overline.copyWith(color: AppColors.soil600),
+        ),
       ),
     );
   }
