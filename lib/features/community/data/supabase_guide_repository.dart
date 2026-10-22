@@ -152,7 +152,7 @@ class SupabaseGuideRepository implements GuideRepository {
   Future<void> deleteGuide(String guideId) async {
     final userId = _requireUserId();
     // The author_id filter keeps a mistyped id from even reaching RLS.
-    await _send(
+    final rows = await _send(
       _client
           .from(_guidesTable)
           .delete()
@@ -160,6 +160,12 @@ class SupabaseGuideRepository implements GuideRepository {
           .eq('author_id', userId)
           .select('id'),
     );
+    if (rows.isEmpty) {
+      // RLS matched no row: not this author's guide, or already gone.
+      throw const GuideWriteRejectedException(
+        'This guide can no longer be deleted',
+      );
+    }
   }
 
   /// Inserts a new row or updates the existing one, and returns its id.

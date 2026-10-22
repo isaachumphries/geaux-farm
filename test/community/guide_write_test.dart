@@ -189,6 +189,16 @@ void main() {
       expect(request.url.query, contains('id=eq.g1'));
       expect(request.url.query, contains('author_id=eq.u1'));
     });
+
+    test('a delete that removes no row is rejected', () async {
+      // RLS answers 200 with no rows for a guide that is not the user's.
+      recorder.rows = [];
+
+      await expectLater(
+        _repo(recorder).deleteGuide('g1'),
+        throwsA(isA<GuideWriteRejectedException>()),
+      );
+    });
   });
 
   group('open for editing', () {
