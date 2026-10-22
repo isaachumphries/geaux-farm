@@ -81,7 +81,8 @@ enum GuideStatus { draft, published, hidden }
 /// editor never offers to demote it back to a draft.
 typedef EditableGuide = ({GuideDraft draft, GuideStatus status});
 
-/// No published guide has the requested id.
+/// No guide the caller can read has the requested id: [fetchGuide] sees
+/// published guides, [fetchDraft] the caller's own guides of any status.
 class GuideNotFoundException implements Exception {
   const GuideNotFoundException(this.id);
 
