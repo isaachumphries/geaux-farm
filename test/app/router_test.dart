@@ -10,6 +10,7 @@ import 'package:geaux_farm/features/community/presentation/editor/guide_editor_s
 import 'package:geaux_farm/features/community/presentation/guide_detail_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/grow_this_sheet.dart';
 import 'package:geaux_farm/features/garden/presentation/my_garden_screen.dart';
+import 'package:geaux_farm/features/community/presentation/my_profile_screen.dart';
 import 'package:geaux_farm/features/garden/presentation/planting_detail_screen.dart';
 import 'package:geaux_farm/features/home/presentation/home_first_run_screen.dart';
 import 'package:geaux_farm/features/onboarding/data/default_profile.dart';
@@ -151,7 +152,6 @@ void main() {
     const placeholders = {
       '/settings': 'Settings',
       '/settings/edit/space': 'OB-07 Edit step',
-      '/community/me': 'CM-05 My profile',
     };
     for (final MapEntry(key: path, value: title) in placeholders.entries) {
       await _go(tester, router, path);
@@ -188,6 +188,9 @@ void main() {
       '/community': CommunityFeedScreen,
       '/community/guide/g1': GuideDetailScreen,
       '/community/editor/new': GuideEditorScreen,
+      // Like the editor, CM-05 opens the sign-in sheet over itself when
+      // signed out, so it comes last.
+      '/community/me': MyProfileScreen,
     };
     for (final MapEntry(key: path, value: type) in screens.entries) {
       await _go(tester, router, path);

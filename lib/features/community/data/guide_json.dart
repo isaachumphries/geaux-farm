@@ -50,6 +50,23 @@ Guide guideFromJson(Map<String, dynamic> row) {
   );
 }
 
+/// A `guides` row read with its `author` profile embedded, as CM-05 lists
+/// it. The table has no `stars_7d` (a `guide_feed` column), so it is 0.
+/// Throws when a required column is missing or mistyped, or `status` is not
+/// one of [GuideStatus].
+OwnGuide ownGuideFromJson(Map<String, dynamic> row) {
+  final author = row['author'] as Map<String, dynamic>;
+  return (
+    guide: guideFromJson({
+      ...row,
+      'author_username': author['username'],
+      'author_display_name': author['display_name'],
+      'stars_7d': 0,
+    }),
+    status: GuideStatus.values.byName(row['status'] as String),
+  );
+}
+
 /// A `guides` row as the editor opens it. Throws when a required column is
 /// missing or mistyped, or `status` is not one of [GuideStatus].
 EditableGuide editableGuideFromJson(Map<String, dynamic> row) {

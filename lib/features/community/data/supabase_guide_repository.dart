@@ -23,6 +23,13 @@ const _uniqueViolation = '23505';
 /// Writes always target the table, never the `guide_feed` view.
 const _guidesTable = 'guides';
 
+/// The author's `profiles` row embedded in a `guides` read, for the
+/// username a card shows (`guide_feed` joins it in the view). Named by its
+/// foreign key: guide_stars, guide_grows and guide_reports also link guides
+/// to profiles, and PostgREST refuses an ambiguous embed (PGRST201).
+const _authorEmbed =
+    'author:profiles!guides_author_id_fkey(username, display_name)';
+
 const _draftStatus = 'draft';
 const _publishedStatus = 'published';
 
@@ -48,9 +55,42 @@ class SupabaseGuideRepository implements GuideRepository {
     final userId = _currentUserId();
     if (userId == null) return const {};
     final rows = await _send(
-      _client.from('guide_stars').select('guide_id').eq('user_id', userId),
+      _client
+          .from('guide_stars')
+          .select('guide_id')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false),
     );
+    // A set literal keeps insertion order, so the newest star stays first.
     return {for (final row in rows) row['guide_id'] as String};
+  }
+
+  @override
+  Future<List<Guide>> fetchGuidesByIds(List<String> ids) async {
+    if (ids.isEmpty) return const [];
+    final rows = await _send(
+      _client.from('guide_feed').select().inFilter('id', ids),
+    );
+    final byId = {
+      for (final row in rows) row['id'] as String: guideFromJson(row),
+    };
+    return [for (final id in ids) ?byId[id]];
+  }
+
+  @override
+  Future<List<OwnGuide>> fetchMyGuides() async {
+    final userId = _requireUserId();
+    // Read from the table, not guide_feed, so drafts and hidden guides come
+    // too; guides_read lets an author read every row they wrote, and the
+    // author_id filter keeps other authors' published guides out.
+    final rows = await _send(
+      _client
+          .from(_guidesTable)
+          .select('*, $_authorEmbed')
+          .eq('author_id', userId)
+          .order('updated_at', ascending: false),
+    );
+    return [for (final row in rows) ownGuideFromJson(row)];
   }
 
   @override
