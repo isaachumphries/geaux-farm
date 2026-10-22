@@ -14,10 +14,12 @@ import 'package:geaux_farm/features/recommendations/application/plant_detail_pro
 import 'package:geaux_farm/features/recommendations/domain/scored_plant.dart';
 import 'package:geaux_farm/features/recommendations/presentation/plant_detail_screen.dart';
 import 'package:geaux_farm/features/recommendations/presentation/widgets/compat_badge.dart';
+import 'package:geaux_farm/features/weather/presentation/attribution_footer.dart';
 
 import '../helpers/file_asset_bundle.dart';
 import '../helpers/fixed_climate.dart';
 import 'fixtures/baton_rouge.dart' as fx;
+import 'fixtures/scored.dart';
 
 const _monthNames = [
   'January',
@@ -111,6 +113,102 @@ Future<Plant> _plant(WidgetTester tester, String id) async {
 }
 
 void main() {
+  testWidgets('sections and every season tag follow record and spec order', (
+    tester,
+  ) async {
+    final plant = kaleWith({
+      'seasonTags': ['cool-season', 'warm-season', 'evergreen', 'perennial'],
+    });
+    await _pump(
+      tester,
+      plantId: plant.id,
+      overrides: [
+        ..._overrides(),
+        catalogProvider.overrideWith((ref) async => [plant]),
+      ],
+    );
+    final sections = [
+      'Kale',
+      'Why it fits',
+      'Time to grow',
+      'When to plant',
+      'Tips',
+      'Image credit: ${plant.image.credit} · ${plant.image.license}',
+    ];
+    final tops = [
+      for (final text in sections) tester.getTopLeft(find.text(text)).dy,
+    ];
+    for (var i = 1; i < tops.length; i++) {
+      expect(tops[i], greaterThan(tops[i - 1]), reason: sections[i]);
+    }
+    const labels = ['Cool-season', 'Warm-season', 'Evergreen', 'Perennial'];
+    final tags = [
+      for (final label in labels) tester.getTopLeft(find.text(label)),
+    ];
+    for (var i = 1; i < tags.length; i++) {
+      expect(
+        tags[i].dy > tags[i - 1].dy ||
+            (tags[i].dy == tags[i - 1].dy && tags[i].dx > tags[i - 1].dx),
+        isTrue,
+        reason: labels[i],
+      );
+    }
+  });
+
+  for (final (weekly, label) in [
+    (15, 'Low care'),
+    (16, 'Medium care'),
+    (40, 'Medium care'),
+    (41, 'High care'),
+  ]) {
+    testWidgets('detail weekly care $weekly shows $label', (tester) async {
+      final plant = kaleWith({
+        'care': {
+          ...fx.rawKale()['care'] as Map<String, dynamic>,
+          'dailyMinutes': 2,
+          'weeklyMinutes': weekly,
+        },
+      });
+      await _pump(
+        tester,
+        plantId: plant.id,
+        overrides: [
+          ..._overrides(),
+          catalogProvider.overrideWith((ref) async => [plant]),
+        ],
+      );
+      expect(find.text(label), findsOneWidget);
+      expect(find.text('~${weekly}m'), findsOneWidget);
+    });
+  }
+
+  for (final (kind, max, label) in [
+    ('harvest', 90, 'Harvest in 60–90 days'),
+    ('bloom', 90, 'Blooms in 60–90 days'),
+    ('establish', 180, 'Settles in over ~6 months'),
+    ('establish', 181, 'Settles in over ~7 months'),
+    ('foliage', 90, 'Grows year-round'),
+  ]) {
+    testWidgets('detail $kind $max uses the first start', (tester) async {
+      final plant = kaleWith({
+        'maturityKind': kind,
+        'starts': [
+          {'method': 'seed', 'daysMin': 60, 'daysMax': max},
+          {'method': 'transplant', 'daysMin': 10, 'daysMax': 20},
+        ],
+      });
+      await _pump(
+        tester,
+        plantId: plant.id,
+        overrides: [
+          ..._overrides(),
+          catalogProvider.overrideWith((ref) async => [plant]),
+        ],
+      );
+      expect(find.text(label), findsOneWidget);
+    });
+  }
+
   testWidgets('english-lavender shows score, bars, care, and season', (
     tester,
   ) async {
@@ -306,5 +404,132 @@ void main() {
   ) async {
     await _pump(tester, plantId: 'no-such-plant', overrides: _overrides());
     expect(find.text('This plant is not in the catalog.'), findsOneWidget);
+  });
+
+  testWidgets('the image credit line opens the record sourceUrl', (
+    tester,
+  ) async {
+    final plant = await _plant(tester, 'kale');
+    final opened = <Uri>[];
+    await _pump(
+      tester,
+      plantId: 'kale',
+      overrides: [
+        ..._overrides(),
+        linkOpenerProvider.overrideWithValue((uri) async {
+          opened.add(uri);
+          return true;
+        }),
+      ],
+    );
+    final credit = find.text(
+      'Image credit: ${plant.image.credit} · ${plant.image.license}',
+    );
+    await tester.ensureVisible(credit);
+    await tester.tap(credit);
+    await tester.pump();
+    expect(opened, [Uri.parse(plant.image.sourceUrl!)]);
+  });
+
+  testWidgets('the image credit line is plain text without a sourceUrl', (
+    tester,
+  ) async {
+    final base = kaleWith({});
+    final noLink = kaleWith({
+      'image': {
+        'asset': base.image.asset,
+        'credit': base.image.credit,
+        'license': base.image.license,
+      },
+    });
+    final opened = <Uri>[];
+    await _pump(
+      tester,
+      plantId: noLink.id,
+      overrides: [
+        ..._overrides(),
+        catalogProvider.overrideWith((ref) async => [noLink]),
+        linkOpenerProvider.overrideWithValue((uri) async {
+          opened.add(uri);
+          return true;
+        }),
+      ],
+    );
+    final credit = find.text(
+      'Image credit: ${noLink.image.credit} · ${noLink.image.license}',
+    );
+    await tester.ensureVisible(credit);
+    await tester.tap(credit);
+    await tester.pump();
+    expect(opened, isEmpty);
+  });
+
+  for (final count in [2, 3, 4]) {
+    testWidgets('a record with $count tips shows all of them in order', (
+      tester,
+    ) async {
+      final tips = [for (var i = 1; i <= count; i++) 'Tip number $i here.'];
+      final plant = kaleWith({'tips': tips});
+      await _pump(
+        tester,
+        plantId: plant.id,
+        overrides: [
+          ..._overrides(),
+          catalogProvider.overrideWith((ref) async => [plant]),
+        ],
+      );
+      final tops = [
+        for (final tip in tips) tester.getTopLeft(find.text(tip)).dy,
+      ];
+      expect(find.textContaining('Tip number'), findsNWidgets(count));
+      for (var i = 1; i < tops.length; i++) {
+        expect(tops[i], greaterThan(tops[i - 1]));
+      }
+    });
+  }
+
+  testWidgets('a plant with no daily care shows a dash, not 0m', (
+    tester,
+  ) async {
+    final plant = kaleWith({
+      'care': {
+        ...fx.rawKale()['care'] as Map<String, dynamic>,
+        'dailyMinutes': 0,
+      },
+    });
+    await _pump(
+      tester,
+      plantId: plant.id,
+      overrides: [
+        ..._overrides(),
+        catalogProvider.overrideWith((ref) async => [plant]),
+      ],
+    );
+    expect(find.text('Daily care'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+    expect(find.text('~0m'), findsNothing);
+  });
+
+  testWidgets('sweet-basil: April is a gold month cell and December is not', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await _pump(tester, plantId: 'sweet-basil', overrides: _overrides());
+    Color? fillOf(String month) {
+      final cell = find.byWidgetPredicate(
+        (w) =>
+            w is Semantics && (w.properties.label?.startsWith(month) ?? false),
+      );
+      final box = tester
+          .widget<DecoratedBox>(
+            find.descendant(of: cell, matching: find.byType(DecoratedBox)),
+          )
+          .decoration;
+      return (box as BoxDecoration).color;
+    }
+
+    expect(fillOf('April'), AppColors.geauxGold);
+    expect(fillOf('December'), isNot(AppColors.geauxGold));
+    handle.dispose();
   });
 }

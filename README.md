@@ -84,3 +84,11 @@ config or the template.
 | Demo account addresses and inbox logins | Team password manager |
 | Service-role key, database password | Supabase dashboard → Project Settings; team password manager |
 | Anon (publishable) key and project URL | `env.json` (gitignored) and CI secrets; template in `env.example.json` |
+
+## Plant detail
+
+PD-01 shows the six compatibility factors, care and first-start growth
+window, all season tags, monthly planting windows, and tips in catalog order.
+The bottom **Grow this** action stays visible while scrolling and opens the
+real PD-02 setup sheet. The image credit includes its license; tapping it
+opens the catalog record's source URL when one is present.

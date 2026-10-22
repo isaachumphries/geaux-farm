@@ -6,6 +6,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../app/theme.dart';
 import '../../../app/widgets/widgets.dart';
 import '../../catalog/domain/plant.dart';
+import '../../weather/presentation/attribution_footer.dart';
 import '../application/clock_provider.dart';
 import '../application/plant_detail_provider.dart';
 import '../domain/scored_plant.dart';
@@ -148,14 +149,7 @@ class _DetailBody extends StatelessWidget {
                               ],
                             ),
                           ),
-                          Text(
-                            'Image credit: ${plant.image.credit} · '
-                            '${plant.image.license}',
-                            style: AppText.label.copyWith(
-                              color: AppColors.soil600,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          _ImageCredit(image: plant.image),
                         ],
                       ),
                     ),
@@ -454,6 +448,43 @@ class _TipCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// "Image credit: {credit} · {license}"; opens `image.sourceUrl` when the
+/// record has one.
+class _ImageCredit extends ConsumerWidget {
+  const _ImageCredit({required this.image});
+
+  final PlantImage image;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final url = image.sourceUrl;
+    final style = AppText.label.copyWith(
+      color: AppColors.soil600,
+      fontWeight: FontWeight.w500,
+    );
+    final text = Text(
+      'Image credit: ${image.credit} · ${image.license}',
+      style: url == null
+          ? style
+          : style.copyWith(decoration: TextDecoration.underline),
+    );
+    if (url == null) return text;
+    return Semantics(
+      link: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => ref.read(linkOpenerProvider)(Uri.parse(url)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.minTouchTarget,
+          ),
+          child: Align(alignment: Alignment.centerLeft, child: text),
+        ),
       ),
     );
   }
