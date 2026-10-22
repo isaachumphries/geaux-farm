@@ -14,15 +14,15 @@ import '../data/guide_repository_provider.dart';
 /// RLS is the real guard on whose guide this is; CM-02 only offers the
 /// action on the author's own guide.
 Future<void> deleteOwnGuide(
-  BuildContext context,
-  WidgetRef ref, {
+  BuildContext context, {
   required String guideId,
 }) async {
   // Taken before any await: the page behind this call is gone once the
   // route changes, the root messenger is not.
   final messenger = ScaffoldMessenger.of(context);
-  // Not `ref`: it dies with this page, but the cached lists must refresh
-  // even when the user left while the request was in flight.
+  // The container, not a WidgetRef: a ref dies with its page, but the
+  // cached lists must refresh even when the user left while the request
+  // was in flight.
   final container = ProviderScope.containerOf(context);
   final confirmed = await showDialog<bool>(
     context: context,

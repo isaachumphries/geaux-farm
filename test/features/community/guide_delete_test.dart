@@ -46,8 +46,7 @@ Future<GoRouter> _pumpOwnGuide(
               return Consumer(
                 builder: (context, ref, _) => GuideDetailScreen(
                   guideId: guideId,
-                  onDelete: () =>
-                      deleteOwnGuide(context, ref, guideId: guideId),
+                  onDelete: () => deleteOwnGuide(context, guideId: guideId),
                 ),
               );
             },

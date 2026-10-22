@@ -173,8 +173,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                           onGrow: () => growGuide(context, ref, guideId: id),
                           onReport: () =>
                               reportGuide(context, ref, guideId: id),
-                          onDelete: () =>
-                              deleteOwnGuide(context, ref, guideId: id),
+                          onDelete: () => deleteOwnGuide(context, guideId: id),
                         ),
                       );
                     },
