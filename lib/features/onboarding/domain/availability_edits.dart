@@ -19,6 +19,30 @@ const blockLabels = [
 
 const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+const _dayNames = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
+
+/// What a screen reader says for one grid cell (plan/01 § AvailabilityGrid):
+/// day, time block, and whether it is selected, e.g. "Monday 6–8 PM,
+/// selected". The meridiem is said once when both ends share it.
+String availabilityCellLabel(int day, int block, {required bool selected}) {
+  final start = 6 + 2 * block;
+  final end = start + 2;
+  String hour(int h) => '${(h + 11) % 12 + 1}';
+  String period(int h) => h < 12 ? 'AM' : 'PM';
+  final range = period(start) == period(end)
+      ? '${hour(start)}–${hour(end)} ${period(end)}'
+      : '${hour(start)} ${period(start)}–${hour(end)} ${period(end)}';
+  return '${_dayNames[day]} $range, ${selected ? 'selected' : 'not selected'}';
+}
+
 bool isBlockSet(List<int> days, int day, int block) =>
     days[day] & (1 << block) != 0;
 
