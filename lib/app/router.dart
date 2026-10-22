@@ -9,6 +9,7 @@ import '../features/community/presentation/editor/guide_editor_screen.dart';
 import '../features/community/presentation/grow_guide.dart';
 import '../features/community/presentation/guide_detail_screen.dart';
 import '../features/community/presentation/my_profile_screen.dart';
+import '../features/community/presentation/remix_guide.dart';
 import '../features/community/presentation/report_sheet.dart';
 import '../features/garden/presentation/grow_this_sheet.dart';
 import '../features/garden/presentation/guide_project_screen.dart';
@@ -172,6 +173,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                         builder: (context, ref, _) => GuideDetailScreen(
                           guideId: id,
                           onGrow: () => growGuide(context, ref, guideId: id),
+                          onRemix: () => remixGuide(context, ref, guideId: id),
                           onReport: () =>
                               reportGuide(context, ref, guideId: id),
                           onDelete: () => deleteOwnGuide(context, guideId: id),

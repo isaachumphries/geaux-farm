@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geaux_farm/core/http.dart';
+import 'package:geaux_farm/features/community/data/remix_payload.dart';
 import 'package:geaux_farm/features/community/data/supabase_guide_repository.dart';
 import 'package:geaux_farm/features/community/domain/guide.dart';
 import 'package:geaux_farm/features/community/domain/guide_repository.dart';
@@ -259,6 +260,40 @@ void main() {
         _repo(recorder).fetchDraft('g1'),
         throwsA(isA<GuideNotFoundException>()),
       );
+    });
+  });
+
+  group('remix', () {
+    test(
+      'inserts one guides row as the signed-in author, reads the id',
+      () async {
+        recorder.rows = [
+          {'id': 'remix-1'},
+        ];
+
+        final id = await _repo(recorder)
+            .insertRemixDraft(buildRemixPayload(testGuide('g1')));
+
+        expect(id, 'remix-1');
+        final request = recorder.requests.single;
+        expect(request.method, 'POST');
+        expect(request.url.path, '/rest/v1/guides');
+        expect(request.url.queryParameters['select'], 'id');
+        expect(recorder.bodies.single['author_id'], 'u1');
+        expect(recorder.bodies.single['forked_from'], 'g1');
+        expect(recorder.bodies.single['status'], 'draft');
+      },
+    );
+
+    test('signed out: throws AuthRequiredException, no request', () async {
+      await expectLater(
+        _repo(
+          recorder,
+          userId: null,
+        ).insertRemixDraft(buildRemixPayload(testGuide('g1'))),
+        throwsA(isA<AuthRequiredException>()),
+      );
+      expect(recorder.requests, isEmpty);
     });
   });
 }

@@ -9,6 +9,7 @@ import 'package:geaux_farm/features/community/data/auth_providers.dart';
 import 'package:geaux_farm/features/community/data/guide_repository_provider.dart';
 import 'package:geaux_farm/features/community/domain/auth_user.dart';
 import 'package:geaux_farm/features/community/presentation/guide_detail_screen.dart';
+import 'package:geaux_farm/features/community/presentation/remix_guide.dart';
 import 'package:geaux_farm/features/community/presentation/report_sheet.dart';
 import 'package:go_router/go_router.dart';
 
@@ -44,6 +45,7 @@ Future<GoRouter> pumpGuideDetail(
   VoidCallback? onRemix,
   VoidCallback? onReport,
   bool wireReport = false,
+  bool wireRemix = false,
 }) async {
   tester.view.physicalSize = Size(360, height);
   tester.view.devicePixelRatio = 1;
@@ -56,14 +58,16 @@ Future<GoRouter> pumpGuideDetail(
         path: '/community/guide/:id',
         builder: (_, state) {
           final guideId = state.pathParameters['id']!;
-          // wireReport runs the real router wiring (sign-in gate plus the
-          // report sheet) instead of a stub callback, so #60's flow test
-          // covers what the app actually does.
+          // wireReport and wireRemix run the real router wiring (sign-in
+          // gate plus the flow) instead of a stub callback, so the #60 and
+          // #57 flow tests cover what the app actually does.
           return Consumer(
             builder: (context, ref, _) => GuideDetailScreen(
               guideId: guideId,
               onGrow: onGrow,
-              onRemix: onRemix,
+              onRemix: wireRemix
+                  ? () => remixGuide(context, ref, guideId: guideId)
+                  : onRemix,
               onReport: wireReport
                   ? () => reportGuide(context, ref, guideId: guideId)
                   : onReport,

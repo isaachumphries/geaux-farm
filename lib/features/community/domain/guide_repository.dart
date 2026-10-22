@@ -78,6 +78,14 @@ abstract interface class GuideRepository {
   /// leaves `published_at` as the trigger first set it.
   Future<String> publishGuide(GuideDraft draft);
 
+  /// Inserts the signed-in user's remix draft from [payload] (the `guides`
+  /// columns `buildRemixPayload` gives) and returns the new guide id
+  /// (plan/07 § Remix).
+  ///
+  /// Throws [AuthRequiredException] when signed out, without sending a
+  /// request.
+  Future<String> insertRemixDraft(Map<String, dynamic> payload);
+
   /// Deletes the signed-in author's own guide. RLS rejects deleting
   /// anyone else's.
   Future<void> deleteGuide(String guideId);

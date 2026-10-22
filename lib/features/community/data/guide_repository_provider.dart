@@ -67,5 +67,9 @@ class UnconfiguredGuideRepository implements GuideRepository {
   Future<String> publishGuide(GuideDraft draft) => Future.error(_unavailable);
 
   @override
+  Future<String> insertRemixDraft(Map<String, dynamic> payload) =>
+      Future.error(_unavailable);
+
+  @override
   Future<void> deleteGuide(String guideId) => Future.error(_unavailable);
 }
