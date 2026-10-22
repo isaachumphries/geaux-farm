@@ -159,6 +159,7 @@ class _AvailabilityGridState extends State<AvailabilityGrid> {
                     onPointerUp: (_) => _end(),
                     onPointerCancel: (_) => _end(),
                     child: Semantics(
+                      container: true,
                       label:
                           'Availability grid, ${dayLabels.length} days by '
                           '${blockLabels.length} two-hour blocks',
@@ -174,7 +175,17 @@ class _AvailabilityGridState extends State<AvailabilityGrid> {
                                     _Cell(
                                       key: ValueKey('cell-$d-$b'),
                                       width: w,
+                                      day: d,
+                                      block: b,
                                       selected: isBlockSet(widget.value, d, b),
+                                      onToggle: () => widget.onChanged(
+                                        setBlock(
+                                          widget.value,
+                                          d,
+                                          b,
+                                          !isBlockSet(widget.value, d, b),
+                                        ),
+                                      ),
                                     ),
                                 ],
                               ),
@@ -194,14 +205,26 @@ class _AvailabilityGridState extends State<AvailabilityGrid> {
 }
 
 class _Cell extends StatelessWidget {
-  const _Cell({super.key, required this.width, required this.selected});
+  const _Cell({
+    super.key,
+    required this.width,
+    required this.day,
+    required this.block,
+    required this.selected,
+    required this.onToggle,
+  });
 
   final double width;
+  final int day;
+  final int block;
   final bool selected;
+
+  /// Screen-reader activation. Touch goes through the grid's Listener.
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final cell = Padding(
       padding: const EdgeInsets.only(
         right: AvailabilityGrid.gap,
         bottom: AvailabilityGrid.gap,
@@ -219,6 +242,14 @@ class _Cell extends StatelessWidget {
           ),
         ),
       ),
+    );
+    return Semantics(
+      container: true,
+      button: true,
+      selected: selected,
+      label: availabilityCellLabel(day, block, selected: selected),
+      onTap: onToggle,
+      child: cell,
     );
   }
 }

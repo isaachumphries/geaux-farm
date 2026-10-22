@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
+import 'widgets/about_card.dart';
+import 'widgets/account_tile.dart';
 import 'widgets/care_reminders_tile.dart';
+import 'widgets/units_tile.dart';
 
-/// ST-01 Settings. Only the Care reminders row is built here. The other
-/// Figma rows (Units, Account, Weather alerts, About) belong to their own
-/// tickets.
+/// ST-01 Settings, in the plan/01 row order: Units, notifications (Care
+/// reminders), account, about. The onboarding-answer rows and Weather
+/// alerts are not built yet.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -15,14 +18,39 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        children: [
-          Text(
-            'Preferences'.toUpperCase(),
-            style: AppText.overline.copyWith(color: AppColors.soil600),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          const CareRemindersTile(),
+        children: const [
+          _SectionLabel('Preferences'),
+          UnitsTile(),
+          SizedBox(height: AppSpacing.sm),
+          CareRemindersTile(),
+          SizedBox(height: AppSpacing.xl),
+          _SectionLabel('Account'),
+          AccountTile(),
+          SizedBox(height: AppSpacing.xl),
+          _SectionLabel('About'),
+          AboutCard(),
         ],
+      ),
+    );
+  }
+}
+
+/// The uppercase caps line over each ST-01 group.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Semantics(
+        header: true,
+        child: Text(
+          text.toUpperCase(),
+          style: AppText.overline.copyWith(color: AppColors.soil600),
+        ),
       ),
     );
   }

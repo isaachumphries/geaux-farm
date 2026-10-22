@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../features/care/presentation/care_screen.dart';
 import '../features/community/presentation/community_feed_screen.dart';
+import '../features/community/presentation/grow_guide.dart';
 import '../features/community/presentation/guide_detail_screen.dart';
 import '../features/community/presentation/report_sheet.dart';
 import '../features/garden/presentation/grow_this_sheet.dart';
+import '../features/garden/presentation/guide_project_screen.dart';
 import '../features/garden/presentation/my_garden_screen.dart';
 import '../features/garden/presentation/planting_detail_screen.dart';
 import '../features/home/presentation/home_first_run_screen.dart';
@@ -134,7 +136,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                       plantingId: state.pathParameters['id']!,
                     ),
                   ),
-                  _placeholder('project/:id', 'GD-03 Guide project'),
+                  GoRoute(
+                    path: 'project/:id',
+                    builder: (context, state) => GuideProjectScreen(
+                      projectId: state.pathParameters['id']!,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -161,6 +168,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                       return Consumer(
                         builder: (context, ref, _) => GuideDetailScreen(
                           guideId: id,
+                          onGrow: () => growGuide(context, ref, guideId: id),
                           onReport: () =>
                               reportGuide(context, ref, guideId: id),
                         ),
