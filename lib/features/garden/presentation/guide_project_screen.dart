@@ -168,8 +168,9 @@ class _CheckRow extends StatelessWidget {
                   value: checked,
                   onChanged: (v) => onChanged(v ?? false),
                   activeColor: AppColors.leaf500,
+                  // stone-200 is too faint for an unchecked box on white.
                   side: const BorderSide(
-                    color: AppColors.stone200,
+                    color: AppColors.soil600,
                     width: AppBorders.width,
                   ),
                 ),
