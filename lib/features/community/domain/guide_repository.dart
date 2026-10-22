@@ -13,9 +13,19 @@ abstract interface class GuideRepository {
   /// [offset], filtered by [query] and then ordered by its sort.
   Future<List<Guide>> fetchFeed(GuideFeedQuery query, {int offset = 0});
 
-  /// The ids of the guides the signed-in user starred; empty when signed
-  /// out.
+  /// The ids of the guides the signed-in user starred, most recent star
+  /// first; empty when signed out.
   Future<Set<String>> starredGuideIds();
+
+  /// The published guides with [ids], in the order of [ids]. An id with no
+  /// published guide (deleted, hidden, or never published) is left out.
+  /// Sends no request when [ids] is empty.
+  Future<List<Guide>> fetchGuidesByIds(List<String> ids);
+
+  /// The signed-in author's own guides of every status (CM-05 My guides),
+  /// most recently updated first. Throws [AuthRequiredException] when
+  /// signed out, without sending a request.
+  Future<List<OwnGuide>> fetchMyGuides();
 
   /// The published guide with [id]. Throws [GuideNotFoundException] when
   /// there is none, or it is hidden or not published.
@@ -75,6 +85,10 @@ abstract interface class GuideRepository {
 
 /// The `guides.status` values (0001_init.sql).
 enum GuideStatus { draft, published, hidden }
+
+/// One of the signed-in author's guides on CM-05: the guide as its card
+/// shows it, and the row's status, which decides where a tap goes.
+typedef OwnGuide = ({Guide guide, GuideStatus status});
 
 /// An author's own guide as the editor opens it: the draft to edit and
 /// the row's current status. A published guide is edited in place, so the
