@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../features/care/presentation/care_screen.dart';
 import '../features/community/presentation/community_feed_screen.dart';
+import '../features/community/presentation/delete_guide.dart';
+import '../features/community/presentation/editor/guide_editor_screen.dart';
 import '../features/community/presentation/grow_guide.dart';
 import '../features/community/presentation/guide_detail_screen.dart';
 import '../features/community/presentation/report_sheet.dart';
@@ -171,11 +173,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                           onGrow: () => growGuide(context, ref, guideId: id),
                           onReport: () =>
                               reportGuide(context, ref, guideId: id),
+                          onDelete: () =>
+                              deleteOwnGuide(context, ref, guideId: id),
                         ),
                       );
                     },
                   ),
-                  _placeholder('editor/:id', 'CM-03 Editor'),
+                  GoRoute(
+                    path: 'editor/:id',
+                    builder: (context, state) =>
+                        GuideEditorScreen(guideId: state.pathParameters['id']!),
+                  ),
                   _placeholder('me', 'CM-05 My profile'),
                 ],
               ),
