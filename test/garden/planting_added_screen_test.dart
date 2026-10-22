@@ -17,9 +17,12 @@ import 'garden_harness.dart';
 /// Counts OS permission prompts. [missing] makes it act like a platform
 /// with no notification plugin.
 class _CountingPlugin extends InertNotificationPlugin {
-  _CountingPlugin({this.missing = false});
+  _CountingPlugin({this.missing = false, this.requestFails = false});
 
   final bool missing;
+
+  /// The OS permission request itself throws, as a platform channel can.
+  final bool requestFails;
   int permissionRequests = 0;
 
   @override
@@ -32,6 +35,7 @@ class _CountingPlugin extends InertNotificationPlugin {
   @override
   Future<bool> requestPermission() async {
     permissionRequests++;
+    if (requestFails) throw PlatformException(code: 'denied');
     return true;
   }
 }
@@ -42,12 +46,16 @@ Future<(AppDatabase, _CountingPlugin)> _open(
   WidgetTester tester, {
   required bool permissionAsked,
   bool missingPlugin = false,
+  bool requestFails = false,
 }) async {
   final db = openGardenDb();
   await tester.runAsync(
     () => seedProfile(db, permissionAsked: permissionAsked),
   );
-  final plugin = _CountingPlugin(missing: missingPlugin);
+  final plugin = _CountingPlugin(
+    missing: missingPlugin,
+    requestFails: requestFails,
+  );
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -159,6 +167,23 @@ void main() {
     await settleDrift(tester);
 
     expect(plugin.permissionRequests, 0);
+    expect(await _asked(tester, db), isTrue);
+    expect(find.text('launcher'), findsOneWidget);
+  });
+
+  testWidgets('Turn on whose OS request fails still records and leaves', (
+    tester,
+  ) async {
+    final (db, plugin) = await _open(
+      tester,
+      permissionAsked: false,
+      requestFails: true,
+    );
+
+    await tester.tap(find.text('TURN ON'));
+    await settleDrift(tester);
+
+    expect(plugin.permissionRequests, 1);
     expect(await _asked(tester, db), isTrue);
     expect(find.text('launcher'), findsOneWidget);
   });
